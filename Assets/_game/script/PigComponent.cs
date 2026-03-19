@@ -32,7 +32,7 @@ public class PigComponent : MonoBehaviour
     public GameObject pigModel;
     public Material hiddenMaterial;
     public Material normalMaterial;
-
+    private int _lockedTargets = 0;
     public void ChangeState(PigState newState)
     {
         currentState = newState;
@@ -157,6 +157,7 @@ public class PigComponent : MonoBehaviour
         isOnTop = value;
         if (value)
         {
+            isHidden = false;
             var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
             if (meshRenderer != null)
             {
@@ -164,12 +165,21 @@ public class PigComponent : MonoBehaviour
                 meshRenderer.material.color = GameUtility.GetColorByName(color);
                 bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
                 bulletText.SetActive(true);
+
+                if(IsLinkedPig())
+                {
+                    EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
+                }
             }
         }
     }
 
     private void OnBulletChanged()
     {
+        if (_lockedTargets > 0)
+        {
+            _lockedTargets--;
+        }
 
         if (Bullet <= 0 && isOnBelt)
         {
@@ -318,12 +328,10 @@ public class PigComponent : MonoBehaviour
 
     private void CheckAndAddTargetBlocks()
     {
-        if (Bullet <= 0) return;
-        if (rayCastPoint == null || _wavyLine == null)
-        {
-            return;
-        }
 
+        if (Bullet - _lockedTargets <= 0) return;
+
+        if (rayCastPoint == null || _wavyLine == null) return;
 
         float checkDistance = 10f;
         Vector3 currentPos = rayCastPoint.position;
@@ -338,10 +346,8 @@ public class PigComponent : MonoBehaviour
                 _lastCheckedBlock = hitObject;
                 _wavyLine.AddTarget(hitObject);
                 blockComp.isAlreadyDestroyed = true;
-                if (_lastCheckedBlock != hitObject)
-                {
 
-                }
+                _lockedTargets++;
             }
             else
             {
@@ -434,7 +440,6 @@ public class PigComponent : MonoBehaviour
     public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, int targetQueueIndex)
     {
         ChangeState(PigState.MovingToQueue);
-        // queueIndex = targetQueueIndex;
 
         StopAllCoroutines();
         if (_wavyLine != null)

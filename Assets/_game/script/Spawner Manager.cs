@@ -200,7 +200,6 @@ public class SpawnerManager : MonoBehaviour
     {
         if (pig == null || isProcessingClick) return;
 
-        // Kiểm tra hợp lệ cho con heo bị click trực tiếp (chỉ cần sai state là cút)
         if (!pig.IsPigValid())
         {
             SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
@@ -225,12 +224,10 @@ public class SpawnerManager : MonoBehaviour
                 return;
             }
 
-            // Đủ điều kiện hết rồi thì cho nhảy!
             StartCoroutine(ProcessLinkedPigsRoutine(linkedPigs));
             return;
         }
 
-        // --- XỬ LÝ HEO LẺ ---
         if (_straightSlot >= _maxstraightSlot)
         {
             EventManager.OnFullConveyorSlot?.Invoke();
@@ -512,7 +509,7 @@ public class SpawnerManager : MonoBehaviour
             return occupiedCount;
         }
 
-        return -1; // Queue đầy
+        return -1; 
     }
 
     private void OnBlockDestroyed()

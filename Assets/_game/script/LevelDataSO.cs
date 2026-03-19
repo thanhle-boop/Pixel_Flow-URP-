@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "NewLevel", menuName = "Configs/LevelData")]
 public class LevelDataSO : ScriptableObject {
-    public TextAsset sourceJson; // Kéo file JSON vào đây
+    public TextAsset sourceJson;
 
     [Header("Parsed Data")]
     public int levelIndex;
@@ -12,11 +12,10 @@ public class LevelDataSO : ScriptableObject {
     public List<string> gridData;
     public List<LaneConfig> lanes;
 
-    [ContextMenu("Import from JSON")] // Chuột phải vào SO chọn dòng này để load
+    [ContextMenu("Import from JSON")]
     public void Import() {
         if (sourceJson != null) {
             JsonUtility.FromJsonOverwrite(sourceJson.text, this);
-            Debug.Log("Đã cập nhật dữ liệu từ JSON!");
         }
     }
     

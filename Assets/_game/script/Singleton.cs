@@ -28,7 +28,6 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             _instance = this as T;
             
-            // Xử lý DontDestroyOnLoad cho object hoặc root của nó
             if (transform.parent != null)
             {
                 DontDestroyOnLoad(transform.root.gameObject);

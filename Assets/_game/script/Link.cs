@@ -11,10 +11,44 @@ public class Link : MonoBehaviour
     private PigComponent pigObject2;
     private Vector3 startPos;
     private Vector3 endPos;
+    private string color1;
+    private string color2;
+
+    void OnEnable()
+    {
+        EventManager.OnPigIsOnTopNoMoreHidden += ResetColorNoMoreHidden;
+    }
+    void OnDisable()
+    {
+        EventManager.OnPigIsOnTopNoMoreHidden -= ResetColorNoMoreHidden;
+    }
+
+    void ResetColorNoMoreHidden(PigComponent pig)
+    {
+        Debug.Log("cogthanh1" + (pig == pigObject1));
+        Debug.Log("cogthanh2" + (pig == pigObject2));
+        if (pig == pigObject1)
+        {
+            var material1 = link1.GetComponent<Renderer>();
+            material1.material = mesh1;
+            material1.material.color = GameUtility.GetColorByName(color1);
+
+        }
+        else if (pig == pigObject2)
+        {
+            var material2 = link2.GetComponent<Renderer>();
+            material2.material = mesh2;
+            material2.material.color = GameUtility.GetColorByName(color2);
+        }
+    }
 
     void Update()
     {
-        if (pigObject1 == null || pigObject2 == null) return;
+        if (pigObject1 == null || pigObject2 == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         startPos = pigObject1.transform.position;
         endPos = pigObject2.transform.position;
@@ -36,7 +70,9 @@ public class Link : MonoBehaviour
     {
         pigObject1 = pig1;
         var material1 = link1.GetComponent<Renderer>();
-        
+        this.color1 = color1;
+        this.color2 = color2;
+
         if (pigObject1.isHidden)
         {
             material1.material = hiddenMesh;

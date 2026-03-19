@@ -28,9 +28,9 @@ public class GameUtility
         case "dark blue":
             return new Color(0f, 0f, 0.5f);
         case "light blue":
-            return new Color(0.68f, 0.85f, 0.9f);  // LightBlue chuẩn
+            return new Color(0.68f, 0.85f, 0.9f); 
         case "purple":
-            return new Color(0.5f, 0f, 0.5f);         // Purple thật (tối hơn Magenta)
+            return new Color(0.5f, 0f, 0.5f);
         case "brown":
             return new Color(0.59f, 0.29f, 0f);
         case "light brown":

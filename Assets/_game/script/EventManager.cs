@@ -17,4 +17,7 @@ public class EventManager
     public static Action OnJumpToConveyor;
 
     public static Action<PigComponent> OnPigOutOfAmmo;
+    public static Action<PigComponent> OnPigIsOnTopNoMoreHidden;
+
+
 }
