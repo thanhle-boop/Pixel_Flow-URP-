@@ -64,7 +64,7 @@ public class PigComponent : MonoBehaviour
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
         // var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
-        var meshRenderer = pigModel.GetComponentInChildren<Renderer>();
+        var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
 
         if (isHidden)
         {
@@ -72,11 +72,12 @@ public class PigComponent : MonoBehaviour
             return;
         }
 
+        meshRenderer.material.color = GameUtility.GetColorByName(color);
+        bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
+        // bulletText.SetActive(true);
         if (meshRenderer != null)
         {
-            meshRenderer.material.color = GameUtility.GetColorByName(color);
-            bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
-            bulletText.SetActive(true);
+
         }
     }
 
@@ -159,18 +160,19 @@ public class PigComponent : MonoBehaviour
         if (value)
         {
             isHidden = false;
-            var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
+            var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
+            meshRenderer.material = normalMaterial;
+            meshRenderer.material.color = GameUtility.GetColorByName(color);
+            bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
+            // bulletText.SetActive(true);
+
+            if (IsLinkedPig())
+            {
+                EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
+            }
             if (meshRenderer != null)
             {
-                meshRenderer.material = normalMaterial;
-                meshRenderer.material.color = GameUtility.GetColorByName(color);
-                bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
-                bulletText.SetActive(true);
 
-                if(IsLinkedPig())
-                {
-                    EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
-                }
             }
         }
     }

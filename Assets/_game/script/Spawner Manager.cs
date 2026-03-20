@@ -398,7 +398,7 @@ public class SpawnerManager : MonoBehaviour
                 var color = GameUtility.GetColorByName(colorType);
                 if (colorType == "empty") continue;
                 Vector3 localPos = new Vector3(
-                    (i * 0.85f) - laneOffsetX,
+                    (i * 0.95f) - laneOffsetX,
                     0,
                     -(j * 0.85f)
                 );
@@ -411,7 +411,7 @@ public class SpawnerManager : MonoBehaviour
 
                 if (pigComp != null)
                 {
-                    pigComp.Initialize(colorType, bulletCount, i, color, speedOnStraight, speedOnCurve, jumpToQueueSpeed, allWaypoints, Random.Range(0, 2) == 0 ? true : false);
+                    pigComp.Initialize(colorType, bulletCount, i, color, speedOnStraight, speedOnCurve, jumpToQueueSpeed, allWaypoints,currentLane.pigs[j].isHidden);
                     pigsByLane[i].Add(pigComp);
                     pigComp.SetIsOnTop(j == 0);
                     if (currentLane.pigs[j].pigRight.IsValid())
