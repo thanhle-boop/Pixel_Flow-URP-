@@ -74,11 +74,6 @@ public class PigComponent : MonoBehaviour
 
         meshRenderer.material.color = GameUtility.GetColorByName(color);
         bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
-        // bulletText.SetActive(true);
-        if (meshRenderer != null)
-        {
-
-        }
     }
 
     public bool IsOnFirstRow()
@@ -255,21 +250,30 @@ public class PigComponent : MonoBehaviour
         StartCoroutine(ConveyorJourney());
     }
 
-    private IEnumerator ConveyorJourney()
+private IEnumerator ConveyorJourney()
     {
         Vector3 firstPoint = allWaypoints[0].position;
         yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
 
         ChangeState(PigState.OnConveyor);
-        StartCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
-        StartCoroutine(ShootingRoutine());
-    }
+        yield return new WaitForFixedUpdate();
 
+        _rayCastDirection = allWaypoints[0].forward;
+        if (_wavyLine != null)
+        {
+            _wavyLine.UpdateStartPoint(rayCastPoint.position);
+        }
+        CheckAndAddTargetBlocks();
+
+        StartCoroutine(ShootingRoutine());
+        StartCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
+    }
     private IEnumerator JumpCoroutine(Vector3 target, float duration, float height)
     {
         isOnTop = true;
         Vector3 startPos = rb.position;
         float elapsed = 0;
+        isOnBelt = true;
 
         while (elapsed < duration)
         {
@@ -286,7 +290,6 @@ public class PigComponent : MonoBehaviour
 
         rb.MovePosition(target);
         isOnTop = false;
-        isOnBelt = true;
     }
 
     public void MoveTo(Vector3 newLocalPos)
@@ -351,11 +354,15 @@ public class PigComponent : MonoBehaviour
                 blockComp.isAlreadyDestroyed = true;
 
                 _lockedTargets++;
+                Debug.DrawRay(currentPos, _rayCastDirection * checkDistance, Color.green);
             }
             else
             {
+                Debug.DrawRay(currentPos, _rayCastDirection * checkDistance, Color.blue);
+
                 _lastCheckedBlock = null;
             }
+
         }
         else
         {
