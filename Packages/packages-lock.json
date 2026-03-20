@@ -33,13 +33,6 @@
       "dependencies": {},
       "hash": "c2af83c9d4f8cdaada9d4a0e94de2f195d8e1d01"
     },
-    "com.hoainam.gameframework": {
-      "version": "https://hoainam151293:ATBBrDyryKgHnXTPaxmQVNevzZS5C6CFE42F@bitbucket.org/hopperstudiogames/gameframework.git?path=Assets/Framework",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "f4124e60cfc666cb0b8d00121c928a7405d473b1"
-    },
     "com.pixeption.mck": {
       "version": "https://github.com/pixeption/MobileConsoleKit.git",
       "depth": 0,

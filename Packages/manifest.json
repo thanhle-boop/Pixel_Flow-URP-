@@ -4,7 +4,6 @@
     "com.cysharp.r3": "https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
-    "com.hoainam.gameframework": "https://hoainam151293:ATBBrDyryKgHnXTPaxmQVNevzZS5C6CFE42F@bitbucket.org/hopperstudiogames/gameframework.git?path=Assets/Framework",
     "com.pixeption.mck": "https://github.com/pixeption/MobileConsoleKit.git",
     "com.unity.addressables": "2.8.1",
     "com.unity.device-simulator.devices": "1.0.1",
