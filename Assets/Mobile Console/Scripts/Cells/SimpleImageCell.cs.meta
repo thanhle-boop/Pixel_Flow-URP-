@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 1dab6049894234d609b69dc3a7609ab4
+timeCreated: 1551523903
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/Cells/SimpleImageCell.cs
+  uploadId: 460155

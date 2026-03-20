@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cf4e6d40964bf45f9865de4ac5f0d010
+timeCreated: 1536487933
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Resources/LogConsoleSettings.asset
+  uploadId: 460155

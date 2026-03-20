@@ -57,8 +57,8 @@ public class WavyLineRenderer : MonoBehaviour
             return;
         }
         
-        _lineRenderer.startWidth = 0.15f;
-        _lineRenderer.endWidth = 0.15f;
+        _lineRenderer.startWidth = 0.08f;
+        _lineRenderer.endWidth = 0.08f;
         _lineRenderer.positionCount = waveSegments;
         
         _lineRenderer.material = lineMaterial;

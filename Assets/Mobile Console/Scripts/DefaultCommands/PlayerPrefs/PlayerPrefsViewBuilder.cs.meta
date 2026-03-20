@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 61d018bd04e1146179def55bc4f88001
+timeCreated: 1551538249
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/DefaultCommands/PlayerPrefs/PlayerPrefsViewBuilder.cs
+  uploadId: 460155

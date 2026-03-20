@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e9cf01dd8fbd44336a77d0267eb32ed7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Internal/Scripts/Base Cells/BaseCell.cs
+  uploadId: 460155

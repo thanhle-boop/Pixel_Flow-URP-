@@ -20,6 +20,7 @@ public class SpawnerManager : MonoBehaviour
 
     public List<LevelDataSO> Levels;
     public float blockSpacing = 1.2f;
+    public float blockAffter = 0.9f;
 
     public Transform pigSpawnPos;
     public GameObject pigPrefab;
@@ -311,7 +312,7 @@ public class SpawnerManager : MonoBehaviour
         {
             Vector3 newLocalPos = pigsInLane[i].transform.localPosition;
 
-            newLocalPos.z = -(i * blockSpacing);
+            newLocalPos.z = -(i * blockAffter);
 
             pigsInLane[i].MoveTo(newLocalPos);
 

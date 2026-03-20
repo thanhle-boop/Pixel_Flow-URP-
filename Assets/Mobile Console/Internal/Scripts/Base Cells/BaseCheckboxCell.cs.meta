@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 90f51f3c644cd4fb0a7ad947e34f3093
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Internal/Scripts/Base Cells/BaseCheckboxCell.cs
+  uploadId: 460155

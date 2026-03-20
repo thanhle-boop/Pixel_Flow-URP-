@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 3f4cdc5c6c8db4dbcaf265b3c7c43af9
+timeCreated: 1551538214
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/DefaultCommands/PlayerPrefs/PlayerPrefsCommand.cs
+  uploadId: 460155

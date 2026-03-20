@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 7c3c03a41a2b04882b9f846f9fac2e95
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Internal/Scripts/Core/LogReceiver.cs
+  uploadId: 460155

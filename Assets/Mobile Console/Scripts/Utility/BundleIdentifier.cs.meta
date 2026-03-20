@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: f42a300f5d66645f6a4b7e2b51e5363b
+timeCreated: 1551719754
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/Utility/BundleIdentifier.cs
+  uploadId: 460155

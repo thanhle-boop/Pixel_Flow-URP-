@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 98c93632b25b742738f17e74706694af
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Internal/Scripts/Attributes/ExcutableCommandAttribute.cs
+  uploadId: 460155

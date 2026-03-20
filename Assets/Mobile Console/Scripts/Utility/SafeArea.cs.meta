@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4f232a6fa386b4d72848fab604ed1429
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/Utility/SafeArea.cs
+  uploadId: 460155

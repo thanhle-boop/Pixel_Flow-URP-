@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 4fb271472d5c6471697f98bf24bb0324
+timeCreated: 1550244545
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/Cells/CheckboxCell.cs
+  uploadId: 460155

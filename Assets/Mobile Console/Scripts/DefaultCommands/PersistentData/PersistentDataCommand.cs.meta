@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: c8809ec7e2d5747718280b82cda7aced
+timeCreated: 1551443054
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/DefaultCommands/PersistentData/PersistentDataCommand.cs
+  uploadId: 460155

@@ -25,8 +25,6 @@ public class Link : MonoBehaviour
 
     void ResetColorNoMoreHidden(PigComponent pig)
     {
-        Debug.Log("cogthanh1" + (pig == pigObject1));
-        Debug.Log("cogthanh2" + (pig == pigObject2));
         if (pig == pigObject1)
         {
             var material1 = link1.GetComponent<Renderer>();

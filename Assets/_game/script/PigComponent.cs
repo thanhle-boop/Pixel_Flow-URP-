@@ -63,7 +63,8 @@ public class PigComponent : MonoBehaviour
 
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
-        var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
+        // var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
+        var meshRenderer = pigModel.GetComponentInChildren<Renderer>();
 
         if (isHidden)
         {

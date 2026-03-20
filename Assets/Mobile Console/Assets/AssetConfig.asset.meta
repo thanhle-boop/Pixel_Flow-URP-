@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c81bbd912e98849b28841db56b47d3ec
+timeCreated: 1550854243
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Assets/AssetConfig.asset
+  uploadId: 460155

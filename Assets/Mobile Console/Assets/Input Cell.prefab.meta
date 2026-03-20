@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 735562412a9b34280b428fc4c7404819
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Assets/Input Cell.prefab
+  uploadId: 460155

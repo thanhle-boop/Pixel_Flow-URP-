@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 68b008640e0ac48c5bbf0b391d760881
+timeCreated: 1551196005
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 128118
+  packageName: Mobile Console Kit
+  packageVersion: 2.1.0
+  assetPath: Assets/Mobile Console/Scripts/DefaultCommands/SearchGameObject/SearchGameObjectViewBuilder.cs
+  uploadId: 460155
