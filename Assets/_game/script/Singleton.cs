@@ -4,13 +4,15 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
     private static T _instance;
 
+    protected virtual bool PersistAcrossScenes => true;
+
     public static T Instance
     {
         get
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<T>();
+                _instance = FindFirstObjectByType<T>();
 
                 if (_instance == null)
                 {
@@ -27,15 +29,18 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if (_instance == null)
         {
             _instance = this as T;
-            
+
+            if (!PersistAcrossScenes)
+            {
+                return;
+            }
+
             if (transform.parent != null)
             {
-                DontDestroyOnLoad(transform.root.gameObject);
+                transform.SetParent(null);
             }
-            else
-            {
-                DontDestroyOnLoad(gameObject);
-            }
+
+            DontDestroyOnLoad(gameObject);
         }
         else if (_instance != this)
         {

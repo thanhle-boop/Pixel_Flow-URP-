@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class PigConfig {
-    public string colorName;
-    public int bullets;
-    public bool isHidden = false;
-    public PigMarker pigLeft = null;
-    public PigMarker pigRight = null;
-}
+// [Serializable]
+// public class PigConfig {
+//     public string colorName;
+//     public int bullets;
+//     public bool isHidden = false;
+//     public PigMarker pigLeft = null;
+//     public PigMarker pigRight = null;
+// }
 
 [Serializable]
 public class LaneConfig {
-    public List<PigConfig> pigs;
+    public List<PigLayoutData> pigs;
 }
 
 [Serializable]

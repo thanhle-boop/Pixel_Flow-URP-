@@ -1,10 +1,13 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 public class UIManager : Singleton<UIManager>
 {
+    protected override bool PersistAcrossScenes => false;
+
     public TMPro.TextMeshProUGUI straightSlotText;
     public VideoPlayer loseGameVideo;
 
@@ -46,6 +49,10 @@ public class UIManager : Singleton<UIManager>
 
     private void StartGame()
     {
+        if(winUI == null || gameOverUI == null || reTryUI == null || gameplayUI == null)
+        {
+            return;
+        }
         gameOverUI.SetActive(false);
         reTryUI.SetActive(false);
         gameplayUI.SetActive(true);
@@ -54,6 +61,9 @@ public class UIManager : Singleton<UIManager>
     private void OnDisable()
     {
         EventManager.OnLoseGame -= GameOver;
+        EventManager.OnStartGame -= StartGame;
+        EventManager.OnFullConveyorSlot -= OnInvalidExecution;
+        EventManager.OnWinGame -= WinGame;
     }
     
     private void GameOver()
@@ -68,6 +78,10 @@ public class UIManager : Singleton<UIManager>
     
     public void UpdateStraightSlot(float count,float maxSlot)
     {
+        if(straightSlotText == null)
+        {
+            return;
+        }
         straightSlotText.text = count + "/" + maxSlot;
     }
     
@@ -85,12 +99,19 @@ public class UIManager : Singleton<UIManager>
     {
         DataManager.Instance.AddCoins(40);
         winCoinText.text = "" + DataManager.Instance.Coins;
-        winUI.SetActive(false);
+        if(winUI != null)
+        {
+            winUI.SetActive(true);
+        }
         GameManager.Instance.StartGame();
     }
 
     public void OnContinueButtonClicked()
     {
+        if(gameOverUI == null || gameplayUI == null)
+        {
+            return;
+        }
         GameManager.Instance.ContinueGame();
         DataManager.Instance.AddCoins(-900);
         coinText.text = "" + DataManager.Instance.Coins;
@@ -101,6 +122,11 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowWinUI(int coinsEarned)
     {
+        if(winUI == null || gameplayUI == null)
+        {
+            return;
+        }
+
         winUI.SetActive(true);
         gameplayUI.SetActive(false);
         winCoinText.text = "" + coinsEarned;
@@ -108,25 +134,43 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowGameOverUI()
     {
+        if(gameOverUI == null || gameplayUI == null)
+        {
+            return;
+        }
+
         gameOverUI.SetActive(true);
         gameOverCoinText.text = "" + DataManager.Instance.Coins;
         gameplayUI.SetActive(false);
     }
 
     public void ShowGameplayUI()
-    {
+    {   
+        if(gameplayUI == null)
+        {
+            return;
+        }
         gameplayUI.SetActive(true);
         levelText.text = "Level " + DataManager.Instance.CurrentLevel;
         coinText.text = "" + DataManager.Instance.Coins;
     }
     public void CloseGameOverUI()
     {
+        if(gameOverUI == null || reTryUI == null)
+        {
+            return;
+        }
         gameOverUI.SetActive(false);
         reTryUI.SetActive(true);
     }
 
     public void OnRetryButtonClicked()
     {
+        if(reTryUI == null)
+        {
+            return;
+        }
+
         DataManager.Instance.LoseLife();
         GameManager.Instance.StartGame();
         reTryUI.SetActive(false);
@@ -134,7 +178,15 @@ public class UIManager : Singleton<UIManager>
 
     public void CloseRetryUI()
     {
+        if(reTryUI == null)
+        {
+            return;
+        }
         reTryUI.SetActive(false);
         //Back to main menu or something
+    }
+    public void OnBackToEditorClicked()
+    {
+        SceneManager.LoadScene("5.level_editor");
     }
 }

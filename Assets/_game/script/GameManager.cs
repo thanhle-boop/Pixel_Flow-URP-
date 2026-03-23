@@ -1,13 +1,48 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
     private GameState _mGameState;
-    
-    void Start()
+
+    private int _lastStartedSceneHandle = -1;
+
+    private void OnEnable()
     {
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void Start()
+    {
+        TryStartScene(SceneManager.GetActiveScene());
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TryStartScene(scene);
+    }
+
+    private void TryStartScene(Scene scene)
+    {
+        if (!scene.isLoaded || scene.name != "6.playTest")
+        {
+            return;
+        }
+
+        if (_lastStartedSceneHandle == scene.handle)
+        {
+            return;
+        }
+
+        _lastStartedSceneHandle = scene.handle;
         StartGame();
     }
+
     public void StartGame()
     {
         _mGameState = GameState.Start;

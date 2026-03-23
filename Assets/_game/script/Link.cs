@@ -17,12 +17,21 @@ public class Link : MonoBehaviour
     void OnEnable()
     {
         EventManager.OnPigIsOnTopNoMoreHidden += ResetColorNoMoreHidden;
+        EventManager.OnPigOutOfAmmo += DestroyLink;
     }
     void OnDisable()
     {
         EventManager.OnPigIsOnTopNoMoreHidden -= ResetColorNoMoreHidden;
+        EventManager.OnPigOutOfAmmo -= DestroyLink;
     }
 
+    void DestroyLink(PigComponent pig)
+    {
+        if (pig == pigObject1 || pig == pigObject2)
+        {
+            Destroy(gameObject);
+        }
+    }
     void ResetColorNoMoreHidden(PigComponent pig)
     {
         if (pig == pigObject1)
@@ -44,7 +53,6 @@ public class Link : MonoBehaviour
     {
         if (pigObject1 == null || pigObject2 == null)
         {
-            Destroy(gameObject);
             return;
         }
 

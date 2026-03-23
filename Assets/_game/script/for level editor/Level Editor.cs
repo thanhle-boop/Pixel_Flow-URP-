@@ -1,0 +1,1648 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TMPro;
+using SimpleFileBrowser;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class LevelEditor : MonoBehaviour
+{
+    public string[] features = {
+        "Paint",
+        "Re-Color"
+    };
+
+    public string[] test12 = {
+        "Swap",
+        "Hidden",
+        "Linked",
+        "EndLink",
+    };
+
+    [Header("UI References")]
+    public GameObject pigFeature;
+    public GameObject pigPrefab;
+    public Sprite emptySprite;
+    public GameObject cellPrefab;
+    public GameObject featurePrefab;
+    public GameObject colorPrefab;
+    public RawImage textureDisplay;
+    public Transform gridCellContainer;
+    public Transform featureContainer;
+    public Transform colorContainer;
+    public Transform pigContainer;
+    public Transform pigFeatureContainer;
+    public TMP_InputField levelInput;
+    public TMP_InputField widthInput;
+    public TMP_InputField stepsInput;
+    public TMP_InputField columnsInput;
+    public TMP_Text reportTextDisplay;
+
+    [Header("Settings")]
+    [SerializeField] private int _queueColumns = 3;
+    private int _targetWidth = 20;
+    private int _targetStepsInput = 12;
+    private const int MaxQueue1 = 5;
+
+    [Header("Internal Data")]
+    private Texture2D _textureInput;
+    private string[,] _tempGrid;
+    private string[,] _finalGridMap;
+    private int _finalWidth, _finalHeight;
+    private int _finalOffsetX, _finalOffsetY;
+    private const int TempGridSize = 35;
+    private Dictionary<string, int> _finalColorCounts = new Dictionary<string, int>();
+    private List<PigLayoutData>[] _multiColumnPigs;
+    private string _activeColorBrush = "red";
+    private List<string[,]> _undoHistory = new List<string[,]>();
+    private (List<string> finalDeck, List<PigDataPool> finalPool, int actualSteps) _lastPigResult;
+    private int _selectedPigCol = -1;
+    private int _selectedPigRow = -1;
+    private int _pigsBeforeAdjust = 0;
+    private int levelIndex = 1;
+    private int MaxUndoSteps = 10;
+
+    private struct UndoSnapshot
+    {
+        public string[,] tempGrid;
+        public List<PigLayoutData>[] multiColumnPigs;
+        public int queueColumns;
+    }
+    private List<UndoSnapshot> _undoSnapshots = new List<UndoSnapshot>();
+
+    public enum FeatureMode { None, Paint, RecolorPicking, RecolorWaitBrush }
+    private FeatureMode _currentMode = FeatureMode.Paint;
+    private string _recolorSourceColor = null;
+    private List<FeatureBtn> _featureBtns = new List<FeatureBtn>();
+    private List<FeaturePig> _pigFeatureBtns = new List<FeaturePig>();
+    private string _activePigFeature = "Swap";
+    private int _nextLinkId = 0;
+    private List<(int col, int row)> _linkingPigs = new List<(int col, int row)>();
+
+    private void Start()
+    {
+        if (levelInput != null && string.IsNullOrEmpty(levelInput.text)) levelInput.text = levelIndex.ToString();
+        if (widthInput != null && string.IsNullOrEmpty(widthInput.text)) widthInput.text = _targetWidth.ToString();
+        if (stepsInput != null && string.IsNullOrEmpty(stepsInput.text)) stepsInput.text = _targetStepsInput.ToString();
+        if (columnsInput != null && string.IsNullOrEmpty(columnsInput.text)) columnsInput.text = _queueColumns.ToString();
+
+        GenerateColorUI();
+        GenerateFeatureUI();
+        GeneratePigFeatureUI();
+    }
+
+    private void Update()
+    {
+        bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (!ctrlHeld || !Input.GetKeyDown(KeyCode.Z)) return;
+
+        if (IsAnyEditorInputFocused()) return;
+        PerformUndo();
+    }
+
+    private bool IsAnyEditorInputFocused()
+    {
+        if (levelInput != null && levelInput.isFocused) return true;
+        if (widthInput != null && widthInput.isFocused) return true;
+        if (stepsInput != null && stepsInput.isFocused) return true;
+        if (columnsInput != null && columnsInput.isFocused) return true;
+
+        if (EventSystem.current == null) return false;
+        var currentSelected = EventSystem.current.currentSelectedGameObject;
+        if (currentSelected == null) return false;
+
+        return currentSelected.GetComponent<TMP_InputField>() != null;
+    }
+
+    private void UpdateReport(string msg)
+    {
+        if (reportTextDisplay != null)
+        {
+            reportTextDisplay.text = msg;
+        }
+    }
+
+    public void OnClickOpenImage()
+    {
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("Images", ".png", ".jpg", ".jpeg"));
+        FileBrowser.SetDefaultFilter(".png");
+
+        FileBrowser.ShowLoadDialog((paths) =>
+        {
+            StartCoroutine(LoadImageRoutine(paths[0]));
+        },
+            null,
+            FileBrowser.PickMode.Files,
+            false,
+            null,
+            "Select Map Image",
+            "Load");
+    }
+
+    public void OnClickOpenJson()
+    {
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("JSON", ".json"));
+        FileBrowser.SetDefaultFilter(".json");
+
+        FileBrowser.ShowLoadDialog((paths) =>
+        {
+            StartCoroutine(LoadJsonRoutine(paths[0]));
+        },
+            null,
+            FileBrowser.PickMode.Files,
+            false,
+            null,
+            "Select Grid JSON",
+            "Load");
+    }
+
+    private IEnumerator LoadJsonRoutine(string path)
+    {
+        string json;
+        try { json = File.ReadAllText(path); }
+        catch (System.Exception e)
+        {
+            UpdateReport($"<color=red>Error reading JSON:</color> {e.Message}");
+            yield break;
+        }
+
+        var rawGrid = ParseJsonGrid(json);
+        if (rawGrid == null || rawGrid.Count == 0)
+        {
+            UpdateReport("<color=red>Error:</color> Invalid or empty JSON grid.");
+            yield break;
+        }
+
+        int jsonH = rawGrid.Count;
+        int jsonW = rawGrid[0].Count;
+
+        if (jsonW > TempGridSize || jsonH > TempGridSize)
+        {
+            UpdateReport($"<color=red>Error:</color> Grid too large ({jsonW}x{jsonH}), max is {TempGridSize}x{TempGridSize}.");
+            yield break;
+        }
+
+        int offsetX = (TempGridSize - jsonW) / 2;
+        int offsetY = (TempGridSize - jsonH) / 2;
+
+        _tempGrid = new string[TempGridSize, TempGridSize];
+        for (int cy = 0; cy < TempGridSize; cy++)
+            for (int cx = 0; cx < TempGridSize; cx++)
+                _tempGrid[cx, cy] = "empty";
+
+        for (int row = 0; row < jsonH; row++)
+        {
+            var rowData = rawGrid[row];
+            int count = Mathf.Min(rowData.Count, jsonW);
+            for (int col = 0; col < count; col++)
+            {
+                string colorName = rowData[col].ToLowerInvariant();
+                _tempGrid[col + offsetX, row + offsetY] = colorName;
+            }
+        }
+
+        _currentMode = FeatureMode.Paint;
+
+        ComputeFinalGrid();
+        GenerateGridUI();
+        ActionShuffleAndSimulate();
+        UpdateReport($"JSON loaded: {jsonW}x{jsonH}  ->  Final: {_finalWidth}x{_finalHeight}");
+        yield return null;
+    }
+
+    private List<List<string>> ParseJsonGrid(string json)
+    {
+        var result = new List<List<string>>();
+        int depth = 0;
+        int start = -1;
+        for (int i = 0; i < json.Length; i++)
+        {
+            char c = json[i];
+            if (c == '[')
+            {
+                depth++;
+                if (depth == 2) start = i;
+            }
+            else if (c == ']')
+            {
+                if (depth == 2)
+                    result.Add(ParseJsonStringArray(json.Substring(start, i - start + 1)));
+                depth--;
+            }
+        }
+        return result;
+    }
+
+    private List<string> ParseJsonStringArray(string rowStr)
+    {
+        var items = new List<string>();
+        var matches = System.Text.RegularExpressions.Regex.Matches(rowStr, "\"([^\"]*)\"");
+        foreach (System.Text.RegularExpressions.Match m in matches)
+            items.Add(m.Groups[1].Value);
+        return items;
+    }
+
+    private IEnumerator LoadImageRoutine(string path)
+    {
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture("file://" + path))
+        {
+            yield return www.SendWebRequest();
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                _textureInput = DownloadHandlerTexture.GetContent(www);
+                textureDisplay.texture = _textureInput;
+                ProcessScan();
+            }
+        }
+    }
+
+    public void OnClickSaveJSON()
+    {
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("JSON", ".json"));
+        FileBrowser.SetDefaultFilter(".json");
+
+        SimpleFileBrowser.FileBrowser.ShowSaveDialog((paths) =>
+        {
+            if (paths == null || paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
+            {
+                UpdateReport("Save canceled: invalid file path.");
+                return;
+            }
+
+            if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
+            {
+                ComputeFinalGrid();
+                if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
+                {
+                    UpdateReport("Save failed: final grid is empty. Please paint/import map first.");
+                    return;
+                }
+            }
+
+            DataConfig data = BuildCurrentDataConfig();
+            if (data == null)
+            {
+                UpdateReport("Save failed: final grid is empty. Please paint/import map first.");
+                return;
+            }
+
+            string savePath = paths[0];
+            if (!string.Equals(Path.GetExtension(savePath), ".json", System.StringComparison.OrdinalIgnoreCase))
+            {
+                savePath = Path.ChangeExtension(savePath, ".json");
+            }
+
+            File.WriteAllText(savePath, JsonUtility.ToJson(data, true));
+            UpdateReport("Saved Success!");
+        }, null, SimpleFileBrowser.FileBrowser.PickMode.Files, false, null, $"Save Level {levelIndex}", "Save");
+    }
+
+    private DataConfig BuildCurrentDataConfig()
+    {
+        if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
+        {
+            ComputeFinalGrid();
+            if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
+            {
+                return null;
+            }
+        }
+
+        DataConfig data = new DataConfig
+        {
+            levelIndex = levelIndex,
+            width = _finalWidth,
+            height = _finalHeight,
+            gridData = new List<string>(_finalWidth * _finalHeight),
+            lanes = new List<LaneConfig>()
+        };
+
+        for (int y = 0; y < _finalHeight; y++)
+            for (int x = 0; x < _finalWidth; x++)
+                data.gridData.Add(IsEmptyCell(_finalGridMap[x, y]) ? "empty" : _finalGridMap[x, y]);
+
+        if (_multiColumnPigs != null)
+        {
+            foreach (var col in _multiColumnPigs)
+            {
+                LaneConfig lane = new LaneConfig { pigs = new List<PigLayoutData>() };
+
+                if (col != null)
+                {
+                    foreach (var pig in col)
+                    {
+                        lane.pigs.Add(new PigLayoutData
+                        {
+                            colorName = pig.colorName,
+                            bullets = pig.bullets,
+                            isHidden = pig.isHidden,
+                            linkId = pig.linkId,
+                            pigLeft = pig.pigLeft != null ? new PigMarker { LaneIndex = pig.pigLeft.LaneIndex, index = pig.pigLeft.index } : null,
+                            pigRight = pig.pigRight != null ? new PigMarker { LaneIndex = pig.pigRight.LaneIndex, index = pig.pigRight.index } : null
+                        });
+                    }
+                }
+
+                data.lanes.Add(lane);
+            }
+        }
+
+        return data;
+    }
+
+    public void PlayTest()
+    {
+        DataConfig data = BuildCurrentDataConfig();
+        if (data == null)
+        {
+            UpdateReport("PlayTest failed: final grid is empty. Please paint/import map first.");
+            return;
+        }
+
+        GameManagerForTesting.Instance.SetPlayTestConfig(data);
+        SceneManager.LoadScene("6.playTest");
+    }
+
+    public void ProcessScan()
+    {
+        if (_textureInput == null)
+        {
+            UpdateReport("<color=red>Error:</color> No image loaded!");
+            return;
+        }
+
+        if (widthInput != null && !string.IsNullOrEmpty(widthInput.text))
+            if (int.TryParse(widthInput.text, out int w))
+                _targetWidth = Mathf.Clamp(w, 5, 100);
+        if (stepsInput != null && !string.IsNullOrEmpty(stepsInput.text))
+            if (int.TryParse(stepsInput.text, out int s))
+                _targetStepsInput = s;
+
+        if (columnsInput != null && !string.IsNullOrEmpty(columnsInput.text))
+            if (int.TryParse(columnsInput.text, out int col))
+                _queueColumns = Mathf.Clamp(col, 2, 5);
+
+        if (levelInput != null && !string.IsNullOrEmpty(levelInput.text))
+            if (int.TryParse(levelInput.text, out int lvl))
+                levelIndex = Mathf.Max(1, lvl);
+
+        int scanW = _targetWidth;
+        float aspect = (float)_textureInput.width / _textureInput.height;
+        int scanH = Mathf.RoundToInt(scanW / aspect);
+        float stepX = (float)_textureInput.width / scanW;
+        float stepY = (float)_textureInput.height / scanH;
+        int offsetX = (TempGridSize - scanW) / 2;
+        int offsetY = (TempGridSize - scanH) / 2;
+
+        _tempGrid = new string[TempGridSize, TempGridSize];
+        for (int cy = 0; cy < TempGridSize; cy++)
+            for (int cx = 0; cx < TempGridSize; cx++)
+                _tempGrid[cx, cy] = "empty";
+
+        for (int sy = 0; sy < scanH; sy++)
+        {
+            for (int sx = 0; sx < scanW; sx++)
+            {
+                int px = Mathf.FloorToInt(sx * stepX + stepX * 0.5f);
+                int py = Mathf.FloorToInt(sy * stepY + stepY * 0.5f);
+                Color col = _textureInput.GetPixel(px, py);
+                _tempGrid[sx + offsetX, scanH - 1 - sy + offsetY] = (col.a < 0.1f) ? "scan_empty" : Helper.GetClosestColor(col);
+            }
+        }
+
+        ComputeFinalGrid();
+        GenerateGridUI();
+        ActionShuffleAndSimulate();
+        UpdateReport($"Scan OK: {scanW}x{scanH}  ->  Final: {_finalWidth}x{_finalHeight}");
+    }
+
+    private void ComputeFinalGrid()
+    {
+        if (_tempGrid == null) { _finalGridMap = null; _finalWidth = 0; _finalHeight = 0; return; }
+        int minX = TempGridSize, maxX = -1, minY = TempGridSize, maxY = -1;
+        for (int y = 0; y < TempGridSize; y++)
+        {
+            for (int x = 0; x < TempGridSize; x++)
+            {
+                string c = _tempGrid[x, y];
+                if (!IsEmptyCell(c))
+                {
+                    if (x < minX) minX = x; if (x > maxX) maxX = x;
+                    if (y < minY) minY = y; if (y > maxY) maxY = y;
+                }
+            }
+        }
+        if (maxX < 0) { _finalGridMap = null; _finalWidth = 0; _finalHeight = 0; return; }
+        _finalWidth = maxX - minX + 1;
+        _finalHeight = maxY - minY + 1;
+        _finalOffsetX = minX;
+        _finalOffsetY = minY;
+        _finalGridMap = new string[_finalWidth, _finalHeight];
+        for (int y = 0; y < _finalHeight; y++)
+            for (int x = 0; x < _finalWidth; x++)
+                _finalGridMap[x, y] = _tempGrid[x + minX, y + minY];
+    }
+
+    private void GenerateGridUI()
+    {
+        var toDeleteG = new List<GameObject>();
+        foreach (Transform child in gridCellContainer) toDeleteG.Add(child.gameObject);
+        foreach (var go in toDeleteG) Destroy(go);
+
+        if (gridCellContainer == null || cellPrefab == null) return;
+
+        const int uiColumns = 35;
+        const int uiRows = 35;
+        const float cellSpacing = 1f;
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = gridCellContainer as RectTransform;
+        if (containerRect == null) return;
+
+        GridLayoutGroup layout = gridCellContainer.GetComponent<GridLayoutGroup>();
+        if (layout == null) layout = gridCellContainer.gameObject.AddComponent<GridLayoutGroup>();
+
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = uiColumns;
+        layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        layout.startAxis = GridLayoutGroup.Axis.Horizontal;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.spacing = new Vector2(cellSpacing, cellSpacing);
+
+        float containerWidth = containerRect.rect.width;
+        float containerHeight = containerRect.rect.height;
+
+        float availableWidth = containerWidth - layout.padding.left - layout.padding.right - cellSpacing * (uiColumns - 1);
+        float availableHeight = containerHeight - layout.padding.top - layout.padding.bottom - cellSpacing * (uiRows - 1);
+
+        RectTransform prefabRect = cellPrefab.GetComponent<RectTransform>();
+        float prefabWidth = (prefabRect != null && prefabRect.rect.width > 0f) ? prefabRect.rect.width : 20f;
+        float prefabHeight = (prefabRect != null && prefabRect.rect.height > 0f) ? prefabRect.rect.height : 20f;
+
+        float fitCellWidth = Mathf.Max(1f, availableWidth / uiColumns);
+        float fitCellHeight = Mathf.Max(1f, availableHeight / uiRows);
+        float scale = Mathf.Min(fitCellWidth / prefabWidth, fitCellHeight / prefabHeight);
+
+        layout.cellSize = new Vector2(prefabWidth * scale, prefabHeight * scale);
+
+        for (int row = 0; row < uiRows; row++)
+        {
+            for (int col = 0; col < uiColumns; col++)
+            {
+                int x = col;
+                int y = row;
+
+                string colorName = (_tempGrid != null) ? _tempGrid[x, y] : "empty";
+
+                GameObject cellGO = Instantiate(cellPrefab, gridCellContainer);
+
+                Image cellImage = cellGO.GetComponent<Image>();
+                GridCell cell = cellGO.GetComponent<GridCell>();
+                if (cell != null)
+                {
+                    if (_tempGrid != null) cell.Setup(x, y, this, 0);
+                    else cell.enabled = false;
+                }
+
+                if (cellImage != null)
+                {
+                    cellImage.raycastTarget = _tempGrid != null;
+
+                    if (colorName == "scan_empty")
+                    {
+                        if (emptySprite != null) cellImage.sprite = emptySprite;
+                        cellImage.color = Color.white;
+                    }
+                    else if (colorName == "empty")
+                    {
+                        cellImage.sprite = null;
+                        cellImage.color = new Color(0, 0, 0, 0.4f);
+                    }
+                    else
+                    {
+                        if (cell != null && cell.defaultSprite != null) cellImage.sprite = cell.defaultSprite;
+                        cellImage.color = Helper.GetColorFromName(colorName);
+                    }
+                }
+            }
+        }
+    }
+
+    public void SetActiveBrush(string colorName)
+    {
+        _activeColorBrush = colorName;
+        if (_currentMode == FeatureMode.Paint)
+            UpdateReport($"[Paint] Active brush with color [{colorName}]");
+
+        if (_currentMode == FeatureMode.RecolorWaitBrush && _recolorSourceColor != null)
+        {
+            RecordUndo();
+            for (int y = 0; y < TempGridSize; y++)
+                for (int x = 0; x < TempGridSize; x++)
+                    if (_tempGrid[x, y] == _recolorSourceColor)
+                        _tempGrid[x, y] = colorName;
+            _recolorSourceColor = null;
+            _currentMode = FeatureMode.Paint;
+            NotifyFeatureSelected(-1);
+            ComputeFinalGrid();
+            GenerateGridUI();
+            ActionShuffleAndSimulate();
+            UpdateReport($"ReColor: all cells recolored to [{colorName}]");
+        }
+    }
+
+    public void PaintCell(int x, int y, Image cellImage)
+    {
+        if (_tempGrid == null) return;
+
+        if (_currentMode == FeatureMode.RecolorPicking)
+        {
+            SelectRecolorSource(_tempGrid[x, y]);
+            return;
+        }
+
+        if (_currentMode != FeatureMode.Paint) return;
+        if (_tempGrid[x, y] == _activeColorBrush) return;
+        RecordUndo();
+        if (_activeColorBrush == "empty" || _activeColorBrush == "scan_empty")
+        {
+            _tempGrid[x, y] = "empty";
+            if (emptySprite != null) cellImage.sprite = emptySprite;
+            cellImage.color = Color.white;
+        }
+        else
+        {
+            _tempGrid[x, y] = _activeColorBrush;
+            GridCell cell = cellImage.GetComponent<GridCell>();
+            if (cell != null && cell.defaultSprite != null) cellImage.sprite = cell.defaultSprite;
+            else if (cellImage.sprite == emptySprite) cellImage.sprite = null;
+            cellImage.color = Helper.GetColorFromName(_activeColorBrush);
+        }
+        ComputeFinalGrid();
+        ActionShuffleAndSimulate();
+    }
+
+    public void PaintCellDrag(int x, int y, Image cellImage)
+    {
+        PaintCell(x, y, cellImage);
+    }
+
+    public void OnSettingsChanged()
+    {
+        if (stepsInput != null && !string.IsNullOrEmpty(stepsInput.text))
+            if (int.TryParse(stepsInput.text, out int s))
+                _targetStepsInput = s;
+        if (columnsInput != null && !string.IsNullOrEmpty(columnsInput.text))
+            if (int.TryParse(columnsInput.text, out int col))
+                _queueColumns = Mathf.Clamp(col, 2, 5);
+        ActionShuffleAndSimulate();
+    }
+
+    public void ActionShuffleAndSimulate()
+    {
+        if (_finalGridMap == null) return;
+
+        if (stepsInput != null && !string.IsNullOrEmpty(stepsInput.text))
+            if (int.TryParse(stepsInput.text, out int s))
+                _targetStepsInput = s;
+        if (columnsInput != null && !string.IsNullOrEmpty(columnsInput.text))
+            if (int.TryParse(columnsInput.text, out int col))
+                _queueColumns = Mathf.Clamp(col, 2, 5);
+
+        _finalColorCounts.Clear();
+        for (int y = 0; y < _finalHeight; y++)
+        {
+            for (int x = 0; x < _finalWidth; x++)
+            {
+                string c = _finalGridMap[x, y];
+                if (c != "empty" && c != "scan_empty" && !string.IsNullOrEmpty(c))
+                {
+                    if (!_finalColorCounts.ContainsKey(c)) _finalColorCounts[c] = 0;
+                    _finalColorCounts[c]++;
+                }
+            }
+        }
+        _lastPigResult = RunAdaptiveSimulation();
+        _multiColumnPigs = new List<PigLayoutData>[_queueColumns];
+        for (int i = 0; i < _queueColumns; i++) _multiColumnPigs[i] = new List<PigLayoutData>();
+
+        if (_lastPigResult.finalDeck != null)
+        {
+            var pool = _lastPigResult.finalPool;
+            foreach (var p in pool) p.isUsed = false;
+            for (int i = 0; i < _lastPigResult.finalDeck.Count; i++)
+            {
+                string color = _lastPigResult.finalDeck[i];
+                var data = pool.FirstOrDefault(x => x.color == color && !x.isUsed);
+                if (data != null)
+                {
+                    data.isUsed = true;
+                    _multiColumnPigs[i % _queueColumns].Add(new PigLayoutData { colorName = data.color, bullets = data.bullets });
+                }
+            }
+            UpdateReport($"Target: {_targetStepsInput} | Actual: {_lastPigResult.actualSteps} steps | Pigs: {_lastPigResult.finalPool.Count}");
+        }
+        else
+        {
+            UpdateReport($"Pigs: {_pigsBeforeAdjust} | <color=red>Unwinnable!</color>");
+        }
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+        _nextLinkId = 0;
+        _linkingPigs.Clear();
+        SpawnPigUI();
+    }
+
+    private void UpdateSimulateFromLanes()
+    {
+        if (_multiColumnPigs == null) return;
+
+        int newSteps = RunSimulationWithLinks(_multiColumnPigs, (string[,])_finalGridMap.Clone());
+
+        List<string> flatColors = new List<string>();
+        int maxRows = _multiColumnPigs.Max(c => c.Count);
+        for (int r = 0; r < maxRows; r++)
+            for (int c = 0; c < _queueColumns; c++)
+                if (r < _multiColumnPigs[c].Count)
+                    flatColors.Add(_multiColumnPigs[c][r].colorName);
+        _lastPigResult.finalDeck = flatColors;
+        _lastPigResult.actualSteps = newSteps;
+
+        int linkGroups = _multiColumnPigs.SelectMany(c => c)
+            .Where(p => p.linkId >= 0).Select(p => p.linkId).Distinct().Count();
+        string msg = newSteps == -1
+            ? "<color=red>Unwinnable!</color>"
+            : $"Steps: {newSteps} (target: {_targetStepsInput}){(newSteps < _targetStepsInput ? " <color=yellow>↓ under</color>" : newSteps > _targetStepsInput ? " <color=orange>↑ over</color>" : " <color=green>✓</color>")}";
+        if (linkGroups > 0) msg += $" | {linkGroups} link group(s)";
+        UpdateReport(msg);
+    }
+
+    public void OnClickClear()
+    {
+        _tempGrid = new string[TempGridSize, TempGridSize];
+        for (int cy = 0; cy < TempGridSize; cy++)
+            for (int cx = 0; cx < TempGridSize; cx++)
+                _tempGrid[cx, cy] = "empty";
+
+        _finalGridMap = null;
+        _finalWidth = 0;
+        _finalHeight = 0;
+        _finalOffsetX = 0;
+        _finalOffsetY = 0;
+        _finalColorCounts.Clear();
+
+        _multiColumnPigs = new List<PigLayoutData>[_queueColumns];
+        for (int i = 0; i < _queueColumns; i++) _multiColumnPigs[i] = new List<PigLayoutData>();
+
+        _undoHistory.Clear();
+        _undoSnapshots.Clear();
+        _linkingPigs.Clear();
+        _nextLinkId = 0;
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+        _lastPigResult = default;
+
+        _currentMode = FeatureMode.Paint;
+        _recolorSourceColor = null;
+        NotifyFeatureSelected(-1);
+
+        GenerateGridUI();
+        SpawnPigUI();
+        UpdateReport("Cleared - ready for new level.");
+    }
+
+    private (List<string> finalDeck, List<PigDataPool> finalPool, int actualSteps) RunAdaptiveSimulation()
+    {
+        List<PigDataPool> pool = new List<PigDataPool>();
+        foreach (var item in _finalColorCounts)
+        {
+            int total = item.Value;
+            int perPig = (total >= 100) ? 40 : 20;
+            int count = Mathf.Max(1, total / perPig);
+            int sum = 0;
+            for (int i = 0; i < count; i++)
+            {
+                int bullets = (i == count - 1) ? total - sum : perPig;
+                if (bullets > 0) { pool.Add(new PigDataPool { color = item.Key, bullets = bullets }); sum += bullets; }
+            }
+        }
+        _pigsBeforeAdjust = pool.Count;
+        int target = Mathf.Max(_targetStepsInput, pool.Select(p => p.color).Distinct().Count());
+        List<string> finalDeck = null;
+        int finalSteps = -1;
+        List<string> bestDeck = null;
+        List<PigDataPool> bestPool = null;
+        int bestSteps = -1;
+        int limit = 50;
+        while (limit-- > 0)
+        {
+            if (pool.Count > target) { MergeTwoPigs(pool); continue; }
+            bool found = false;
+            int best = -1, worst = 1000;
+            for (int i = 0; i < 300; i++)
+            {
+                var sim = ExecuteSimulation(pool.Select(p => p.color).ToList(), pool);
+                if (sim.steps == target) { finalSteps = sim.steps; finalDeck = sim.deck; found = true; break; }
+                if (sim.steps != -1)
+                {
+                    best = Mathf.Max(best, sim.steps); worst = Mathf.Min(worst, sim.steps);
+                    if (bestDeck == null || Mathf.Abs(sim.steps - target) < Mathf.Abs(bestSteps - target))
+                    {
+                        bestDeck = sim.deck; bestSteps = sim.steps;
+                        bestPool = pool.Select(p => new PigDataPool { color = p.color, bullets = p.bullets }).ToList();
+                    }
+                }
+            }
+            if (found) break;
+            if (best < target) SplitOnePig(pool); else if (worst > target) MergeTwoPigs(pool);
+        }
+        if (finalDeck == null && bestDeck != null) { finalDeck = bestDeck; finalSteps = bestSteps; pool = bestPool; }
+        return (finalDeck, pool, finalSteps);
+    }
+
+    private (List<string> deck, int steps) ExecuteSimulation(List<string> poolNames, List<PigDataPool> pool)
+    {
+        var deck = poolNames.OrderBy(x => Random.value).ToList();
+        var tempB = pool.GroupBy(p => p.color).ToDictionary(g => g.Key, g => g.Select(p => p.bullets).OrderByDescending(b => b).ToList());
+        List<int> bullets = deck.Select(c => { int b = tempB[c][0]; tempB[c].RemoveAt(0); return b; }).ToList();
+        return (deck, RunFullSimulationEnhanced(deck, bullets, (string[,])_finalGridMap.Clone()));
+    }
+
+    private void MergeTwoPigs(List<PigDataPool> pool)
+    {
+        var group = pool.GroupBy(p => p.color).Where(g => g.Count() > 1).OrderByDescending(g => g.Count()).FirstOrDefault();
+        if (group != null) { var items = group.OrderBy(p => p.bullets).ToList(); items[1].bullets += items[0].bullets; pool.Remove(items[0]); }
+    }
+
+    private void TryAutoFitLinkedPigs()
+    {
+        if (_multiColumnPigs == null || _finalGridMap == null) { SpawnPigUI(); return; }
+
+        int currentSteps = RunSimulationWithLinks(_multiColumnPigs, (string[,])_finalGridMap.Clone());
+        int maxIter = 40;
+
+        while (currentSteps != _targetStepsInput && maxIter-- > 0)
+        {
+            if (currentSteps == -1 || currentSteps < _targetStepsInput)
+            {
+                PigLayoutData best = null; int bestCol = -1, bestRow = -1;
+                for (int c = 0; c < _queueColumns; c++)
+                    for (int r = 0; r < _multiColumnPigs[c].Count; r++)
+                    {
+                        var p = _multiColumnPigs[c][r];
+                        if (p.linkId >= 0 || p.bullets < 2) continue;
+                        if (best == null || p.bullets > best.bullets) { best = p; bestCol = c; bestRow = r; }
+                    }
+                if (best == null) break;
+                int b1 = best.bullets / 2, b2 = best.bullets - b1;
+                best.bullets = b1;
+                _multiColumnPigs[bestCol].Insert(bestRow + 1,
+                    new PigLayoutData { colorName = best.colorName, bullets = b2, linkId = -1 });
+            }
+            else
+            {
+                bool merged = false;
+                for (int c = 0; c < _queueColumns && !merged; c++)
+                    for (int r = 0; r < _multiColumnPigs[c].Count && !merged; r++)
+                    {
+                        var p = _multiColumnPigs[c][r];
+                        if (p.linkId >= 0) continue;
+                        for (int c2 = c; c2 < _queueColumns && !merged; c2++)
+                        {
+                            int startR = (c2 == c) ? r + 1 : 0;
+                            for (int r2 = startR; r2 < _multiColumnPigs[c2].Count && !merged; r2++)
+                            {
+                                var p2 = _multiColumnPigs[c2][r2];
+                                if (p2.linkId >= 0 || p2.colorName != p.colorName) continue;
+                                p.bullets += p2.bullets;
+                                _multiColumnPigs[c2].RemoveAt(r2);
+                                merged = true;
+                            }
+                        }
+                    }
+                if (!merged) break;
+            }
+            currentSteps = RunSimulationWithLinks(_multiColumnPigs, (string[,])_finalGridMap.Clone());
+        }
+
+        var flatColors = new List<string>();
+        int maxRows = _multiColumnPigs.Max(c => c.Count);
+        for (int r = 0; r < maxRows; r++)
+            for (int c = 0; c < _queueColumns; c++)
+                if (r < _multiColumnPigs[c].Count) flatColors.Add(_multiColumnPigs[c][r].colorName);
+        _lastPigResult.finalDeck = flatColors;
+        _lastPigResult.actualSteps = currentSteps;
+
+        int linkGroups = _multiColumnPigs.SelectMany(col => col)
+            .Where(p => p.linkId >= 0).Select(p => p.linkId).Distinct().Count();
+        string stepStr = currentSteps == -1
+            ? "<color=red>Unwinnable sau khi auto-adjust!</color>"
+            : $"Steps: {currentSteps} (target: {_targetStepsInput})"
+              + (currentSteps == _targetStepsInput ? " <color=green>✓</color>"
+                : currentSteps < _targetStepsInput ? " <color=yellow>↓ under</color>"
+                : " <color=orange>↑ over</color>");
+        UpdateReport($"Link ended. {stepStr}{(linkGroups > 0 ? $" | {linkGroups} link group(s)" : "")}");
+        SpawnPigUI();
+    }
+
+    private void SplitOnePig(List<PigDataPool> pool)
+    {
+        var pigTarget = pool.Where(p => p.bullets > 1).OrderByDescending(p => p.bullets).FirstOrDefault();
+        if (pigTarget != null)
+        {
+            int b1 = pigTarget.bullets / 2;
+            int b2 = pigTarget.bullets - b1;
+            pigTarget.bullets = b1;
+            pool.Add(new PigDataPool { color = pigTarget.color, bullets = b2 });
+        }
+    }
+
+    private int RunSimulationWithLinks(List<PigLayoutData>[] lanes, string[,] grid)
+    {
+        var cols = new List<(string color, int bullets, int linkId)>[_queueColumns];
+        for (int i = 0; i < _queueColumns; i++)
+        {
+            cols[i] = new List<(string, int, int)>();
+            if (i < lanes.Length)
+                foreach (var p in lanes[i])
+                    cols[i].Add((p.colorName, p.bullets, p.linkId));
+        }
+        var queue = new List<(string color, int bullets, int linkId)>();
+        int steps = 0;
+        int failsafe = 0;
+
+        while ((cols.Any(c => c.Count > 0) || queue.Count > 0) && ++failsafe < 2000)
+        {
+            bool moved = false;
+
+            for (int i = 0; i < queue.Count && !moved; i++)
+            {
+                if (queue[i].linkId < 0 && IsExposed(queue[i].color, grid))
+                { steps++; ClearGridSim(queue[i].color, queue[i].bullets, grid); queue.RemoveAt(i); moved = true; }
+            }
+
+            for (int i = 0; i < _queueColumns && !moved; i++)
+            {
+                if (cols[i].Count > 0 && cols[i][0].linkId < 0 && IsExposed(cols[i][0].color, grid))
+                { steps++; ClearGridSim(cols[i][0].color, cols[i][0].bullets, grid); cols[i].RemoveAt(0); moved = true; }
+            }
+
+            if (moved) continue;
+
+            var allLinkIds = cols.SelectMany(c => c).Concat(queue)
+                .Where(p => p.linkId >= 0).Select(p => p.linkId).Distinct().ToList();
+
+            foreach (int lid in allLinkIds)
+            {
+                bool ready = true;
+                for (int i = 0; i < _queueColumns && ready; i++)
+                    if (cols[i].Any(p => p.linkId == lid) && cols[i][0].linkId != lid)
+                        ready = false;
+                if (!ready) continue;
+
+                var fromCols = new List<int>();
+                for (int i = 0; i < _queueColumns; i++)
+                    if (cols[i].Count > 0 && cols[i][0].linkId == lid) fromCols.Add(i);
+                var fromQ = queue.Where(p => p.linkId == lid).ToList();
+                var allMembers = fromCols.Select(i => cols[i][0]).Concat(fromQ).ToList();
+
+                if (!allMembers.Any(p => IsExposed(p.color, grid))) continue;
+
+                steps++;
+                foreach (var mp in allMembers) ClearGridSim(mp.color, mp.bullets, grid);
+                foreach (int ci in fromCols) cols[ci].RemoveAt(0);
+                foreach (var qp in fromQ) queue.Remove(qp);
+                moved = true;
+                break;
+            }
+            if (moved) continue;
+
+            for (int i = 0; i < _queueColumns && !moved; i++)
+            {
+                if (cols[i].Count > 0 && queue.Count < MaxQueue1)
+                { steps++; queue.Add(cols[i][0]); cols[i].RemoveAt(0); moved = true; }
+            }
+            if (!moved) break;
+        }
+
+        return (cols.Any(c => c.Count > 0) || queue.Count > 0) ? -1 : steps;
+    }
+
+    private int RunFullSimulationEnhanced(List<string> playDeck, List<int> pigBullets, string[,] grid)
+    {
+        int steps = 0; List<string> q1C = new List<string>(); List<int> q1B = new List<int>();
+        List<string>[] colsC = new List<string>[_queueColumns]; List<int>[] colsB = new List<int>[_queueColumns];
+        for (int i = 0; i < _queueColumns; i++) { colsC[i] = new List<string>(); colsB[i] = new List<int>(); }
+        for (int i = 0; i < playDeck.Count; i++) { colsC[i % _queueColumns].Add(playDeck[i]); colsB[i % _queueColumns].Add(pigBullets[i]); }
+        int failsafe = 0;
+        while ((colsC.Any(c => c.Count > 0) || q1C.Count > 0) && failsafe++ < 1000)
+        {
+            bool moved = false;
+            for (int i = 0; i < q1C.Count; i++) if (IsExposed(q1C[i], grid)) { steps++; ClearGridSim(q1C[i], q1B[i], grid); q1C.RemoveAt(i); q1B.RemoveAt(i); moved = true; break; }
+            if (moved) continue;
+            for (int i = 0; i < _queueColumns; i++) if (colsC[i].Count > 0 && IsExposed(colsC[i][0], grid)) { steps++; ClearGridSim(colsC[i][0], colsB[i][0], grid); colsC[i].RemoveAt(0); colsB[i].RemoveAt(0); moved = true; break; }
+            if (!moved)
+            {
+                for (int i = 0; i < _queueColumns; i++) if (colsC[i].Count > 0 && q1C.Count < MaxQueue1) { steps++; q1C.Add(colsC[i][0]); q1B.Add(colsB[i][0]); colsC[i].RemoveAt(0); colsB[i].RemoveAt(0); moved = true; break; }
+            }
+            if (!moved) break;
+        }
+        return (colsC.Any(c => c.Count > 0) || q1C.Count > 0) ? -1 : steps;
+    }
+
+    private bool IsExposed(string color, string[,] grid)
+    {
+        for (int i = 0; i < _finalHeight; i++)
+        {
+            for (int j = 0; j < _finalWidth; j++) { if (IsEmptyCell(grid[j, i])) continue; if (grid[j, i] == color) return true; break; }
+            for (int j = _finalWidth - 1; j >= 0; j--) { if (IsEmptyCell(grid[j, i])) continue; if (grid[j, i] == color) return true; break; }
+        }
+        return false;
+    }
+
+    private void ClearGridSim(string color, int amount, string[,] grid)
+    {
+        int cleared = 0;
+        for (int i = 0; i < _finalHeight && cleared < amount; i++)
+            for (int j = 0; j < _finalWidth && cleared < amount; j++)
+                if (grid[j, i] == color) { grid[j, i] = "empty"; cleared++; }
+    }
+
+    private bool IsEmptyCell(string colorName)
+    {
+        return string.IsNullOrEmpty(colorName) || colorName == "empty" || colorName == "scan_empty";
+    }
+
+    private void RecordUndo()
+    {
+        if (_tempGrid == null) return;
+
+        List<PigLayoutData>[] pigCopy = null;
+        if (_multiColumnPigs != null)
+        {
+            pigCopy = new List<PigLayoutData>[_multiColumnPigs.Length];
+            for (int i = 0; i < _multiColumnPigs.Length; i++)
+            {
+                pigCopy[i] = new List<PigLayoutData>();
+                foreach (var p in _multiColumnPigs[i])
+                    pigCopy[i].Add(new PigLayoutData
+                    {
+                        colorName = p.colorName, bullets = p.bullets, isHidden = p.isHidden,
+                        linkId = p.linkId,
+                        pigLeft = p.pigLeft != null ? new PigMarker { LaneIndex = p.pigLeft.LaneIndex, index = p.pigLeft.index } : null,
+                        pigRight = p.pigRight != null ? new PigMarker { LaneIndex = p.pigRight.LaneIndex, index = p.pigRight.index } : null
+                    });
+            }
+        }
+
+        _undoSnapshots.Add(new UndoSnapshot
+        {
+            tempGrid = (string[,])_tempGrid.Clone(),
+            multiColumnPigs = pigCopy,
+            queueColumns = _queueColumns
+        });
+        if (_undoSnapshots.Count > MaxUndoSteps) _undoSnapshots.RemoveAt(0);
+    }
+
+    public void PerformUndo()
+    {
+        if (_undoSnapshots.Count == 0)
+        {
+            UpdateReport("Nothing to undo.");
+            return;
+        }
+        var snap = _undoSnapshots[_undoSnapshots.Count - 1];
+        _undoSnapshots.RemoveAt(_undoSnapshots.Count - 1);
+
+        _tempGrid = snap.tempGrid;
+
+        if (snap.multiColumnPigs != null)
+        {
+            _queueColumns = snap.queueColumns;
+            _multiColumnPigs = snap.multiColumnPigs;
+        }
+
+        _currentMode = FeatureMode.Paint;
+        _linkingPigs.Clear();
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+
+        ComputeFinalGrid();
+        GenerateGridUI();
+        ActionShuffleAndSimulate();
+        UpdateReport($"Undo - {_undoSnapshots.Count} step(s) remaining.");
+    }
+
+    private void GeneratePigFeatureUI()
+    {
+        if (pigFeatureContainer == null || pigFeature == null) return;
+        var toDelete = new List<GameObject>();
+        foreach (Transform child in pigFeatureContainer) toDelete.Add(child.gameObject);
+        foreach (var go in toDelete) Destroy(go);
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = pigFeatureContainer as RectTransform;
+        if (containerRect == null) return;
+
+        const float spacing = 2f;
+        int count = test12.Length;
+        float containerW = containerRect.rect.width;
+        float containerH = containerRect.rect.height;
+
+        RectTransform pigFeatureRect = pigFeature.GetComponent<RectTransform>();
+        float prefabW = (pigFeatureRect != null && pigFeatureRect.rect.width > 0f) ? pigFeatureRect.rect.width : 100f;
+        float prefabH = (pigFeatureRect != null && pigFeatureRect.rect.height > 0f) ? pigFeatureRect.rect.height : 40f;
+
+        float cellW = containerW;
+        float cellH = Mathf.Max(1f, (containerH - spacing * (count - 1)) / count);
+        float scale = Mathf.Min(cellW / prefabW, cellH / prefabH);
+
+        GridLayoutGroup layout = pigFeatureContainer.GetComponent<GridLayoutGroup>();
+        if (layout == null) layout = pigFeatureContainer.gameObject.AddComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 1;
+        layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        layout.startAxis = GridLayoutGroup.Axis.Vertical;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.spacing = new Vector2(0f, spacing);
+        layout.cellSize = new Vector2(prefabW * scale, prefabH * scale);
+
+        _pigFeatureBtns.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            GameObject go = Instantiate(pigFeature, pigFeatureContainer);
+            FeaturePig featurePig = go.GetComponent<FeaturePig>();
+            featurePig.SetFeatureName(test12[i], this);
+            _pigFeatureBtns.Add(featurePig);
+        }
+        NotifyPigFeatureSelected(0);
+    }
+
+    private void NotifyPigFeatureSelected(int selectedIndex)
+    {
+        for (int i = 0; i < _pigFeatureBtns.Count; i++)
+            _pigFeatureBtns[i].SetSelected(i == selectedIndex);
+    }
+
+    private void GenerateColorUI()
+    {
+        if (colorContainer == null || colorPrefab == null) return;
+
+        var toDelete = new List<GameObject>();
+        foreach (Transform child in colorContainer) toDelete.Add(child.gameObject);
+        foreach (var go in toDelete) Destroy(go);
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = colorContainer as RectTransform;
+        if (containerRect == null) return;
+
+        const float baseSize = 60f;
+        const float spacing = 8f;
+        var colorKeys = new List<string>(Helper.ColorMap.Keys);
+        if (!colorKeys.Contains("empty")) colorKeys.Insert(0, "empty");
+        int count = colorKeys.Count;
+
+        float containerW = containerRect.rect.width;
+        int cols = Mathf.Max(1, Mathf.FloorToInt((containerW + spacing) / (baseSize + spacing)));
+        float cellSize = Mathf.Max(1f, (containerW - spacing * (cols - 1)) / cols);
+
+        int rows = Mathf.CeilToInt((float)count / cols);
+        float totalH = rows * cellSize + (rows - 1) * spacing;
+        containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, totalH);
+
+        GridLayoutGroup layout = colorContainer.GetComponent<GridLayoutGroup>();
+        if (layout == null) layout = colorContainer.gameObject.AddComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = cols;
+        layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        layout.startAxis = GridLayoutGroup.Axis.Horizontal;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.spacing = new Vector2(spacing, spacing);
+        layout.cellSize = new Vector2(cellSize, cellSize);
+
+        for (int i = 0; i < count; i++)
+        {
+            string colorName = colorKeys[i];
+            GameObject go = Instantiate(colorPrefab, colorContainer);
+
+            Image img = go.GetComponent<Image>();
+            if (img != null)
+            {
+                if (colorName == "empty")
+                {
+                    img.sprite = emptySprite;
+                    img.color = Color.white;
+                }
+                else
+                {
+                    img.sprite = null;
+                    img.color = Helper.GetColorFromName(colorName);
+                }
+            }
+
+            Button btn = go.GetComponent<Button>();
+            if (btn != null)
+            {
+                string captured = colorName;
+                btn.onClick.AddListener(() => SetActiveBrush(captured));
+            }
+
+            ColorBtn label = go.GetComponentInChildren<ColorBtn>();
+            if (label != null) label.SetColor(colorName, this);
+        }
+    }
+
+    private void GenerateFeatureUI()
+    {
+        if (featureContainer == null || featurePrefab == null) return;
+        var toDeleteF = new List<GameObject>();
+        foreach (Transform child in featureContainer) toDeleteF.Add(child.gameObject);
+        foreach (var go in toDeleteF) Destroy(go);
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = featureContainer as RectTransform;
+        if (containerRect == null) return;
+
+        const float spacing = 2f;
+        int count = features.Length;
+        float containerW = containerRect.rect.width;
+        float containerH = containerRect.rect.height;
+
+        RectTransform featurePrefabRect = featurePrefab.GetComponent<RectTransform>();
+        float prefabW = (featurePrefabRect != null && featurePrefabRect.rect.width > 0f) ? featurePrefabRect.rect.width : 100f;
+        float prefabH = (featurePrefabRect != null && featurePrefabRect.rect.height > 0f) ? featurePrefabRect.rect.height : 40f;
+
+        float cellW = containerW;
+        float cellH = Mathf.Max(1f, (containerH - spacing * (count - 1)) / count);
+        float scaleX = cellW / prefabW;
+        float scaleY = cellH / prefabH;
+        float scale = Mathf.Min(scaleX, scaleY);
+
+        GridLayoutGroup layout = featureContainer.GetComponent<GridLayoutGroup>();
+        if (layout == null) layout = featureContainer.gameObject.AddComponent<GridLayoutGroup>();
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 1;
+        layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        layout.startAxis = GridLayoutGroup.Axis.Vertical;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.spacing = new Vector2(0f, spacing);
+        layout.cellSize = new Vector2(prefabW * scale, prefabH * scale);
+
+        _featureBtns.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            GameObject go = Instantiate(featurePrefab, featureContainer);
+            FeatureBtn featureBtn = go.GetComponent<FeatureBtn>();
+            featureBtn.SetFeatureName(features[i], this);
+            _featureBtns.Add(featureBtn);
+        }
+        NotifyFeatureSelected(-1);
+    }
+
+    public void OnClickFeatureButton(int index)
+    {
+        if (index < 0 || index >= features.Length) return;
+        NotifyFeatureSelected(index);
+
+        switch (features[index])
+        {
+            case "Paint":
+                Paint();
+                break;
+            case "Re-Color":
+                ReColorSpecificColor();
+                break;
+        }
+    }
+
+    public void OnClickFeaturePigButton(int index)
+    {
+        if (index < 0 || index >= test12.Length) return;
+
+        string feature = test12[index];
+
+        if (feature == "EndLink")
+        {
+            if (_linkingPigs.Count == 1)
+            {
+                ClearPigLinkData(_multiColumnPigs[_linkingPigs[0].col][_linkingPigs[0].row]);
+            }
+            _linkingPigs.Clear();
+            _activePigFeature = "Linked";
+            int linkedIndex = System.Array.IndexOf(test12, "Linked");
+            NotifyPigFeatureSelected(linkedIndex);
+            _selectedPigCol = -1;
+            _selectedPigRow = -1;
+            TryAutoFitLinkedPigs();
+            return;
+        }
+
+        if (_linkingPigs.Count == 1)
+        {
+            _multiColumnPigs[_linkingPigs[0].col][_linkingPigs[0].row].linkId = -1;
+        }
+        _linkingPigs.Clear();
+
+        _activePigFeature = feature;
+        NotifyPigFeatureSelected(index);
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+        SpawnPigUI();
+
+        switch (feature)
+        {
+            case "Swap":
+                UpdateReport("Mode: Swap - click a pig to select, click another to swap.");
+                break;
+            case "Hidden":
+                UpdateReport("Mode: Hidden - click a pig to toggle hidden (alpha 0.5).");
+                break;
+            case "Linked":
+                UpdateReport("Mode: Linked - click adjacent pigs to chain them. Press EndLink to finish.");
+                break;
+        }
+    }
+
+    private void NotifyFeatureSelected(int selectedIndex)
+    {
+        for (int i = 0; i < _featureBtns.Count; i++)
+            _featureBtns[i].SetSelected(i == selectedIndex);
+    }
+
+    public void Paint()
+    {
+        _currentMode = FeatureMode.Paint;
+        _recolorSourceColor = null;
+        UpdateReport("Mode: Paint - click cell to paint");
+    }
+
+    public void ReColorSpecificColor()
+    {
+        _currentMode = FeatureMode.RecolorPicking;
+        _recolorSourceColor = null;
+        UpdateReport("ReColor: click a cell to pick source color");
+    }
+
+    public void SelectRecolorSource(string sourceColor)
+    {
+        _recolorSourceColor = sourceColor;
+        _currentMode = FeatureMode.RecolorWaitBrush;
+        UpdateReport($"ReColor: source = [{sourceColor}] - now pick a color from palette");
+    }
+
+    public void DisableColor() { }
+    public void EnableColor() { }
+
+    private void SpawnPigUI()
+    {
+        if (pigContainer == null || pigPrefab == null) return;
+        var toDelete = new List<GameObject>();
+        foreach (Transform child in pigContainer) toDelete.Add(child.gameObject);
+        foreach (var go in toDelete) Destroy(go);
+        if (_multiColumnPigs == null) return;
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = pigContainer as RectTransform;
+        if (containerRect == null) return;
+
+        float containerW = containerRect.rect.width;
+        float colSpacing = 4f;
+        float rowSpacing = 2f;
+
+        float colWidth = Mathf.Max(1f, (containerW - colSpacing * (_queueColumns - 1)) / _queueColumns);
+        int maxRows = _multiColumnPigs.Max(c => c.Count);
+        RectTransform pigPrefabRect = pigPrefab.GetComponent<RectTransform>();
+        float pigHeight = (pigPrefabRect != null && pigPrefabRect.rect.height > 0f)
+            ? pigPrefabRect.rect.height
+            : 48f;
+        pigHeight = Mathf.Max(20f, pigHeight);
+
+        int totalRowsPerColumn = maxRows + 1;
+        float requiredContentHeight = totalRowsPerColumn > 0
+            ? totalRowsPerColumn * pigHeight + (totalRowsPerColumn - 1) * rowSpacing
+            : pigHeight;
+        float finalContentHeight = Mathf.Max(containerRect.rect.height, requiredContentHeight);
+        containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, finalContentHeight);
+
+        HorizontalLayoutGroup hLayout = pigContainer.GetComponent<HorizontalLayoutGroup>();
+        if (hLayout == null) hLayout = pigContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
+        hLayout.spacing = colSpacing;
+        hLayout.childAlignment = TextAnchor.UpperLeft;
+        hLayout.childForceExpandWidth = false;
+        hLayout.childForceExpandHeight = false;
+        hLayout.childControlWidth = false;
+        hLayout.childControlHeight = false;
+
+        for (int col = 0; col < _queueColumns; col++)
+        {
+            GameObject colGO = new GameObject($"PigCol_{col}", typeof(RectTransform));
+            colGO.transform.SetParent(pigContainer, false);
+
+            RectTransform colRect = colGO.GetComponent<RectTransform>();
+            colRect.sizeDelta = new Vector2(colWidth, finalContentHeight);
+
+            VerticalLayoutGroup vLayout = colGO.AddComponent<VerticalLayoutGroup>();
+            vLayout.spacing = rowSpacing;
+            vLayout.childAlignment = TextAnchor.UpperCenter;
+            vLayout.childControlWidth = true;
+            vLayout.childForceExpandWidth = true;
+            vLayout.childControlHeight = false;
+            vLayout.childForceExpandHeight = false;
+
+            if (col >= _multiColumnPigs.Length) continue;
+
+            for (int row = 0; row < _multiColumnPigs[col].Count; row++)
+            {
+                var pigData = _multiColumnPigs[col][row];
+                GameObject pigGO = Instantiate(pigPrefab, colGO.transform);
+
+                LayoutElement le = pigGO.GetComponent<LayoutElement>();
+                if (le == null) le = pigGO.AddComponent<LayoutElement>();
+                le.preferredHeight = pigHeight;
+                le.flexibleWidth = 1f;
+
+                bool isSelected = (col == _selectedPigCol && row == _selectedPigRow);
+                Image pigImage = pigGO.GetComponent<Image>();
+                if (pigImage != null)
+                {
+                    pigImage.raycastTarget = true;
+                    pigImage.alphaHitTestMinimumThreshold = 0f;
+                    Color baseColor = Helper.GetColorFromName(pigData.colorName);
+                    if (pigData.isHidden) baseColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.5f);
+                    pigImage.color = isSelected ? Color.Lerp(baseColor, Color.white, 0.5f) : baseColor;
+                }
+
+                PigComp pigComp = pigGO.GetComponent<PigComp>();
+                if (pigComp != null)
+                {
+                    pigComp.SetBulletCount(pigData.bullets, pigData.colorName);
+                    if (pigData.isHidden) pigImage.color = new Color(pigImage.color.r, pigImage.color.g, pigImage.color.b, 0.2f);
+                    pigComp.pigLeft = pigData.pigLeft;
+                    pigComp.pigRight = pigData.pigRight;
+                }
+
+                if (pigData.linkId >= 0 && pigImage != null)
+                {
+                    bool inChain = _linkingPigs.Any(p => p.col == col && p.row == row);
+                    pigImage.color = Color.Lerp(pigImage.color,
+                        inChain ? Color.yellow : new Color(1f, 0.75f, 0f, pigImage.color.a),
+                        inChain ? 0.55f : 0.35f);
+                    if (pigComp != null && pigComp.text != null)
+                        pigComp.text.text = $"L{pigData.linkId}\n{pigData.bullets}";
+                }
+
+                Button btn = pigGO.GetComponent<Button>();
+                if (btn == null) btn = pigGO.AddComponent<Button>();
+                btn.onClick.RemoveAllListeners();
+                int capturedCol = col;
+                int capturedRow = row;
+                btn.onClick.AddListener(() => OnPigClicked(capturedCol, capturedRow));
+            }
+
+            GameObject ghostPigGO = Instantiate(pigPrefab, colGO.transform);
+
+            LayoutElement ghostLE = ghostPigGO.GetComponent<LayoutElement>();
+            if (ghostLE == null) ghostLE = ghostPigGO.AddComponent<LayoutElement>();
+            ghostLE.preferredHeight = pigHeight;
+            ghostLE.flexibleWidth = 1f;
+
+            Image ghostImage = ghostPigGO.GetComponent<Image>();
+            if (ghostImage != null)
+                ghostImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+
+            TextMeshProUGUI ghostText = ghostPigGO.GetComponentInChildren<TextMeshProUGUI>();
+            if (ghostText != null)
+            {
+                ghostText.text = "+";
+                ghostText.fontSize = 36;
+                ghostText.alignment = TextAlignmentOptions.Center;
+            }
+
+            Button ghostBtn = ghostPigGO.GetComponent<Button>();
+            if (ghostBtn == null) ghostBtn = ghostPigGO.AddComponent<Button>();
+            ghostBtn.onClick.RemoveAllListeners();
+            int capturedGhostCol = col;
+            ghostBtn.onClick.AddListener(() => OnEmptySlotClicked(capturedGhostCol));
+        }
+    }
+
+    private void OnEmptySlotClicked(int col)
+    {
+        if (_activePigFeature != "Swap" || _selectedPigCol == -1) return;
+
+        var pig = _multiColumnPigs[_selectedPigCol][_selectedPigRow];
+        _multiColumnPigs[_selectedPigCol].RemoveAt(_selectedPigRow);
+        _multiColumnPigs[col].Add(pig);
+
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+        UpdateSimulateFromLanes();
+        SpawnPigUI();
+    }
+
+    private bool ArePigsAdjacent(int col1, int row1, int col2, int row2)
+    {
+        int dc = Mathf.Abs(col1 - col2);
+        int dr = Mathf.Abs(row1 - row2);
+        return dc == 1 || (dc == 0 && dr == 1);
+    }
+
+    private void ClearPigLinkData(PigLayoutData p)
+    {
+        p.linkId = -1;
+        p.pigLeft = null; p.pigRight = null;
+    }
+
+    private int GetPigConnectionCount(PigLayoutData p)
+    {
+        int n = 0;
+        if (p.pigLeft != null) n++;
+        if (p.pigRight != null) n++;
+        return n;
+    }
+
+    private void RemoveLinkBetween(PigLayoutData p, int otherCol, int otherRow)
+    {
+        if (p.pigLeft != null && p.pigLeft.LaneIndex == otherCol && p.pigLeft.index == otherRow) p.pigLeft = null;
+        else if (p.pigRight != null && p.pigRight.LaneIndex == otherCol && p.pigRight.index == otherRow) p.pigRight = null;
+    }
+
+    private void AddLink(PigLayoutData p, int toCol, int toRow)
+    {
+        if (p.pigLeft == null) p.pigLeft = new PigMarker { LaneIndex = toCol, index = toRow };
+        else p.pigRight = new PigMarker { LaneIndex = toCol, index = toRow };
+    }
+
+    private bool HasConnectionInDirection(PigLayoutData p, int myCol, int myRow, int toCol, int toRow)
+    {
+        int dc = toCol - myCol, dr = toRow - myRow;
+        if (p.pigLeft != null && SameDirection(dc, dr, p.pigLeft.LaneIndex - myCol, p.pigLeft.index - myRow)) return true;
+        if (p.pigRight != null && SameDirection(dc, dr, p.pigRight.LaneIndex - myCol, p.pigRight.index - myRow)) return true;
+        return false;
+    }
+
+    private bool SameDirection(int dc1, int dr1, int dc2, int dr2)
+    {
+        if (dc1 != 0 && dc2 != 0) return System.Math.Sign(dc1) == System.Math.Sign(dc2);
+        if (dc1 == 0 && dc2 == 0) return System.Math.Sign(dr1) == System.Math.Sign(dr2);
+        return false;
+    }
+
+    private void HandleLinkPigClick(int col, int row)
+    {
+        if (_multiColumnPigs == null) return;
+        var pig = _multiColumnPigs[col][row];
+
+        int existingIdx = _linkingPigs.FindIndex(p => p.col == col && p.row == row);
+        if (existingIdx >= 0)
+        {
+            if (existingIdx > 0)
+            {
+                var prev = _linkingPigs[existingIdx - 1];
+                RemoveLinkBetween(_multiColumnPigs[prev.col][prev.row], col, row);
+            }
+            if (existingIdx < _linkingPigs.Count - 1)
+            {
+                var next = _linkingPigs[existingIdx + 1];
+                RemoveLinkBetween(_multiColumnPigs[next.col][next.row], col, row);
+            }
+            ClearPigLinkData(pig);
+            _linkingPigs.RemoveAt(existingIdx);
+            if (_linkingPigs.Count == 1)
+            {
+                ClearPigLinkData(_multiColumnPigs[_linkingPigs[0].col][_linkingPigs[0].row]);
+                _linkingPigs.Clear();
+            }
+            SpawnPigUI();
+            UpdateReport(_linkingPigs.Count == 0 ? "Link cleared." : $"Linking: {_linkingPigs.Count} pig(s).");
+            return;
+        }
+
+        if (_linkingPigs.Count == 0 && pig.linkId >= 0)
+        {
+            int oldId = pig.linkId;
+            foreach (var lane in _multiColumnPigs)
+                foreach (var p in lane)
+                    if (p.linkId == oldId) ClearPigLinkData(p);
+            SpawnPigUI();
+            UpdateSimulateFromLanes();
+            return;
+        }
+
+        if (_linkingPigs.Count >= 5)
+        {
+            UpdateReport("Max 5 pigs per link group!");
+            return;
+        }
+
+        if (_linkingPigs.Count > 0)
+        {
+            var last = _linkingPigs[_linkingPigs.Count - 1];
+            if (!ArePigsAdjacent(last.col, last.row, col, row))
+            {
+                UpdateReport($"Khong the noi: pig ({col},{row}) khong ke voi pig cuoi ({last.col},{last.row}).");
+                return;
+            }
+
+            var lastPig = _multiColumnPigs[last.col][last.row];
+
+            if (GetPigConnectionCount(lastPig) >= 2)
+            {
+                UpdateReport($"Pig ({last.col},{last.row}) da co du 2 ket noi!");
+                return;
+            }
+            if (GetPigConnectionCount(pig) >= 2)
+            {
+                UpdateReport($"Pig ({col},{row}) da co du 2 ket noi!");
+                return;
+            }
+
+            if (HasConnectionInDirection(lastPig, last.col, last.row, col, row))
+            {
+                UpdateReport($"Pig ({last.col},{last.row}) da co ket noi theo huong do!");
+                return;
+            }
+            if (HasConnectionInDirection(pig, col, row, last.col, last.row))
+            {
+                UpdateReport($"Pig ({col},{row}) da co ket noi theo huong do!");
+                return;
+            }
+        }
+
+        int assignLinkId;
+        if (_linkingPigs.Count == 0)
+        {
+            assignLinkId = _nextLinkId++;
+        }
+        else
+        {
+            assignLinkId = _multiColumnPigs[_linkingPigs[0].col][_linkingPigs[0].row].linkId;
+            if (pig.linkId >= 0 && pig.linkId != assignLinkId)
+            {
+                int targetId = pig.linkId;
+                foreach (var lp in _linkingPigs)
+                    _multiColumnPigs[lp.col][lp.row].linkId = targetId;
+                assignLinkId = targetId;
+            }
+        }
+        pig.linkId = assignLinkId;
+
+        if (_linkingPigs.Count > 0)
+        {
+            var last = _linkingPigs[_linkingPigs.Count - 1];
+            AddLink(_multiColumnPigs[last.col][last.row], col, row);
+            AddLink(pig, last.col, last.row);
+        }
+
+        _linkingPigs.Add((col, row));
+        SpawnPigUI();
+        if (_linkingPigs.Count >= 2)
+            UpdateSimulateFromLanes();
+        else
+            UpdateReport($"Linking: 1 pig selected (col {col} row {row}) - click pig ke tiep de noi.");
+    }
+
+    private void OnPigClicked(int col, int row)
+    {
+        if (_activePigFeature == "Linked")
+        {
+            HandleLinkPigClick(col, row);
+            return;
+        }
+
+        if (_activePigFeature == "Hidden")
+        {
+            _multiColumnPigs[col][row].isHidden = !_multiColumnPigs[col][row].isHidden;
+            SpawnPigUI();
+            return;
+        }
+
+        if (_selectedPigCol == -1)
+        {
+            _selectedPigCol = col;
+            _selectedPigRow = row;
+            SpawnPigUI();
+        }
+        else if (_selectedPigCol == col && _selectedPigRow == row)
+        {
+            _selectedPigCol = -1;
+            _selectedPigRow = -1;
+            SpawnPigUI();
+        }
+        else
+        {
+            var temp = _multiColumnPigs[_selectedPigCol][_selectedPigRow];
+            _multiColumnPigs[_selectedPigCol][_selectedPigRow] = _multiColumnPigs[col][row];
+            _multiColumnPigs[col][row] = temp;
+            _selectedPigCol = -1;
+            _selectedPigRow = -1;
+            UpdateSimulateFromLanes();
+            SpawnPigUI();
+        }
+    }
+}

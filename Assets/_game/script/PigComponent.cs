@@ -13,8 +13,9 @@ public class PigComponent : MonoBehaviour
     public bool isHidden = false;
     private bool isOnTop = false;
     public bool isOnBelt = false;
-    private float speedOnStraight = 0f;
-    private float speedOnCurve = 0f;
+    private float speed = 0f;
+    private float baseConveyorSpeed = 0f;
+    // private float speedOnCurve = 0f;
     public bool isLinkPig = false;
     public PigComponent leftPig = null;
     public PigComponent rightPig = null;
@@ -38,7 +39,7 @@ public class PigComponent : MonoBehaviour
         currentState = newState;
     }
 
-    public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float speedOnStraight, float speedOnCurve,
+    public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed,
     float jumpSpeed, List<Transform> paths, bool isHidden)
     {
         this.isHidden = isHidden;
@@ -46,8 +47,8 @@ public class PigComponent : MonoBehaviour
         this.Bullet = bulletCount;
         this.laneIndex = laneIndex;
 
-        this.speedOnCurve = speedOnCurve;
-        this.speedOnStraight = speedOnStraight;
+        this.speed = _speed;
+        this.baseConveyorSpeed = _speed;
         this.jumpToQueueSpeed = jumpSpeed;
 
         allWaypoints = paths;
@@ -69,9 +70,9 @@ public class PigComponent : MonoBehaviour
         if (isHidden)
         {
             meshRenderer.material = hiddenMaterial;
+            bulletText.SetActive(false);
             return;
         }
-
         meshRenderer.material.color = GameUtility.GetColorByName(color);
         bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
     }
@@ -149,6 +150,12 @@ public class PigComponent : MonoBehaviour
         }
     }
 
+    public void SetLinkedNeighbors(PigComponent left, PigComponent right)
+    {
+        leftPig = left;
+        rightPig = right;
+    }
+
     public void SetIsOnTop(bool value)
     {
         isOnTop = value;
@@ -159,7 +166,7 @@ public class PigComponent : MonoBehaviour
             meshRenderer.material = normalMaterial;
             meshRenderer.material.color = GameUtility.GetColorByName(color);
             bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
-            // bulletText.SetActive(true);
+            bulletText.SetActive(true);
 
             if (IsLinkedPig())
             {
@@ -235,6 +242,8 @@ public class PigComponent : MonoBehaviour
 
     public void JumpTo()
     {
+        SetConveyorSpeedMultiplier(1f);
+
         if (currentState == PigState.InQueue)
         {
             ChangeState(PigState.JumpingFromQueue);
@@ -370,9 +379,10 @@ private IEnumerator ConveyorJourney()
         }
     }
 
-    public IEnumerator SlideTo(Vector3 target, float duration)
+    public IEnumerator SlideTo(Vector3 target, float speed)
     {
         Vector3 start = rb.position;
+        float duration = Vector3.Distance(start, target) / speed;
         float elapsed = 0;
         while (elapsed < duration)
         {
@@ -405,7 +415,7 @@ private IEnumerator ConveyorJourney()
                 Quaternion startRot = path[i].rotation;
                 Quaternion endRot = path[i + 2].rotation;
 
-                yield return StartCoroutine(SlideOnCurve(start, control, end, startRot, endRot, speedOnCurve));
+                yield return StartCoroutine(SlideOnCurve(start, control, end, startRot, endRot, speed));
                 i += 2;
 
             }
@@ -413,7 +423,7 @@ private IEnumerator ConveyorJourney()
             {
                 rb.MoveRotation(path[i].rotation);
                 Vector3 end = path[i + 1].position;
-                yield return StartCoroutine(SlideTo(end, speedOnStraight));
+                yield return StartCoroutine(SlideTo(end, speed));
                 i++;
             }
 
@@ -424,8 +434,23 @@ private IEnumerator ConveyorJourney()
         }
     }
 
-    public IEnumerator SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float duration)
+    public IEnumerator SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float speed)
     {
+        // Estimate Bezier curve length by sampling
+        const int samples = 20;
+        float curveLength = 0f;
+        Vector3 prev = start;
+        for (int s = 1; s <= samples; s++)
+        {
+            float st = s / (float)samples;
+            Vector3 pt = Mathf.Pow(1 - st, 2) * start +
+                         2 * (1 - st) * st * control +
+                         Mathf.Pow(st, 2) * end;
+            curveLength += Vector3.Distance(prev, pt);
+            prev = pt;
+        }
+
+        float duration = curveLength / speed;
         float elapsed = 0;
 
         while (elapsed < duration)
@@ -522,10 +547,10 @@ private IEnumerator ConveyorJourney()
         Quaternion startRot = rb.rotation;
 
         float distance = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(targetPos.x, 0, targetPos.z));
-        float speed = 5f;
-        float duration = distance / speed;
+        float moveSpeed = Mathf.Max(1f, 5);
+        float duration = distance / moveSpeed;
 
-        if (duration < 0.2f) duration = 0.2f;
+        if (duration < 0.08f) duration = 0.08f;
 
         float jumpHeight = 0.5f;
         float elapsed = 0;
@@ -554,6 +579,12 @@ private IEnumerator ConveyorJourney()
 
             ChangeState(PigState.InQueue);
         }
+    }
+
+    public void SetConveyorSpeedMultiplier(float multiplier)
+    {
+        float clamped = Mathf.Max(0.1f, multiplier);
+        speed = baseConveyorSpeed * clamped;
     }
 
     private void OnTriggerEnter(Collider other)
