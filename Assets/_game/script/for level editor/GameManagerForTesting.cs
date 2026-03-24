@@ -4,6 +4,18 @@ using UnityEngine;
 public class GameManagerForTesting : Singleton<GameManagerForTesting>
 {
 	public DataConfig CurrentPlayTestConfig { get; private set; }
+	public string[,] SavedTempGrid { get; private set; }
+
+	public void SetSavedTempGrid(string[,] tempGrid)
+	{
+		if (tempGrid == null) { SavedTempGrid = null; return; }
+		int sizeX = tempGrid.GetLength(0);
+		int sizeY = tempGrid.GetLength(1);
+		SavedTempGrid = new string[sizeX, sizeY];
+		for (int x = 0; x < sizeX; x++)
+			for (int y = 0; y < sizeY; y++)
+				SavedTempGrid[x, y] = tempGrid[x, y];
+	}
 
 	public void SetPlayTestConfig(DataConfig source)
 	{

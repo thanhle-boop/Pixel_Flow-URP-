@@ -17,7 +17,7 @@ public class LevelEditor : MonoBehaviour
         "Re-Color"
     };
 
-    public string[] test12 = {
+    public string[] PigFeature = {
         "Swap",
         "Hidden",
         "Linked",
@@ -86,6 +86,7 @@ public class LevelEditor : MonoBehaviour
 
     private void Start()
     {
+
         if (levelInput != null && string.IsNullOrEmpty(levelInput.text)) levelInput.text = levelIndex.ToString();
         if (widthInput != null && string.IsNullOrEmpty(widthInput.text)) widthInput.text = _targetWidth.ToString();
         if (stepsInput != null && string.IsNullOrEmpty(stepsInput.text)) stepsInput.text = _targetStepsInput.ToString();
@@ -94,7 +95,91 @@ public class LevelEditor : MonoBehaviour
         GenerateColorUI();
         GenerateFeatureUI();
         GeneratePigFeatureUI();
+
+        if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig savedConfig))
+        {
+            RestoreFromPlayTestConfig(savedConfig);
+        }
     }
+
+    private void RestoreFromPlayTestConfig(DataConfig config)
+    {
+        if (config == null || config.gridData == null || config.width <= 0 || config.height <= 0) return;
+
+        levelIndex = config.levelIndex;
+
+        string[,] savedTempGrid = GameManagerForTesting.Instance.SavedTempGrid;
+        if (savedTempGrid != null)
+        {
+            _tempGrid = new string[TempGridSize, TempGridSize];
+            for (int cy = 0; cy < TempGridSize; cy++)
+                for (int cx = 0; cx < TempGridSize; cx++)
+                    _tempGrid[cx, cy] = savedTempGrid[cx, cy] ?? "empty";
+            ComputeFinalGrid();
+        }
+        else
+        {
+            _finalWidth = config.width;
+            _finalHeight = config.height;
+            _finalOffsetX = (TempGridSize - _finalWidth) / 2;
+            _finalOffsetY = (TempGridSize - _finalHeight) / 2;
+
+            _finalGridMap = new string[_finalWidth, _finalHeight];
+            for (int y = 0; y < _finalHeight; y++)
+                for (int x = 0; x < _finalWidth; x++)
+                {
+                    int idx = y * _finalWidth + x;
+                    _finalGridMap[x, y] = idx < config.gridData.Count ? config.gridData[idx] : "empty";
+                }
+
+            _tempGrid = new string[TempGridSize, TempGridSize];
+            for (int cy = 0; cy < TempGridSize; cy++)
+                for (int cx = 0; cx < TempGridSize; cx++)
+                    _tempGrid[cx, cy] = "empty";
+            for (int y = 0; y < _finalHeight; y++)
+                for (int x = 0; x < _finalWidth; x++)
+                    _tempGrid[x + _finalOffsetX, y + _finalOffsetY] = _finalGridMap[x, y];
+        }
+
+        if (config.lanes != null && config.lanes.Count > 0)
+        {
+            _queueColumns = config.lanes.Count;
+            _multiColumnPigs = new List<PigLayoutData>[_queueColumns];
+            int maxLinkId = -1;
+            for (int i = 0; i < _queueColumns; i++)
+            {
+                _multiColumnPigs[i] = new List<PigLayoutData>();
+                if (config.lanes[i]?.pigs == null) continue;
+                foreach (PigLayoutData pig in config.lanes[i].pigs)
+                {
+                    _multiColumnPigs[i].Add(new PigLayoutData
+                    {
+                        colorName = pig.colorName,
+                        bullets = pig.bullets,
+                        isHidden = pig.isHidden,
+                        linkId = pig.linkId,
+                        pigLeft = pig.pigLeft != null ? new PigMarker { LaneIndex = pig.pigLeft.LaneIndex, index = pig.pigLeft.index } : null,
+                        pigRight = pig.pigRight != null ? new PigMarker { LaneIndex = pig.pigRight.LaneIndex, index = pig.pigRight.index } : null
+                    });
+                    if (pig.linkId > maxLinkId) maxLinkId = pig.linkId;
+                }
+            }
+            _nextLinkId = maxLinkId + 1;
+        }
+
+        if (levelInput != null) levelInput.text = levelIndex.ToString();
+        if (columnsInput != null) columnsInput.text = _queueColumns.ToString();
+
+        _selectedPigCol = -1;
+        _selectedPigRow = -1;
+        _linkingPigs.Clear();
+        _currentMode = FeatureMode.Paint;
+
+        GenerateGridUI();
+        UpdateSimulateFromLanes();
+        SpawnPigUI();
+    }
+
 
     private void Update()
     {
@@ -365,6 +450,7 @@ public class LevelEditor : MonoBehaviour
         }
 
         GameManagerForTesting.Instance.SetPlayTestConfig(data);
+        GameManagerForTesting.Instance.SetSavedTempGrid(_tempGrid);
         SceneManager.LoadScene("6.playTest");
     }
 
@@ -1050,7 +1136,7 @@ public class LevelEditor : MonoBehaviour
         if (containerRect == null) return;
 
         const float spacing = 2f;
-        int count = test12.Length;
+        int count = PigFeature.Length;
         float containerW = containerRect.rect.width;
         float containerH = containerRect.rect.height;
 
@@ -1077,7 +1163,7 @@ public class LevelEditor : MonoBehaviour
         {
             GameObject go = Instantiate(pigFeature, pigFeatureContainer);
             FeaturePig featurePig = go.GetComponent<FeaturePig>();
-            featurePig.SetFeatureName(test12[i], this);
+            featurePig.SetFeatureName(PigFeature[i], this);
             _pigFeatureBtns.Add(featurePig);
         }
         NotifyPigFeatureSelected(0);
@@ -1222,9 +1308,9 @@ public class LevelEditor : MonoBehaviour
 
     public void OnClickFeaturePigButton(int index)
     {
-        if (index < 0 || index >= test12.Length) return;
+        if (index < 0 || index >= PigFeature.Length) return;
 
-        string feature = test12[index];
+        string feature = PigFeature[index];
 
         if (feature == "EndLink")
         {
@@ -1234,7 +1320,7 @@ public class LevelEditor : MonoBehaviour
             }
             _linkingPigs.Clear();
             _activePigFeature = "Linked";
-            int linkedIndex = System.Array.IndexOf(test12, "Linked");
+            int linkedIndex = System.Array.IndexOf(PigFeature, "Linked");
             NotifyPigFeatureSelected(linkedIndex);
             _selectedPigCol = -1;
             _selectedPigRow = -1;
@@ -1545,7 +1631,7 @@ public class LevelEditor : MonoBehaviour
             var last = _linkingPigs[_linkingPigs.Count - 1];
             if (!ArePigsAdjacent(last.col, last.row, col, row))
             {
-                UpdateReport($"Khong the noi: pig ({col},{row}) khong ke voi pig cuoi ({last.col},{last.row}).");
+                UpdateReport($": pig ({col},{row}) can not connect to ({last.col},{last.row}).");
                 return;
             }
 
@@ -1553,23 +1639,23 @@ public class LevelEditor : MonoBehaviour
 
             if (GetPigConnectionCount(lastPig) >= 2)
             {
-                UpdateReport($"Pig ({last.col},{last.row}) da co du 2 ket noi!");
+                UpdateReport($"Pig ({last.col},{last.row}) already has 2 connections!");
                 return;
             }
             if (GetPigConnectionCount(pig) >= 2)
             {
-                UpdateReport($"Pig ({col},{row}) da co du 2 ket noi!");
+                UpdateReport($"Pig ({col},{row}) already has 2 connections!");
                 return;
             }
 
             if (HasConnectionInDirection(lastPig, last.col, last.row, col, row))
             {
-                UpdateReport($"Pig ({last.col},{last.row}) da co ket noi theo huong do!");
+                UpdateReport($"Pig ({last.col},{last.row}) already has a connection in that direction!");
                 return;
             }
             if (HasConnectionInDirection(pig, col, row, last.col, last.row))
             {
-                UpdateReport($"Pig ({col},{row}) da co ket noi theo huong do!");
+                UpdateReport($"Pig ({col},{row}) already has a connection in that direction!");
                 return;
             }
         }
@@ -1604,7 +1690,7 @@ public class LevelEditor : MonoBehaviour
         if (_linkingPigs.Count >= 2)
             UpdateSimulateFromLanes();
         else
-            UpdateReport($"Linking: 1 pig selected (col {col} row {row}) - click pig ke tiep de noi.");
+            UpdateReport($"Linking: 1 pig selected (col {col} row {row}) - click next pig to connect.");
     }
 
     private void OnPigClicked(int col, int row)

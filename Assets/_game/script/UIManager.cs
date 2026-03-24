@@ -183,7 +183,6 @@ public class UIManager : Singleton<UIManager>
             return;
         }
         reTryUI.SetActive(false);
-        //Back to main menu or something
     }
     public void OnBackToEditorClicked()
     {
