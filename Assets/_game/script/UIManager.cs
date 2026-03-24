@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,9 +7,8 @@ public class UIManager : Singleton<UIManager>
 {
     protected override bool PersistAcrossScenes => false;
 
-    public TMPro.TextMeshProUGUI straightSlotText;
+    public TextMeshProUGUI straightSlotText;
     public VideoPlayer loseGameVideo;
-
 
     [Header("Gameplay UI")]
     public TextMeshProUGUI coinText;
@@ -28,6 +26,9 @@ public class UIManager : Singleton<UIManager>
     public GameObject winUI;
     public TextMeshProUGUI winCoinText;
 
+    public GameObject straightSlot;
+    public GameObject BottomUI;
+    public UnityEngine.EventSystems.EventSystem eventSystem;
 
     private void OnEnable()
     {
@@ -49,7 +50,7 @@ public class UIManager : Singleton<UIManager>
 
     private void StartGame()
     {
-        if(winUI == null || gameOverUI == null || reTryUI == null || gameplayUI == null)
+        if (winUI == null || gameOverUI == null || reTryUI == null || gameplayUI == null)
         {
             return;
         }
@@ -65,7 +66,7 @@ public class UIManager : Singleton<UIManager>
         EventManager.OnFullConveyorSlot -= OnInvalidExecution;
         EventManager.OnWinGame -= WinGame;
     }
-    
+
     private void GameOver()
     {
         ShowGameOverUI();
@@ -75,21 +76,21 @@ public class UIManager : Singleton<UIManager>
     {
         //Luna.Unity.Playable.InstallFullGame();
     }
-    
-    public void UpdateStraightSlot(float count,float maxSlot)
+
+    public void UpdateStraightSlot(float count, float maxSlot)
     {
-        if(straightSlotText == null)
+        if (straightSlotText == null)
         {
             return;
         }
         straightSlotText.text = count + "/" + maxSlot;
     }
-    
+
     public void UpdateScore(int score)
     {
         // scoreText.text = score.ToString();
     }
-    
+
     public void RestartGame()
     {
         GameManager.Instance.StartGame();
@@ -99,17 +100,15 @@ public class UIManager : Singleton<UIManager>
     {
         DataManager.Instance.AddCoins(40);
         winCoinText.text = "" + DataManager.Instance.Coins;
-        if(winUI != null)
-        {
-            winUI.SetActive(true);
-        }
+        winUI.SetActive(false);
         GameManager.Instance.StartGame();
     }
 
     public void OnContinueButtonClicked()
     {
-        if(gameOverUI == null || gameplayUI == null)
+        if (gameOverUI == null || gameplayUI == null)
         {
+            Debug.Log("congthanh");
             return;
         }
         GameManager.Instance.ContinueGame();
@@ -122,7 +121,7 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowWinUI(int coinsEarned)
     {
-        if(winUI == null || gameplayUI == null)
+        if (winUI == null || gameplayUI == null)
         {
             return;
         }
@@ -134,7 +133,7 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowGameOverUI()
     {
-        if(gameOverUI == null || gameplayUI == null)
+        if (gameOverUI == null || gameplayUI == null)
         {
             return;
         }
@@ -145,8 +144,8 @@ public class UIManager : Singleton<UIManager>
     }
 
     public void ShowGameplayUI()
-    {   
-        if(gameplayUI == null)
+    {
+        if (gameplayUI == null)
         {
             return;
         }
@@ -156,7 +155,7 @@ public class UIManager : Singleton<UIManager>
     }
     public void CloseGameOverUI()
     {
-        if(gameOverUI == null || reTryUI == null)
+        if (gameOverUI == null || reTryUI == null)
         {
             return;
         }
@@ -166,7 +165,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OnRetryButtonClicked()
     {
-        if(reTryUI == null)
+        if (reTryUI == null)
         {
             return;
         }
@@ -178,7 +177,7 @@ public class UIManager : Singleton<UIManager>
 
     public void CloseRetryUI()
     {
-        if(reTryUI == null)
+        if (reTryUI == null)
         {
             return;
         }
@@ -188,4 +187,30 @@ public class UIManager : Singleton<UIManager>
     {
         SceneManager.LoadScene("5.level_editor");
     }
+
+    public void OnAddTrayButtonClicked()
+    {
+        if (DataManager.Instance.GetItem1())
+        {
+            straightSlot.SetActive(true);
+            EventManager.OnAddTray?.Invoke();
+        }
+        else
+        {
+
+        }
+    }
+
+    public void OnHandButtonClicked()
+    {
+        if (DataManager.Instance.GetItem2())
+        {
+            EventManager.OnHand?.Invoke();
+        }
+        else
+        {
+
+        }
+    }
+
 }

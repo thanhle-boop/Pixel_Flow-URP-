@@ -106,6 +106,17 @@ public static class Helper
             // { "ivory",            new Color(1f, 1f, 0.94f) },         // Ivory
             // { "snow",             new Color(1f, 0.98f, 0.98f) },      // Snow
             { "cream",            new Color(1f, 0.99f, 0.82f) },      // Cream
+
+            { "c1",            new Color(245f/255f, 166f/255f, 220f/255f) },      // Cream
+            { "c2",            new Color(139f/255f, 236f/255f, 243f/255f) },      // Cream
+            { "c3",            new Color(181f/255f, 145f/255f, 251f/255f) },      // Cream
+            { "c4",            new Color(1f, 233f/255f, 123f/255f) },      // Cream
+            { "c5",            new Color(141f/255f, 227f/255f, 126f/255f) },      // Cream
+            { "c6",            new Color(1f, 174f/255f, 111f/255f) },      // Cream
+            { "c7",            new Color(249f/255f, 243f/255f, 1f) },      // Cream
+            { "c8",            new Color(85f/255f, 8f/255f, 97f/255f) },      // Cream
+            { "c9",            new Color(161f/255f, 208f/255f, 1f) },      // Cream
+            { "c10",           new Color(97f/255f, 174f/255f, 9f/255f) },      // Cream
     };
 
     public static string GetClosestColor(Color c)

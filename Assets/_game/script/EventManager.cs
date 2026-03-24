@@ -18,6 +18,9 @@ public class EventManager
 
     public static Action<PigComponent> OnPigOutOfAmmo;
     public static Action<PigComponent> OnPigIsOnTopNoMoreHidden;
+    public static Action<PigComponent> OnClearLinked;
 
+    public static Action OnAddTray;
+    public static Action OnHand;
 
 }

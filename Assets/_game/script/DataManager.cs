@@ -25,6 +25,29 @@ public class DataManager : Singleton<DataManager>
     public int Lives        => _playerData.CurrentLives;
     public int Coins        => _playerData.CurrentCoins;
     
+    public int Item2 => _playerData.item2;
+    public int Item3 => _playerData.item3;
+    public int Item4 => _playerData.item4;
+    
+    public bool GetItem1()
+    {
+        if (_playerData.item1 > 0)
+        {
+            _playerData.item1--;
+            return true;
+        }
+        return false;
+    }
+
+    public bool GetItem2()
+    {
+        if (_playerData.item2 > 0)
+        {
+            _playerData.item2--;
+            return true;
+        }
+        return false;
+    }
     public void IncreaseLevel()
     {
         _playerData.CurrentLevel++;

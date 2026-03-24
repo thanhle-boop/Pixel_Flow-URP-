@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class GameUtility : Singleton<GameUtility>
-{   
+{
     public Color red;
     public Color green;
     public Color blue;
@@ -45,6 +45,17 @@ public class GameUtility : Singleton<GameUtility>
     public Color darkGray;
     public Color lightGray;
     public Color dimGray;
+
+    public Color color1 = new Color(245f / 255f, 166f / 255f, 220f / 255f);     // Cream
+    public Color color2 = new Color(139f / 255f, 236f / 255f, 243f / 255f);      // Cream
+    public Color color3 = new Color(181f / 255f, 145f / 255f, 251f / 255f);      // Cream
+    public Color color4 = new Color(1f, 233f / 255f, 123f / 255f);      // Cream
+    public Color color5 = new Color(141f / 255f, 227f / 255f, 126f / 255f);      // Cream
+    public Color color6 = new Color(1f, 174f / 255f, 111f / 255f);      // Cream
+    public Color color7 = new Color(249f / 255f, 243f / 255f, 1f);      // Cream
+    public Color color8 = new Color(85f / 255f, 8f / 255f, 97f / 255f);      // Cream
+    public Color color9 = new Color(161f / 255f, 208f / 255f, 1f);      // Cream
+    public Color color10 = new Color(97f / 255f, 174f / 255f, 9f / 255f);      // Cream
 
     public static Color GetColorByName(string colorName)
     {
@@ -97,6 +108,18 @@ public class GameUtility : Singleton<GameUtility>
             case "dark gray": return Instance.darkGray;
             case "light gray": return Instance.lightGray;
             case "dim gray": return Instance.dimGray;
+
+            case "c1": return Instance.color1;
+            case "c2": return Instance.color2;
+            case "c3": return Instance.color3;
+            case "c4": return Instance.color4;
+            case "c5": return Instance.color5;
+            case "c6": return Instance.color6;
+            case "c7": return Instance.color7;
+            case "c8": return Instance.color8;
+            case "c9": return Instance.color9;
+            case "c10": return Instance.color10;
+
             default: return Instance.gray;
         }
     }

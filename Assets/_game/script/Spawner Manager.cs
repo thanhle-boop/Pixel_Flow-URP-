@@ -42,6 +42,7 @@ public class SpawnerManager : MonoBehaviour
     private int tempScore = 0;
 
     private bool isProcessingClick = false;
+    private bool onHandItemUsed = false;
 
     [SerializeField]
     private float speed = 1f;
@@ -66,6 +67,17 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnLoseGame += LoseGame;
         EventManager.OnContinueGame += ContinueGame;
         EventManager.OnPigOutOfAmmo += HandlePigOutOfAmmo;
+
+        EventManager.OnAddTray += () =>
+        {
+            _maxstraightSlot++;
+            UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+        };
+
+        EventManager.OnHand += () =>
+        {
+            onHandItemUsed = true;
+        };
     }
 
     private void OnDisable()
@@ -105,6 +117,7 @@ public class SpawnerManager : MonoBehaviour
                 foreach (PigComponent p in linkedGroup)
                 {
                     p.ExecuteDestroy();
+                    EventManager.OnClearLinked?.Invoke(p);
                 }
             }
         }
@@ -112,6 +125,7 @@ public class SpawnerManager : MonoBehaviour
         else
         {
             pig.ExecuteDestroy();
+
         }
     }
     private void IncreaseStraightSlot()
@@ -203,11 +217,13 @@ public class SpawnerManager : MonoBehaviour
     {
         if (pig == null || isProcessingClick) return;
 
-        if (!pig.IsPigValid())
+        if (!pig.IsPigValid() && !onHandItemUsed)
         {
             SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
             return;
         }
+
+        onHandItemUsed = false;
 
         if (pig.IsLinkedPig())
         {
@@ -458,7 +474,7 @@ public class SpawnerManager : MonoBehaviour
 
                 if (pigComp != null)
                 {
-                    pigComp.Initialize(colorType, bulletCount, i, color, speed, jumpToQueueSpeed, allWaypoints,currentLane.pigs[j].isHidden);
+                    pigComp.Initialize(colorType, bulletCount, i, color, speed, jumpToQueueSpeed, allWaypoints, currentLane.pigs[j].isHidden);
                     pigsByLane[i].Add(pigComp);
                     pigComp.SetIsOnTop(j == 0);
                 }
@@ -724,12 +740,15 @@ public class SpawnerManager : MonoBehaviour
     private void ApplyMaterial(GameObject obj, string colorName)
     {
         var renderer = obj.GetComponent<Renderer>();
+        if(renderer == null)
+        {
+            renderer = obj.GetComponentInChildren<MeshRenderer>();
+        }
         var blockComponent = obj.GetComponent<Block>();
         if (renderer == null || blockComponent == null) return;
 
         blockComponent.color = colorName;
         renderer.material.color = GameUtility.GetColorByName(colorName);
-
     }
 
     private void HandlePigEnterQueue(PigComponent pig)
@@ -738,11 +757,15 @@ public class SpawnerManager : MonoBehaviour
 
         if (ShouldSkipQueueForFinalRush())
         {
-            ApplyConveyorSpeedMultiplier(1.5f);
-            pig.SetConveyorSpeedMultiplier(1.5f);
+            var pigRemaining = pigSpawnPos.GetComponentsInChildren<PigComponent>();
+            for (int i = 0; i < pigRemaining.Length; i++)
+            {
+                ApplyConveyorSpeedMultiplier(2f);
+                pigRemaining[i].SetConveyorSpeedMultiplier(2f);
+
+            }
             return;
         }
-
         pig.SetConveyorSpeedMultiplier(1f);
 
         if (queuePos == null || queuePos.Count == 0)
@@ -781,24 +804,11 @@ public class SpawnerManager : MonoBehaviour
 
     private bool ShouldSkipQueueForFinalRush()
     {
-        int remainingPigs = GetRemainingPigCount();
-        return remainingPigs <= 5;
-    }
-
-    private int GetRemainingPigCount()
-    {
         PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
-        int count = 0;
-        foreach (PigComponent pig in allPigs)
-        {
-            if (pig != null && pig.gameObject.activeInHierarchy)
-            {
-                count++;
-            }
-        }
-
-        return count;
+        return allPigs.Length <= 5;
     }
+
+
 
     private void ApplyConveyorSpeedMultiplier(float multiplier)
     {
@@ -820,7 +830,7 @@ public class SpawnerManager : MonoBehaviour
             return occupiedCount;
         }
 
-        return -1; 
+        return -1;
     }
 
     private void OnBlockDestroyed()

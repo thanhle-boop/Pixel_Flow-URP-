@@ -17,12 +17,12 @@ public class Link : MonoBehaviour
     void OnEnable()
     {
         EventManager.OnPigIsOnTopNoMoreHidden += ResetColorNoMoreHidden;
-        EventManager.OnPigOutOfAmmo += DestroyLink;
+        EventManager.OnClearLinked += DestroyLink;
     }
     void OnDisable()
     {
         EventManager.OnPigIsOnTopNoMoreHidden -= ResetColorNoMoreHidden;
-        EventManager.OnPigOutOfAmmo -= DestroyLink;
+        EventManager.OnClearLinked -= DestroyLink;
     }
 
     void DestroyLink(PigComponent pig)

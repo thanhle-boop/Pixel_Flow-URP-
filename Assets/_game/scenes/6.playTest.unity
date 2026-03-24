@@ -3109,6 +3109,7 @@ MonoBehaviour:
   gameOverCoinText: {fileID: 1318847772}
   winUI: {fileID: 0}
   winCoinText: {fileID: 628101949}
+  straightSlot: {fileID: 0}
 --- !u!4 &610574051
 Transform:
   m_ObjectHideFlags: 0
@@ -9602,7 +9603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5fa0c936c8117d4b8708a2f2600211e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockPrefab: {fileID: 3850684735345747513, guid: 04d93131522f26b44b6475c595990920, type: 3}
+  blockPrefab: {fileID: 4886328685167030700, guid: a4e13b989d360c248906fc7864625213, type: 3}
   blockSpawnPoint: {fileID: 559098098}
   blockGroup: {fileID: 2022943474}
   pigSpawnPoint: {fileID: 1331223360}
@@ -10457,6 +10458,16 @@ MonoBehaviour:
   darkGray: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 0}
   lightGray: {r: 0.7830189, g: 0.71284264, b: 0.71284264, a: 0}
   dimGray: {r: 0.4117647, g: 0.4117647, b: 0.4117647, a: 0}
+  color1: {r: 0.9607843, g: 0.6509804, b: 0.8627451, a: 1}
+  color2: {r: 0.54509807, g: 0.9254902, b: 0.9529412, a: 1}
+  color3: {r: 0.70980394, g: 0.5686275, b: 0.9843137, a: 1}
+  color4: {r: 1, g: 0.9137255, b: 0.48235294, a: 1}
+  color5: {r: 0.5529412, g: 0.8901961, b: 0.49411765, a: 1}
+  color6: {r: 1, g: 0.68235296, b: 0.43529412, a: 1}
+  color7: {r: 0.9764706, g: 0.9529412, b: 1, a: 1}
+  color8: {r: 0.33333334, g: 0.03137255, b: 0.38039216, a: 1}
+  color9: {r: 0.6313726, g: 0.8156863, b: 1, a: 1}
+  color10: {r: 0.38039216, g: 0.68235296, b: 0.03529412, a: 1}
 --- !u!4 &2141272767
 Transform:
   m_ObjectHideFlags: 0

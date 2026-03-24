@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class PlayerInput : MonoBehaviour
 {
@@ -49,7 +50,7 @@ public class PlayerInput : MonoBehaviour
         {
             PigComponent clickedPig = hit.collider.GetComponent<PigComponent>();
 
-            if (clickedPig != null)
+            if (clickedPig != null && !StaticUtils.IsClickOnUI(UIManager.Instance.eventSystem, Input.mousePosition,new List<string>() { "Top", "StraightSlot" }))
             {
                 EventManager.OnClickPig?.Invoke(clickedPig);
             }
