@@ -50,7 +50,6 @@ public class GameUtility : Singleton<GameUtility>
     {
         if (Instance == null)
         {
-            Debug.LogWarning("Chưa có GameUtility trong Scene! Trả về màu xám mặc định.");
             return Color.gray;
         }
 

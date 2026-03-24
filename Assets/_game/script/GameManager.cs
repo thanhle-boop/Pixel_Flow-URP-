@@ -29,7 +29,7 @@ public class GameManager : Singleton<GameManager>
 
     private void TryStartScene(Scene scene)
     {
-        if (!scene.isLoaded || scene.name != "6.playTest")
+        if (!scene.isLoaded)
         {
             return;
         }
