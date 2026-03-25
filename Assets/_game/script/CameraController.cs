@@ -1,46 +1,45 @@
 using UnityEngine;
-
 public class CameraController : MonoBehaviour
 {
     public bool isTranslated = false;
-    public bool pingpong = false;
     private Vector3 initialPosition;
+    private Vector3 targetPosition;
 
-    void Start()
+    private void Start() // Dùng Start thay vì Awake để các object khác ổn định vị trí đã
     {
         initialPosition = transform.position;
-        EventManager.OnHand += () =>
+
+        EventManager.OnUseHand += () =>
         {
+            if (isTranslated) return;
+
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
+            {
+                
+            }
+
+            targetPosition = initialPosition + new Vector3(0, 0, -0.82f);
+            isTranslated = true;
+        };
+
+        EventManager.OnEndHand += () =>
+        {
+            targetPosition = initialPosition;
             isTranslated = true;
         };
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (isTranslated)
         {
-            if (pingpong)
+            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 5f);
+
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                MoveToPosition(initialPosition + new Vector3(0, 0, -0.82f));
-            }
-            else
-            {
-                MoveToPosition(initialPosition);
+                transform.position = targetPosition;
+                isTranslated = false;
             }
         }
-    }
-
-    public void MoveToPosition(Vector3 targetPosition)
-    {
-        transform.transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 5f);
-
-        if(Vector3.Distance(transform.position, targetPosition) < 0.1f)
-        {
-            transform.position = targetPosition;
-            isTranslated = false;
-            pingpong = !pingpong;
-        }
-
     }
 }

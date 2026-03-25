@@ -11,613 +11,433 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f188c8f177552f4fb636f9ea3fd3991, type: 3}
   m_Name: Level 3
-  m_EditorClassIdentifier: 
-  sourceJson: {fileID: 4900000, guid: 67050f473e2a85a4d965310f94972933, type: 3}
+  m_EditorClassIdentifier: Assembly-CSharp::LevelDataSO
+  sourceJson: {fileID: 0}
   levelIndex: 2
-  width: 25
-  height: 22
+  width: 16
+  height: 20
   gridData:
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - dark blue
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - dark blue
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - dark blue
-  - black
-  - black
-  - black
-  - black
-  - black
-  - dark blue
-  - black
-  - black
-  - gray
-  - black
-  - black
-  - black
-  - gray
-  - black
-  - black
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - gray
-  - gray
-  - black
-  - black
-  - black
-  - black
-  - gray
-  - dark blue
-  - black
-  - gray
-  - gray
-  - gray
-  - black
-  - gray
-  - gray
-  - gray
-  - black
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - black
-  - gray
-  - black
-  - gray
-  - dark blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - light blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - black
-  - gray
-  - dark blue
-  - black
-  - gray
-  - gray
-  - gray
-  - light blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - gray
-  - dark blue
-  - gray
-  - dark blue
-  - dark blue
-  - light blue
-  - light blue
-  - light blue
-  - dark blue
-  - dark blue
-  - gray
-  - dark blue
-  - white
-  - white
-  - white
-  - white
-  - white
-  - dark blue
-  - gray
-  - dark blue
-  - gray
-  - gray
-  - gray
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - light blue
-  - dark blue
-  - white
-  - white
-  - white
-  - orange
-  - orange
-  - dark blue
-  - black
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - yellow
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - dark blue
-  - orange
-  - orange
-  - white
-  - orange
-  - cream
-  - cream
-  - dark blue
-  - gray
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - cream
-  - dark blue
-  - gray
-  - gray
-  - dark blue
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - yellow
-  - cream
-  - cream
-  - cream
-  - orange
-  - orange
-  - cream
-  - cream
-  - dark blue
-  - black
-  - dark blue
-  - light blue
-  - light blue
-  - dark blue
-  - cream
-  - dark blue
-  - light blue
-  - light blue
-  - dark blue
-  - cream
-  - cream
-  - cream
-  - cream
-  - yellow
-  - cream
-  - cream
-  - yellow
-  - cream
-  - cream
-  - orange
-  - orange
-  - cream
-  - yellow
-  - dark blue
-  - gray
-  - dark blue
-  - dark blue
-  - dark blue
-  - cream
-  - cream
-  - cream
-  - dark blue
-  - dark blue
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - yellow
-  - yellow
-  - cream
-  - orange
-  - orange
-  - cream
-  - yellow
-  - dark blue
-  - light blue
-  - dark blue
-  - cream
-  - yellow
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - orange
-  - white
-  - orange
-  - cream
-  - dark blue
-  - light blue
-  - dark blue
-  - yellow
-  - cream
-  - yellow
-  - yellow
-  - cream
-  - yellow
-  - cream
-  - cream
-  - yellow
-  - cream
-  - yellow
-  - cream
-  - orange
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - orange
-  - white
-  - white
-  - orange
-  - cream
-  - yellow
-  - dark blue
-  - yellow
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - yellow
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - orange
-  - yellow
-  - orange
-  - cream
-  - orange
-  - white
-  - white
-  - white
-  - orange
-  - cream
-  - orange
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - orange
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - yellow
-  - cream
-  - orange
-  - cream
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - orange
-  - cream
-  - cream
-  - orange
-  - yellow
-  - yellow
-  - orange
-  - yellow
-  - orange
-  - yellow
-  - cream
-  - yellow
-  - yellow
-  - yellow
-  - orange
-  - yellow
-  - orange
-  - orange
-  - cream
-  - cream
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - white
-  - orange
-  - cream
-  - cream
-  - yellow
-  - orange
-  - yellow
-  - orange
-  - orange
-  - yellow
-  - cream
-  - orange
-  - orange
-  - orange
-  - yellow
-  - yellow
-  - orange
-  - cream
-  - cream
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - orange
-  - orange
-  - cream
-  - cream
-  - orange
-  - orange
-  - orange
-  - orange
-  - cream
-  - orange
-  - yellow
-  - orange
-  - orange
-  - cream
-  - cream
-  - orange
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - orange
-  - orange
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - cream
-  - orange
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - orange
-  - orange
-  - orange
-  - orange
-  - orange
-  - orange
-  - orange
-  - orange
-  - orange
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
-  - white
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - c12
+  - c12
+  - c28
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c28
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c28
+  - c12
+  - c12
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - c02
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - c12
+  - c12
+  - c12
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c28
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - c12
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
+  - empty
   lanes:
   - pigs:
-    - colorName: cream
-      bullets: 28
-    - colorName: yellow
-      bullets: 24
-    - colorName: light blue
+    - colorName: c12
       bullets: 10
-    - colorName: orange
-      bullets: 20
-    - colorName: dark blue
-      bullets: 20
-    - colorName: orange
-      bullets: 20
-    - colorName: gray
-      bullets: 20
-    - colorName: yellow
-      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
+      bullets: 16
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
   - pigs:
-    - colorName: dark blue
-      bullets: 17
-    - colorName: light blue
+    - colorName: c12
       bullets: 10
-    - colorName: black
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 1
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
       bullets: 10
-    - colorName: gray
-      bullets: 19
-    - colorName: cream
-      bullets: 40
-    - colorName: cream
-      bullets: 20
-    - colorName: yellow
-      bullets: 20
-    - colorName: gray
-      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
   - pigs:
-    - colorName: white
-      bullets: 62
-    - colorName: orange
-      bullets: 25
-    - colorName: dark blue
-      bullets: 20
-    - colorName: white
-      bullets: 40
-    - colorName: black
+    - colorName: c28
+      bullets: 4
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
+      bullets: 15
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c12
       bullets: 10
-    - colorName: gray
-      bullets: 20
-    - colorName: white
-      bullets: 40
-    - colorName: black
-      bullets: 5
-    - colorName: dark blue
-      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1

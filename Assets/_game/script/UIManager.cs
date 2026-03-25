@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -7,6 +9,7 @@ public class UIManager : Singleton<UIManager>
 {
     protected override bool PersistAcrossScenes => false;
 
+    public List<string> tagValueTypes;
     public TextMeshProUGUI straightSlotText;
     public VideoPlayer loseGameVideo;
 
@@ -29,13 +32,21 @@ public class UIManager : Singleton<UIManager>
     public GameObject straightSlot;
     public GameObject BottomUI;
     public UnityEngine.EventSystems.EventSystem eventSystem;
+    public bool isBottomUiTranslate = false;
 
+    // public Vector3 targetPosition = Vector3.zero;
     private void OnEnable()
     {
         EventManager.OnLoseGame += GameOver;
         EventManager.OnStartGame += StartGame;
         EventManager.OnFullConveyorSlot += OnInvalidExecution;
         EventManager.OnWinGame += WinGame;
+        EventManager.OnEndHand += () =>
+        {
+            isBottomUiTranslate = true;
+            RectTransform rect = BottomUI.GetComponent<RectTransform>();
+            StartCoroutine(MoveUISmoothly(rect, new Vector2(0, 0f)));
+        };
     }
 
     private void WinGame()
@@ -193,7 +204,7 @@ public class UIManager : Singleton<UIManager>
         if (DataManager.Instance.GetItem1())
         {
             straightSlot.SetActive(true);
-            EventManager.OnAddTray?.Invoke();
+            EventManager.OnUseAddTray?.Invoke();
         }
         else
         {
@@ -203,13 +214,49 @@ public class UIManager : Singleton<UIManager>
 
     public void OnHandButtonClicked()
     {
+        if (isBottomUiTranslate)
+        {
+            return;
+        }
         if (DataManager.Instance.GetItem2())
         {
-            EventManager.OnHand?.Invoke();
+            EventManager.OnUseHand?.Invoke();
+            RectTransform rect = BottomUI.GetComponent<RectTransform>();
+            Vector2 targetPos = rect.anchoredPosition + new Vector2(0, -230f);
+            isBottomUiTranslate = true;
+            StartCoroutine(MoveUISmoothly(rect, targetPos));
         }
-        else
-        {
+    }
 
+    IEnumerator MoveUISmoothly(RectTransform uiRect, Vector2 target)
+    {
+        float speed = 10f;
+
+        while (Vector2.Distance(uiRect.anchoredPosition, target) > 0.1f)
+        {
+            uiRect.anchoredPosition = Vector2.Lerp(uiRect.anchoredPosition, target, Time.deltaTime * speed);
+
+            yield return null;
+        }
+
+        uiRect.anchoredPosition = target;
+        isBottomUiTranslate = false;
+
+    }
+
+    public void OnUseShuffleButtonClicked()
+    {
+        if (DataManager.Instance.GetItem3())
+        {
+            EventManager.OnUseShuffle?.Invoke();
+        }
+    }
+
+    public void OnUseSuperCatClicked()
+    {
+        if (DataManager.Instance.GetItem4())
+        {
+            EventManager.OnUseSuperCat?.Invoke();
         }
     }
 

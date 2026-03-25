@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 940883844968107865}
   - component: {fileID: 5204232414624736065}
   - component: {fileID: 2564608515963293948}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Canvas
-  m_TagString: Untagged
+  m_TagString: Pig
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -124,7 +124,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7342929883817876045}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Raycast Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -160,7 +160,7 @@ GameObject:
   - component: {fileID: 9023464987300224240}
   - component: {fileID: 1849966781869042274}
   - component: {fileID: -4236024807362940736}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Cat Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -403,9 +403,9 @@ GameObject:
   - component: {fileID: 4830569984398270213}
   - component: {fileID: 4454403650339189746}
   - component: {fileID: 1054517380337963550}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Text (TMP)
-  m_TagString: Untagged
+  m_TagString: Pig
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -540,7 +540,7 @@ GameObject:
   - component: {fileID: 7755848903939585444}
   - component: {fileID: 6633121555253885441}
   - component: {fileID: 8928777278556737227}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Standing_Cat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -630,7 +630,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3748537107543299844}
   - component: {fileID: 3704807220309611431}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LittleSquirrel_Angry (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -750,6 +750,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0c895143c91276c4aa1a6ed9fa08035a, type: 3}
       propertyPath: m_Name
       value: Lucky_Cat
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0c895143c91276c4aa1a6ed9fa08035a, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

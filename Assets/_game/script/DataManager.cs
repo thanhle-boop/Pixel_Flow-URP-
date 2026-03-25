@@ -48,6 +48,27 @@ public class DataManager : Singleton<DataManager>
         }
         return false;
     }
+
+    public bool GetItem3()
+    {
+        if (_playerData.item3 > 0)
+        {
+            _playerData.item3--;
+            return true;
+        }
+        return false;
+    }
+
+    public bool GetItem4()
+    {
+        if (_playerData.item4 > 0)
+        {
+            _playerData.item4--;
+            return true;
+        }
+        return false;
+    }
+
     public void IncreaseLevel()
     {
         _playerData.CurrentLevel++;

@@ -194,7 +194,7 @@ public class PigComponent : MonoBehaviour
 
     public void ExecuteDestroy()
     {
-        if (!isOnBelt) return;
+        // if (!isOnBelt) return;
 
         isOnBelt = false;
         if (_wavyLine != null)

@@ -889,6 +889,7 @@ public class LevelEditor : MonoBehaviour
                 best.bullets = b1;
                 _multiColumnPigs[bestCol].Insert(bestRow + 1,
                     new PigLayoutData { colorName = best.colorName, bullets = b2, linkId = -1 });
+                ShiftMarkersAfterInsert(bestCol, bestRow + 1);
             }
             else
             {
@@ -906,6 +907,7 @@ public class LevelEditor : MonoBehaviour
                                 var p2 = _multiColumnPigs[c2][r2];
                                 if (p2.linkId >= 0 || p2.colorName != p.colorName) continue;
                                 p.bullets += p2.bullets;
+                                ShiftMarkersAfterRemove(c2, r2);
                                 _multiColumnPigs[c2].RemoveAt(r2);
                                 merged = true;
                             }
@@ -1550,6 +1552,36 @@ public class LevelEditor : MonoBehaviour
         if (p.pigLeft != null) n++;
         if (p.pigRight != null) n++;
         return n;
+    }
+
+    private void ShiftMarkersAfterInsert(int col, int insertedRow)
+    {
+        foreach (var lane in _multiColumnPigs)
+            foreach (var pig in lane)
+            {
+                if (pig.pigLeft != null && pig.pigLeft.LaneIndex == col && pig.pigLeft.index >= insertedRow)
+                    pig.pigLeft.index++;
+                if (pig.pigRight != null && pig.pigRight.LaneIndex == col && pig.pigRight.index >= insertedRow)
+                    pig.pigRight.index++;
+            }
+    }
+
+    private void ShiftMarkersAfterRemove(int col, int removedRow)
+    {
+        foreach (var lane in _multiColumnPigs)
+            foreach (var pig in lane)
+            {
+                if (pig.pigLeft != null && pig.pigLeft.LaneIndex == col)
+                {
+                    if (pig.pigLeft.index == removedRow) pig.pigLeft = null;
+                    else if (pig.pigLeft.index > removedRow) pig.pigLeft.index--;
+                }
+                if (pig.pigRight != null && pig.pigRight.LaneIndex == col)
+                {
+                    if (pig.pigRight.index == removedRow) pig.pigRight = null;
+                    else if (pig.pigRight.index > removedRow) pig.pigRight.index--;
+                }
+            }
     }
 
     private void RemoveLinkBetween(PigLayoutData p, int otherCol, int otherRow)

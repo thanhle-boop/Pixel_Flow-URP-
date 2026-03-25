@@ -20,7 +20,13 @@ public class EventManager
     public static Action<PigComponent> OnPigIsOnTopNoMoreHidden;
     public static Action<PigComponent> OnClearLinked;
 
-    public static Action OnAddTray;
-    public static Action OnHand;
+    public static Action OnUseAddTray;
+    public static Action OnUseHand;
+    public static Action OnEndHand;
+
+    public static Action OnUseShuffle;
+
+    public static Action OnUseSuperCat;
+    public static Action<string> OnClickBlock;
 
 }

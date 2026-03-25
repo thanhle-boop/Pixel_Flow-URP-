@@ -4,16 +4,21 @@ using System.Collections.Generic;
 public class PlayerInput : MonoBehaviour
 {
     public LayerMask pigLayerMask;
-    public Transform target;
+    public LayerMask blockLayerMask;
 
     private bool canClick = false;
+    private bool isUseSuperCat = false;
 
     void OnEnable()
     {
         EventManager.OnStartGame += EnableInput;
         EventManager.OnContinueGame += EnableInput;
-
         EventManager.OnLoseGame += DisableInput;
+
+        EventManager.OnUseSuperCat += () =>
+        {
+            isUseSuperCat = true;
+        };
     }
     private void OnDisable()
     {
@@ -34,25 +39,45 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        if (canClick && Input.GetMouseButtonDown(0))
-        {
-            HandleInput(Input.mousePosition);
-        }
+        HandleInput();
     }
-    
-    void HandleInput(Vector2 screenPos)
+
+    void HandleInput()
     {
-        Ray ray = Camera.main.ScreenPointToRay(screenPos);
-        RaycastHit hit;
-        
 
-        if (Physics.Raycast(ray, out hit, 100f, pigLayerMask))
+        if (Input.GetMouseButtonDown(0))
         {
-            PigComponent clickedPig = hit.collider.GetComponent<PigComponent>();
 
-            if (clickedPig != null && !StaticUtils.IsClickOnUI(UIManager.Instance.eventSystem, Input.mousePosition,new List<string>() { "Top", "StraightSlot" }))
+            if (StaticUtils.IsClickOnUI(UIManager.Instance.eventSystem, Input.mousePosition, UIManager.Instance.tagValueTypes))
             {
-                EventManager.OnClickPig?.Invoke(clickedPig);
+                Debug.Log("Clicked on UI, ignoring pig click.");
+                return;
+            }
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, 100f, pigLayerMask))
+            {
+                PigComponent clickedPig = hit.collider.GetComponent<PigComponent>();
+                if (clickedPig != null)
+                {
+                    EventManager.OnClickPig?.Invoke(clickedPig);
+                    Debug.Log("Clicked on pig: ");
+
+                }
+            }
+            if (Physics.Raycast(ray, out hit, 100f, blockLayerMask) && isUseSuperCat)
+            {
+
+                Block clickedBlock = hit.collider.GetComponent<Block>();
+                if (clickedBlock != null)
+                {
+                    EventManager.OnClickBlock?.Invoke(clickedBlock.color);
+                    Debug.Log("Clicked on block with color: " + clickedBlock.color);
+                    isUseSuperCat = false;
+                }
+
             }
         }
     }

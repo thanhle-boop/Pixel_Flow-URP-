@@ -11,7 +11,7 @@ public class SpawnerManager : MonoBehaviour
         public PigComponent sourcePig;
         public PigComponent targetPig;
     }
-
+    public GameObject supertCatPrefab;
     public GameObject blockPrefab;
     public Transform blockSpawnPoint;
     public Transform blockGroup;
@@ -55,6 +55,8 @@ public class SpawnerManager : MonoBehaviour
 
     public Link linkPrefabs;
 
+    public List<GameObject> blockPrefabsByColor;
+
     void OnEnable()
     {
         EventManager.OnStartGame += SpawnMap;
@@ -68,15 +70,42 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnContinueGame += ContinueGame;
         EventManager.OnPigOutOfAmmo += HandlePigOutOfAmmo;
 
-        EventManager.OnAddTray += () =>
+        EventManager.OnUseAddTray += () =>
         {
             _maxstraightSlot++;
             UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
         };
 
-        EventManager.OnHand += () =>
+        EventManager.OnUseHand += () =>
         {
             onHandItemUsed = true;
+        };
+
+        EventManager.OnUseShuffle += ProcessShufflePig;
+
+        EventManager.OnUseSuperCat += () =>
+        {
+            // supertCatPrefab.SetActive(true);
+        };
+
+        EventManager.OnClickBlock += (color) =>
+        {
+            Debug.Log("color" + color);
+            foreach (Transform block in blockGroup)
+            {
+                Block blockComp = block.GetComponent<Block>();
+                if (blockComp != null && blockComp.color == color)
+                {
+                    blockPrefabsByColor.Add(block.gameObject);
+                }
+            }
+            Debug.Log("congthanh" + blockPrefabsByColor.Count);
+            supertCatPrefab.SetActive(true);
+            var cat = supertCatPrefab.GetComponent<SuperCat>();
+            cat.AddAllTarget(blockPrefabsByColor);
+            cat.color = GameUtility.GetColorByName(color);
+
+            blockPrefabsByColor.Clear();
         };
     }
 
@@ -93,6 +122,8 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnLoseGame -= LoseGame;
         EventManager.OnContinueGame -= ContinueGame;
         EventManager.OnPigOutOfAmmo -= HandlePigOutOfAmmo;
+
+
     }
 
     private void HandlePigOutOfAmmo(PigComponent pig)
@@ -117,6 +148,8 @@ public class SpawnerManager : MonoBehaviour
                 foreach (PigComponent p in linkedGroup)
                 {
                     p.ExecuteDestroy();
+                    pigsInQueue.Remove(p);
+                    pigsInTempQueue.Remove(p);
                     EventManager.OnClearLinked?.Invoke(p);
                 }
             }
@@ -223,7 +256,11 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
 
-        onHandItemUsed = false;
+        if (onHandItemUsed)
+        {
+            onHandItemUsed = false;
+            EventManager.OnEndHand?.Invoke();
+        }
 
         if (pig.IsLinkedPig())
         {
@@ -740,7 +777,7 @@ public class SpawnerManager : MonoBehaviour
     private void ApplyMaterial(GameObject obj, string colorName)
     {
         var renderer = obj.GetComponent<Renderer>();
-        if(renderer == null)
+        if (renderer == null)
         {
             renderer = obj.GetComponentInChildren<MeshRenderer>();
         }
@@ -914,6 +951,34 @@ public class SpawnerManager : MonoBehaviour
             if (pigComp != null)
             {
                 pigComp.StopAllCoroutines();
+            }
+        }
+    }
+
+    public void ProcessShufflePig()
+    {
+        pigsByLane = Helper.ShuffleHeoDictionary(pigsByLane);
+
+        int laneCount = pigsByLane.Count;
+        float laneOffsetX = (laneCount - 1) * 0.85f / 2f;
+
+        foreach (var laneEntry in pigsByLane)
+        {
+            int laneIndex = laneEntry.Key;
+
+            for (int pigIndex = 0; pigIndex < laneEntry.Value.Count; pigIndex++)
+            {
+                PigComponent pig = laneEntry.Value[pigIndex];
+                pig.laneIndex = laneIndex;
+
+                Vector3 newLocalPos = new Vector3(
+                    (laneIndex * 0.95f) - laneOffsetX,
+                    0,
+                    -(pigIndex * 0.85f)
+                );
+
+                pig.MoveTo(newLocalPos);
+                pig.SetIsOnTop(pigIndex == 0);
             }
         }
     }

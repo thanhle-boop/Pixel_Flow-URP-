@@ -8,6 +8,8 @@ TagManager:
   - ControlPos
   - Block
   - Top
+  - Pig
+  - BottomUI
   layers:
   - Default
   - TransparentFX
@@ -16,7 +18,7 @@ TagManager:
   - Water
   - UI
   - Block
-  - 
+  - Pig
   - 
   - 
   - 

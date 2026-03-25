@@ -80,9 +80,9 @@ GameObject:
   - component: {fileID: 5617373517262965578}
   - component: {fileID: 9013895286102953859}
   - component: {fileID: 2376170883036719770}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Vwool
-  m_TagString: Untagged
+  m_TagString: Block
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
