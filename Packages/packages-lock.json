@@ -34,11 +34,11 @@
       "hash": "c2af83c9d4f8cdaada9d4a0e94de2f195d8e1d01"
     },
     "com.hoainam.gameframework": {
-      "version": "https://congthanh1enguyen@bitbucket.org/hopperstudiogames/gameframework.git?path=Assets/Framework",
+      "version": "https://hoainam151293:ATATT3xFfGF0lV9WfOKI50oFEtFPhYaZVoj8SpbB9F-V-Da8lO4-HtxYMKmaQuC1EKfSvJDkPcnDuR8tf9zW-TZbet26ScYoBCPl2Lp_mlDpIrZvENcI3KsE2fqwX893T9mysQwS8guqiRXInF2ASY2ZMLYM_7baHlYsNy9yccQDKvB_I_x2wAQ=ED46EFC4@bitbucket.org/hopperstudiogames/gameframework.git?path=Assets/Framework",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "8b6cb594b682a85dbf1d012c1b726ae21b42042e"
+      "hash": "56cd9fad281fb13d9d6444692299043758c60f79"
     },
     "com.pixeption.mck": {
       "version": "https://github.com/pixeption/MobileConsoleKit.git",
