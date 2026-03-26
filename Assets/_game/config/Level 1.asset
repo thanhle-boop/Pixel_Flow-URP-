@@ -727,8 +727,8 @@ MonoBehaviour:
         LaneIndex: -1
         index: -1
       pigRight:
-        LaneIndex: -1
-        index: -1
+        LaneIndex: 1
+        index: 0
     - colorName: c23
       bullets: 40
       isHidden: 0
@@ -795,11 +795,11 @@ MonoBehaviour:
       isHidden: 0
       linkId: -1
       pigLeft:
-        LaneIndex: -1
-        index: -1
+        LaneIndex: 0
+        index: 0
       pigRight:
-        LaneIndex: -1
-        index: -1
+        LaneIndex: 2
+        index: 0
     - colorName: c07
       bullets: 40
       isHidden: 0
@@ -866,8 +866,8 @@ MonoBehaviour:
       isHidden: 0
       linkId: -1
       pigLeft:
-        LaneIndex: -1
-        index: -1
+        LaneIndex: 1
+        index: 0
       pigRight:
         LaneIndex: -1
         index: -1

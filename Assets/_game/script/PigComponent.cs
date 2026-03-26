@@ -27,7 +27,7 @@ public class PigComponent : MonoBehaviour
     public LayerMask blockLayer;
 
     private WavyLineRenderer _wavyLine;
-    private GameObject _lastCheckedBlock;
+    // private GameObject _lastCheckedBlock;
 
     public GameObject bulletText;
     public GameObject pigModel;
@@ -358,7 +358,7 @@ private IEnumerator ConveyorJourney()
 
             if (hit.collider.CompareTag("Block") && blockComp != null && blockComp.color == color && !blockComp.isAlreadyDestroyed)
             {
-                _lastCheckedBlock = hitObject;
+                // _lastCheckedBlock = hitObject;
                 _wavyLine.AddTarget(hitObject);
                 blockComp.isAlreadyDestroyed = true;
 
@@ -369,13 +369,13 @@ private IEnumerator ConveyorJourney()
             {
                 Debug.DrawRay(currentPos, _rayCastDirection * checkDistance, Color.blue);
 
-                _lastCheckedBlock = null;
+                // _lastCheckedBlock = null;
             }
 
         }
         else
         {
-            _lastCheckedBlock = null;
+            // _lastCheckedBlock = null;
         }
     }
 
@@ -483,7 +483,7 @@ private IEnumerator ConveyorJourney()
             _wavyLine.HideLineImmediately();
         }
 
-        _lastCheckedBlock = null;
+        // _lastCheckedBlock = null;
         isOnBelt = false;
         StartCoroutine(JumpToQueueCoroutine(targetPosition, targetRotation));
     }

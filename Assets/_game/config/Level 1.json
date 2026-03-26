@@ -720,8 +720,8 @@
                         "index": -1
                     },
                     "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
+                        "LaneIndex": 1,
+                        "index": 0
                     }
                 },
                 {
@@ -730,12 +730,12 @@
                     "isHidden": false,
                     "linkId": -1,
                     "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
+                        "LaneIndex": 0,
+                        "index": 0
                     },
                     "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
+                        "LaneIndex": 2,
+                        "index": 0
                     }
                 },
                 {

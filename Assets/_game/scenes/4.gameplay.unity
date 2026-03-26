@@ -1469,7 +1469,7 @@ GameObject:
   - component: {fileID: 436873448}
   m_Layer: 5
   m_Name: DecreaseLive
-  m_TagString: Top
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3243,7 +3243,7 @@ GameObject:
   - component: {fileID: 709142896}
   m_Layer: 5
   m_Name: WinUI
-  m_TagString: Top
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3982,7 +3982,7 @@ GameObject:
   - component: {fileID: 920537590}
   m_Layer: 5
   m_Name: OutOfSpaceUI
-  m_TagString: Top
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10283,6 +10283,28 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3396636636316712417, guid: 99b73e7a3d0ac024697c59d36828dddb, type: 3}
   m_PrefabInstance: {fileID: 2985476549524113246}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &2826824883381486996
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2826824883381486989}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 8b15252657bc2484f86a020a8c7d4d74, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &2985476549524113246
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10335,10 +10357,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Super Cat
       objectReference: {fileID: 0}
+    - target: {fileID: 3396636636316712417, guid: 99b73e7a3d0ac024697c59d36828dddb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3396636636316712417, guid: 99b73e7a3d0ac024697c59d36828dddb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2826824883381486996}
   m_SourcePrefab: {fileID: 100100000, guid: 99b73e7a3d0ac024697c59d36828dddb, type: 3}
 --- !u!23 &3942212660538371486
 MeshRenderer:

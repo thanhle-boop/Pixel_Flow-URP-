@@ -49,7 +49,7 @@ public class WavyLineRenderer : MonoBehaviour
         _onBulletChanged = callback;
     }
     
-    public void InitializeLineRenderer(float startWidth = 0.08f, float endWidth = 0.08f)
+    public void InitializeLineRenderer(float startWidth = 0.08f, float endWidth = 0.08f, float amplitude = 0.03f)
     {
         _lineRenderer = GetComponent<LineRenderer>();
         if (_lineRenderer == null)
@@ -60,6 +60,7 @@ public class WavyLineRenderer : MonoBehaviour
         _lineRenderer.startWidth = startWidth;
         _lineRenderer.endWidth = endWidth;
         _lineRenderer.positionCount = waveSegments;
+        _currentAmplitude = amplitude;
         
         _lineRenderer.material = lineMaterial;
         
@@ -75,8 +76,9 @@ public class WavyLineRenderer : MonoBehaviour
         _baseColor = color;
         if (_lineRenderer != null)
         {
-            _lineRenderer.startColor = _baseColor;
-            _lineRenderer.endColor = _baseColor;
+            _lineRenderer.material = lineMaterial;
+            _lineRenderer.material.color = _baseColor;
+            // _lineRenderer.endColor = _baseColor;
         }
     }
     

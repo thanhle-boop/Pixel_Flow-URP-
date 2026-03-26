@@ -11,21 +11,25 @@ public class SuperCat : MonoBehaviour
     private WavyLineRenderer wavyLineRenderer;
 
     public List<GameObject> targetBlocks = new List<GameObject>();
-    public Color color;
+    private Animator animator;
 
     private void OnEnable()
     {
         wavyLineRenderer = GetComponentInChildren<WavyLineRenderer>();
         initPosition = transform.position;
+        animator = GetComponent<Animator>();
+        animator.SetInteger("Status",0);
     }
 
-    public void AddAllTarget(List<GameObject> blocks)
+    public void AddAllTarget(List<GameObject> blocks, Color color)
     {
         targetBlocks = new List<GameObject>(blocks);
-        currentState = SuperCatState.Shoot;
+        wavyLineRenderer.InitializeLineRenderer(0.15f, 0.15f,0.015f);
         wavyLineRenderer.SetColor(color);
-        wavyLineRenderer.InitializeLineRenderer(0.15f, 0.15f);
+        animator.SetInteger("Status", 1);
         StartCoroutine(ShootingRoutine());
+        currentState = SuperCatState.Shoot;
+        animator.enabled = true;
     }
 
     private IEnumerator ShootingRoutine()
@@ -43,17 +47,19 @@ public class SuperCat : MonoBehaviour
         }
 
         targetBlocks.Clear();
+        animator.SetInteger("Status", 0);
         currentState = SuperCatState.Rotate;
+        animator.enabled = false;
     }
 
     void Update()
     {
+        Debug.Log("currentState: " + currentState);
         if (currentState == SuperCatState.Rotate)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(90f, 0, 0), Time.deltaTime * 10f);
             if (Quaternion.Angle(transform.rotation, Quaternion.Euler(90f, 0, 0)) < 0.1f)
             {
-                // transform.rotation = Quaternion.Euler(90f, 0, 0);
                 currentState = SuperCatState.Move;
             }
         }
@@ -65,6 +71,7 @@ public class SuperCat : MonoBehaviour
             {
                 currentState = SuperCatState.Idel;
                 transform.position = initPosition;
+                transform.rotation = Quaternion.identity;
                 gameObject.SetActive(false);
             }
         }

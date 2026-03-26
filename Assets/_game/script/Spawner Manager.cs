@@ -90,7 +90,6 @@ public class SpawnerManager : MonoBehaviour
 
         EventManager.OnClickBlock += (color) =>
         {
-            Debug.Log("color" + color);
             foreach (Transform block in blockGroup)
             {
                 Block blockComp = block.GetComponent<Block>();
@@ -99,11 +98,20 @@ public class SpawnerManager : MonoBehaviour
                     blockPrefabsByColor.Add(block.gameObject);
                 }
             }
-            Debug.Log("congthanh" + blockPrefabsByColor.Count);
+
+            foreach (PigComponent pig in pigSpawnPos.GetComponentsInChildren<PigComponent>())
+            {
+                if(pig.color == color)
+                {
+                    pig.ExecuteDestroy();
+                    RemovePigFromLane(pig);
+                    HandlePigClickedFromQueue(pig, pigsInTempQueue.Contains(pig));
+                }
+            }
+
             supertCatPrefab.SetActive(true);
             var cat = supertCatPrefab.GetComponent<SuperCat>();
-            cat.AddAllTarget(blockPrefabsByColor);
-            cat.color = GameUtility.GetColorByName(color);
+            cat.AddAllTarget(blockPrefabsByColor, GameUtility.GetColorByName(color));
 
             blockPrefabsByColor.Clear();
         };
