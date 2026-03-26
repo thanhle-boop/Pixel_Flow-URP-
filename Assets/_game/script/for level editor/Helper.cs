@@ -114,7 +114,7 @@ public static class Helper
             { "c05",            new Color(141f/255f, 227f/255f, 126f/255f) },      // Cream
             { "c06",            new Color(1f, 174f/255f, 111f/255f) },      // Cream
             { "c07",            new Color(249f/255f, 243f/255f, 1f) },      // Cream
-            { "c08",            new Color(85f/255f, 8f/255f, 97f/255f) },      // Cream
+            { "c08",            new Color(85f/255f, 85f/255f, 97f/255f) },      // Cream
             { "c09",            new Color(161f/255f, 208f/255f, 1f) },      // Cream
             { "c10",           new Color(97f/255f, 174f/255f, 9f/255f) },      // Cream
             { "c11",           new Color(1f, 138f/255f, 145f/255f) },

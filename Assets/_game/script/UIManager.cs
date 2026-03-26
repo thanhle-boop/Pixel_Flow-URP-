@@ -34,19 +34,44 @@ public class UIManager : Singleton<UIManager>
     public UnityEngine.EventSystems.EventSystem eventSystem;
     public bool isBottomUiTranslate = false;
 
-    // public Vector3 targetPosition = Vector3.zero;
+
+    public GameplayButton item1Button;
+    public GameplayButton item2Button;
+    public GameplayButton item3Button;
+    public GameplayButton item4Button;
     private void OnEnable()
     {
         EventManager.OnLoseGame += GameOver;
         EventManager.OnStartGame += StartGame;
         EventManager.OnFullConveyorSlot += OnInvalidExecution;
         EventManager.OnWinGame += WinGame;
-        EventManager.OnEndHand += () =>
-        {
-            isBottomUiTranslate = true;
-            RectTransform rect = BottomUI.GetComponent<RectTransform>();
-            StartCoroutine(MoveUISmoothly(rect, new Vector2(0, 0f)));
-        };
+        EventManager.OnEndHand += OnEndHand;
+
+        item1Button.AddListener(OnAddTrayButtonClicked);
+        item2Button.AddListener(OnHandButtonClicked);
+        item3Button.AddListener(OnUseShuffleButtonClicked);
+        item4Button.AddListener(OnUseSuperCatClicked);
+    }
+
+    private void OnDisable()
+    {
+        EventManager.OnLoseGame -= GameOver;
+        EventManager.OnStartGame -= StartGame;
+        EventManager.OnFullConveyorSlot -= OnInvalidExecution;
+        EventManager.OnWinGame -= WinGame;
+        EventManager.OnEndHand -= OnEndHand;
+
+        item1Button.RemoveListener(OnAddTrayButtonClicked);
+        item2Button.RemoveListener(OnHandButtonClicked);
+        item3Button.RemoveListener(OnUseShuffleButtonClicked);
+        item4Button.RemoveListener(OnUseSuperCatClicked);
+    }
+
+    private void OnEndHand()
+    {
+        isBottomUiTranslate = true;
+        RectTransform rect = BottomUI.GetComponent<RectTransform>();
+        StartCoroutine(MoveUISmoothly(rect, new Vector2(0, 0f)));
     }
 
     private void WinGame()
@@ -65,17 +90,10 @@ public class UIManager : Singleton<UIManager>
         {
             return;
         }
+        levelText.text = "Level " + DataManager.Instance.CurrentLevel;
         gameOverUI.SetActive(false);
         reTryUI.SetActive(false);
         gameplayUI.SetActive(true);
-    }
-
-    private void OnDisable()
-    {
-        EventManager.OnLoseGame -= GameOver;
-        EventManager.OnStartGame -= StartGame;
-        EventManager.OnFullConveyorSlot -= OnInvalidExecution;
-        EventManager.OnWinGame -= WinGame;
     }
 
     private void GameOver()
@@ -201,15 +219,14 @@ public class UIManager : Singleton<UIManager>
 
     public void OnAddTrayButtonClicked()
     {
-        if (DataManager.Instance.GetItem1())
+        if (DataManager.Instance.GetItemCount(1) <= 0)
         {
-            straightSlot.SetActive(true);
-            EventManager.OnUseAddTray?.Invoke();
+            return;
         }
-        else
-        {
+        straightSlot.SetActive(true);
+        EventManager.OnUseAddTray?.Invoke();    
+        DataManager.Instance.ConsumeItem(1);
 
-        }
     }
 
     public void OnHandButtonClicked()
@@ -218,14 +235,18 @@ public class UIManager : Singleton<UIManager>
         {
             return;
         }
-        if (DataManager.Instance.GetItem2())
+
+        if (DataManager.Instance.GetItemCount(2) <= 0)
         {
-            EventManager.OnUseHand?.Invoke();
-            RectTransform rect = BottomUI.GetComponent<RectTransform>();
-            Vector2 targetPos = rect.anchoredPosition + new Vector2(0, -230f);
-            isBottomUiTranslate = true;
-            StartCoroutine(MoveUISmoothly(rect, targetPos));
+            return;
         }
+        EventManager.OnUseHand?.Invoke();
+        RectTransform rect = BottomUI.GetComponent<RectTransform>();
+        Vector2 targetPos = rect.anchoredPosition + new Vector2(0, -230f);
+        isBottomUiTranslate = true;
+        StartCoroutine(MoveUISmoothly(rect, targetPos));
+        DataManager.Instance.ConsumeItem(2);
+
     }
 
     IEnumerator MoveUISmoothly(RectTransform uiRect, Vector2 target)
@@ -246,18 +267,22 @@ public class UIManager : Singleton<UIManager>
 
     public void OnUseShuffleButtonClicked()
     {
-        if (DataManager.Instance.GetItem3())
+        if (DataManager.Instance.GetItemCount(3) <= 0)
         {
-            EventManager.OnUseShuffle?.Invoke();
+            return;
         }
+        EventManager.OnUseShuffle?.Invoke();
+        DataManager.Instance.ConsumeItem(3);
     }
 
     public void OnUseSuperCatClicked()
     {
-        if (DataManager.Instance.GetItem4())
+        if (DataManager.Instance.GetItemCount(4) <= 0)
         {
-            EventManager.OnUseSuperCat?.Invoke();
+            return;
         }
+        EventManager.OnUseSuperCat?.Invoke();
+        DataManager.Instance.ConsumeItem(4);
     }
 
 }

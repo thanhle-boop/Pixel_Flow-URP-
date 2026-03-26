@@ -29,4 +29,6 @@ public class EventManager
     public static Action OnUseSuperCat;
     public static Action<string> OnClickBlock;
 
+    public static Action<int, int> OnItemCountChanged;
+
 }

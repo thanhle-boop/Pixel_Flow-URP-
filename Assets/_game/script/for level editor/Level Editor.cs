@@ -17,11 +17,11 @@ public class LevelEditor : MonoBehaviour
         "Re-Color"
     };
 
-    public string[] PigFeature = {
+    public string[] PigFeatures = {
         "Swap",
         "Hidden",
         "Linked",
-        "EndLink",
+        // "EndLink",
     };
 
     [Header("UI References")]
@@ -915,7 +915,7 @@ public class LevelEditor : MonoBehaviour
                     }
                 if (!merged) break;
             }
-            currentSteps = RunSimulationWithLinks(_multiColumnPigs, (string[,])_finalGridMap.Clone());
+            // currentSteps = RunSimulationWithLinks(_multiColumnPigs, (string[,])_finalGridMap.Clone());
         }
 
         var flatColors = new List<string>();
@@ -943,8 +943,16 @@ public class LevelEditor : MonoBehaviour
         var pigTarget = pool.Where(p => p.bullets > 1).OrderByDescending(p => p.bullets).FirstOrDefault();
         if (pigTarget != null)
         {
-            int b1 = pigTarget.bullets / 2;
-            int b2 = pigTarget.bullets - b1;
+            int total = pigTarget.bullets;
+
+            int b1 = (total + 10) / 20 * 10;
+            if (b1 <= 0 || b1 >= total)
+            {
+                b1 = total / 2;
+            }
+
+            int b2 = total - b1;
+
             pigTarget.bullets = b1;
             pool.Add(new PigDataPool { color = pigTarget.color, bullets = b2 });
         }
@@ -1080,7 +1088,9 @@ public class LevelEditor : MonoBehaviour
                 foreach (var p in _multiColumnPigs[i])
                     pigCopy[i].Add(new PigLayoutData
                     {
-                        colorName = p.colorName, bullets = p.bullets, isHidden = p.isHidden,
+                        colorName = p.colorName,
+                        bullets = p.bullets,
+                        isHidden = p.isHidden,
                         linkId = p.linkId,
                         pigLeft = p.pigLeft != null ? new PigMarker { LaneIndex = p.pigLeft.LaneIndex, index = p.pigLeft.index } : null,
                         pigRight = p.pigRight != null ? new PigMarker { LaneIndex = p.pigRight.LaneIndex, index = p.pigRight.index } : null
@@ -1138,7 +1148,7 @@ public class LevelEditor : MonoBehaviour
         if (containerRect == null) return;
 
         const float spacing = 2f;
-        int count = PigFeature.Length;
+        int count = PigFeatures.Length;
         float containerW = containerRect.rect.width;
         float containerH = containerRect.rect.height;
 
@@ -1165,7 +1175,7 @@ public class LevelEditor : MonoBehaviour
         {
             GameObject go = Instantiate(pigFeature, pigFeatureContainer);
             FeaturePig featurePig = go.GetComponent<FeaturePig>();
-            featurePig.SetFeatureName(PigFeature[i], this);
+            featurePig.SetFeatureName(PigFeatures[i], this);
             _pigFeatureBtns.Add(featurePig);
         }
         NotifyPigFeatureSelected(0);
@@ -1310,9 +1320,9 @@ public class LevelEditor : MonoBehaviour
 
     public void OnClickFeaturePigButton(int index)
     {
-        if (index < 0 || index >= PigFeature.Length) return;
+        if (index < 0 || index >= PigFeatures.Length) return;
 
-        string feature = PigFeature[index];
+        string feature = PigFeatures[index];
 
         if (feature == "EndLink")
         {
@@ -1322,11 +1332,11 @@ public class LevelEditor : MonoBehaviour
             }
             _linkingPigs.Clear();
             _activePigFeature = "Linked";
-            int linkedIndex = System.Array.IndexOf(PigFeature, "Linked");
+            int linkedIndex = System.Array.IndexOf(PigFeatures, "Linked");
             NotifyPigFeatureSelected(linkedIndex);
             _selectedPigCol = -1;
             _selectedPigRow = -1;
-            TryAutoFitLinkedPigs();
+            // TryAutoFitLinkedPigs();
             return;
         }
 

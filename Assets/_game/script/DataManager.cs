@@ -25,49 +25,61 @@ public class DataManager : Singleton<DataManager>
     public int Lives        => _playerData.CurrentLives;
     public int Coins        => _playerData.CurrentCoins;
     
-    public int Item2 => _playerData.item2;
-    public int Item3 => _playerData.item3;
-    public int Item4 => _playerData.item4;
-    
-    public bool GetItem1()
+public int GetItemCount(int itemType)
     {
-        if (_playerData.item1 > 0)
+        switch (itemType)
         {
-            _playerData.item1--;
-            return true;
+            case 1: return _playerData.item1.count;
+            case 2: return _playerData.item2.count;
+            case 3: return _playerData.item3.count;
+            case 4: return _playerData.item4.count;
+        }
+        return 0;
+    }
+
+    public void ConsumeItem(int itemType)
+    {
+        int newCount = 0; 
+
+        switch (itemType)
+        {
+            case 1:
+                if (_playerData.item1.count > 0) _playerData.item1.count--;
+                newCount = _playerData.item1.count;
+                break;
+            case 2:
+                if (_playerData.item2.count > 0) _playerData.item2.count--;
+                newCount = _playerData.item2.count;
+                break;
+            case 3:
+                if (_playerData.item3.count > 0) _playerData.item3.count--;
+                newCount = _playerData.item3.count;
+                break;
+            case 4:
+                if (_playerData.item4.count > 0) _playerData.item4.count--;
+                newCount = _playerData.item4.count;
+                break;
+        }
+
+        SaveData();
+        EventManager.OnItemCountChanged?.Invoke(itemType, newCount);
+    }
+    public bool GetStatus(int itemType)
+    {
+        switch (itemType)
+        {
+            case 1:
+                return _playerData.item1.isOpened;
+            case 2:
+                return _playerData.item2.isOpened;
+            case 3:
+                return _playerData.item3.isOpened;
+            case 4:
+                return _playerData.item4.isOpened;
         }
         return false;
     }
 
-    public bool GetItem2()
-    {
-        if (_playerData.item2 > 0)
-        {
-            _playerData.item2--;
-            return true;
-        }
-        return false;
-    }
-
-    public bool GetItem3()
-    {
-        if (_playerData.item3 > 0)
-        {
-            _playerData.item3--;
-            return true;
-        }
-        return false;
-    }
-
-    public bool GetItem4()
-    {
-        if (_playerData.item4 > 0)
-        {
-            _playerData.item4--;
-            return true;
-        }
-        return false;
-    }
 
     public void IncreaseLevel()
     {

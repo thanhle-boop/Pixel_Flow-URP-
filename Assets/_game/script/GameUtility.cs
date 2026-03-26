@@ -53,7 +53,7 @@ public class GameUtility
     public static Color color5 = new Color(141f / 255f, 227f / 255f, 126f / 255f);      // Cream
     public static Color color6 = new Color(1f, 174f / 255f, 111f / 255f);      // Cream
     public static Color color7 = new Color(249f / 255f, 243f / 255f, 1f);      // Cream
-    public static Color color8 = new Color(85f / 255f, 8f / 255f, 97f / 255f);      // Cream
+    public static Color color8 = new Color(85f / 255f, 85f / 255f, 97f / 255f);      // Cream
     public static Color color9 = new Color(161f / 255f, 208f / 255f, 1f);      // Cream
     public static Color color10 = new Color(97f / 255f, 174f / 255f, 9f / 255f);      // Cream
 

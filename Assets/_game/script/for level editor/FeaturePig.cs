@@ -35,7 +35,7 @@ public class FeaturePig : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        int featureIndex = System.Array.IndexOf(levelEditor.PigFeature, featureName);
+        int featureIndex = System.Array.IndexOf(levelEditor.PigFeatures, featureName);
         if (featureIndex >= 0)
             levelEditor.OnClickFeaturePigButton(featureIndex);
     }

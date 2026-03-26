@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level 2
   m_EditorClassIdentifier: Assembly-CSharp::LevelDataSO
   sourceJson: {fileID: 0}
-  levelIndex: 1
+  levelIndex: 2
   width: 20
   height: 20
   gridData:
