@@ -38,7 +38,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "910f8e45b6a9ffabfeb7a49a11c8e113282ef449"
+      "hash": "c8f0542c2c9c8c91bf1ee9efcabc2398b423ef85"
     },
     "com.pixeption.mck": {
       "version": "https://github.com/pixeption/MobileConsoleKit.git",
