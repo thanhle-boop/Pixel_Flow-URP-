@@ -1,7 +1,9 @@
+using System;
 
+[System.Serializable]
 public class GameData 
 {
-    public int CurrentLevel = 1;
+    public int CurrentLevel = 0;
     public int CurrentScore = 0;
     public int CurrentLives = 5;
     public int CurrentCoins = 5000;
@@ -17,6 +19,7 @@ public class GameData
     public itemData item4 = new itemData { count = 5, isOpened = false, itemType = 4 };
 }
 
+[System.Serializable]
 public class itemData
 {
     public int count;

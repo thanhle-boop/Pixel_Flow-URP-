@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -34,11 +36,11 @@ public class UIManager : Singleton<UIManager>
     public UnityEngine.EventSystems.EventSystem eventSystem;
     public bool isBottomUiTranslate = false;
 
-
     public GameplayButton item1Button;
     public GameplayButton item2Button;
     public GameplayButton item3Button;
     public GameplayButton item4Button;
+    public GameplayButton settingButton;
     private void OnEnable()
     {
         EventManager.OnLoseGame += GameOver;
@@ -51,6 +53,7 @@ public class UIManager : Singleton<UIManager>
         item2Button.AddListener(OnHandButtonClicked);
         item3Button.AddListener(OnUseShuffleButtonClicked);
         item4Button.AddListener(OnUseSuperCatClicked);
+        settingButton.AddListener(OnSettingButtonClicked);
     }
 
     private void OnDisable()
@@ -65,6 +68,13 @@ public class UIManager : Singleton<UIManager>
         item2Button.RemoveListener(OnHandButtonClicked);
         item3Button.RemoveListener(OnUseShuffleButtonClicked);
         item4Button.RemoveListener(OnUseSuperCatClicked);
+        settingButton.RemoveListener(OnSettingButtonClicked);
+
+    }
+
+    private void OnSettingButtonClicked()
+    {
+        SceneManager.LoadScene("3.menu");
     }
 
     private void OnEndHand()
@@ -90,7 +100,8 @@ public class UIManager : Singleton<UIManager>
         {
             return;
         }
-        levelText.text = "Level " + DataManager.Instance.CurrentLevel;
+        levelText.text = "Level " + (DataManager.Instance.CurrentLevel + 1);
+        coinText.text = "" + DataManager.Instance.Coins;
         gameOverUI.SetActive(false);
         reTryUI.SetActive(false);
         gameplayUI.SetActive(true);
@@ -179,7 +190,7 @@ public class UIManager : Singleton<UIManager>
             return;
         }
         gameplayUI.SetActive(true);
-        levelText.text = "Level " + DataManager.Instance.CurrentLevel;
+        levelText.text = "Level " + (DataManager.Instance.CurrentLevel + 1);
         coinText.text = "" + DataManager.Instance.Coins;
     }
     public void CloseGameOverUI()
@@ -224,7 +235,7 @@ public class UIManager : Singleton<UIManager>
             return;
         }
         straightSlot.SetActive(true);
-        EventManager.OnUseAddTray?.Invoke();    
+        EventManager.OnUseAddTray?.Invoke();
         DataManager.Instance.ConsumeItem(1);
 
     }
@@ -284,5 +295,6 @@ public class UIManager : Singleton<UIManager>
         EventManager.OnUseSuperCat?.Invoke();
         DataManager.Instance.ConsumeItem(4);
     }
+
 
 }

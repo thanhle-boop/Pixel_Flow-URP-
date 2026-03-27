@@ -48,8 +48,6 @@ public class GameManager : Singleton<GameManager>
         _mGameState = GameState.Start;
         Time.timeScale = 1;
         EventManager.OnStartGame?.Invoke();
-        SoundManager.Instance.PlayBackgroundMusic();
-        UIManager.Instance.ShowGameplayUI();
     }
 
     public void WinStage()
@@ -59,6 +57,7 @@ public class GameManager : Singleton<GameManager>
         _mGameState = GameState.Win;
         EventManager.OnWinGame?.Invoke();
         SoundManager.Instance.PlaySound(SoundManager.Instance.win);
+        DataManager.Instance.SaveData();
     }
 
     public void GameOver()

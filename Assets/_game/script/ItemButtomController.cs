@@ -27,6 +27,13 @@ public class ItemButtomController : MonoBehaviour
 
         EventManager.OnItemCountChanged += OnItemCountChanged;
     }
+    void OnDisable()
+    {
+        EventManager.OnStartGame -= UpdateItemStatus;
+
+        EventManager.OnItemCountChanged -= OnItemCountChanged;
+
+    }
 
     private void OnItemCountChanged(int itemType, int newValue)
     {

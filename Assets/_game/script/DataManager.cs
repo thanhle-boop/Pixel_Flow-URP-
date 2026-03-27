@@ -7,17 +7,17 @@ public class DataManager : Singleton<DataManager>
     protected override void Awake()
     {
         base.Awake();
-        // _playerData = GetData();
+        _playerData = GetData();
         
-        if (_playerData == null)
-        {
-            _playerData = new GameData();
-        }
+        // if (_playerData == null)
+        // {
+        //     _playerData = new GameData();
+        // }
 
         //For Testing
-        string json = JsonUtility.ToJson(_playerData);
-        PlayerPrefs.SetString("GameData", json);
-        PlayerPrefs.Save();
+        // string json = JsonUtility.ToJson(_playerData);
+        // PlayerPrefs.SetString("GameData", json);
+        // PlayerPrefs.Save();
     }
 
     public int CurrentLevel => _playerData.CurrentLevel;
@@ -46,6 +46,7 @@ public int GetItemCount(int itemType)
             case 1:
                 if (_playerData.item1.count > 0) _playerData.item1.count--;
                 newCount = _playerData.item1.count;
+
                 break;
             case 2:
                 if (_playerData.item2.count > 0) _playerData.item2.count--;
@@ -60,7 +61,6 @@ public int GetItemCount(int itemType)
                 newCount = _playerData.item4.count;
                 break;
         }
-
         SaveData();
         EventManager.OnItemCountChanged?.Invoke(itemType, newCount);
     }

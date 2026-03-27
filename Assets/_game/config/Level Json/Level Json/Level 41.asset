@@ -1,0 +1,982 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f188c8f177552f4fb636f9ea3fd3991, type: 3}
+  m_Name: Level 41
+  m_EditorClassIdentifier: Assembly-CSharp::LevelDataSO
+  sourceJson: {fileID: 0}
+  levelIndex: 1
+  width: 26
+  height: 23
+  gridData:
+  - c04
+  - c04
+  - c04
+  - c04
+  - c04
+  - c04
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c08
+  - c02
+  - empty
+  - c04
+  - c04
+  - c04
+  - c04
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c02
+  - c08
+  - c07
+  - c07
+  - c07
+  - c08
+  - empty
+  - c04
+  - c04
+  - c04
+  - c04
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - empty
+  - c04
+  - c04
+  - c04
+  - c04
+  - c02
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c04
+  - c04
+  - c02
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c01
+  - empty
+  - c07
+  - c07
+  - empty
+  - c01
+  - c07
+  - c07
+  - c07
+  - c08
+  - c02
+  - c02
+  - c04
+  - c02
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c01
+  - empty
+  - c07
+  - c07
+  - empty
+  - c01
+  - c07
+  - c07
+  - c07
+  - c08
+  - c04
+  - c02
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c01
+  - c01
+  - c07
+  - c07
+  - c01
+  - c01
+  - c07
+  - c07
+  - c07
+  - c08
+  - c02
+  - c04
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c08
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c06
+  - c06
+  - c08
+  - c02
+  - c02
+  - c02
+  - c08
+  - c06
+  - c06
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c08
+  - c06
+  - c07
+  - c06
+  - c06
+  - c08
+  - c08
+  - c08
+  - c06
+  - c06
+  - c07
+  - c06
+  - c08
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c02
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c06
+  - c06
+  - c06
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c06
+  - c06
+  - c06
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c06
+  - c06
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c06
+  - c06
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c06
+  - c07
+  - c07
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c07
+  - c07
+  - c06
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c06
+  - c07
+  - c07
+  - c06
+  - c08
+  - c06
+  - c06
+  - empty
+  - c06
+  - c06
+  - c08
+  - c06
+  - c07
+  - c07
+  - c06
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c01
+  - c01
+  - c01
+  - c07
+  - c07
+  - c06
+  - c08
+  - c06
+  - c06
+  - c08
+  - c06
+  - c06
+  - c08
+  - c06
+  - c07
+  - c07
+  - c01
+  - c01
+  - c01
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c06
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c01
+  - c01
+  - c01
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c01
+  - c01
+  - c01
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c08
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c07
+  - c08
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  - c10
+  lanes:
+  - pigs:
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c06
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c06
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c08
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c10
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c04
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c10
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+  - pigs:
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c08
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c10
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+  - pigs:
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c04
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c08
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c07
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+  - pigs:
+    - colorName: c02
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c04
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c07
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c02
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c06
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c01
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c08
+      bullets: 10
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1
+    - colorName: c10
+      bullets: 20
+      isHidden: 0
+      linkId: -1
+      pigLeft:
+        LaneIndex: -1
+        index: -1
+      pigRight:
+        LaneIndex: -1
+        index: -1

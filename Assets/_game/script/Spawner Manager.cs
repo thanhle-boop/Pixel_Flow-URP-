@@ -57,6 +57,8 @@ public class SpawnerManager : MonoBehaviour
 
     public List<GameObject> blockPrefabsByColor;
 
+    public float spacing = 1.2f;
+
     void OnEnable()
     {
         EventManager.OnStartGame += SpawnMap;
@@ -375,7 +377,7 @@ public class SpawnerManager : MonoBehaviour
         {
             Vector3 newLocalPos = pigsInLane[i].transform.localPosition;
 
-            newLocalPos.z = -(i * blockAffter);
+            newLocalPos.z = -(i * spacing);
 
             pigsInLane[i].MoveTo(newLocalPos);
 
@@ -401,7 +403,7 @@ public class SpawnerManager : MonoBehaviour
 
         if (DataManager.Instance.CurrentLevel - 1 >= Levels.Count) return;
 
-        LevelDataSO data = Levels[DataManager.Instance.CurrentLevel - 1];
+        LevelDataSO data = Levels[DataManager.Instance.CurrentLevel];
         SpawnBlocks(data.width, data.height, data.gridData);
         SpawnPigs(data.lanes);
     }
@@ -508,7 +510,7 @@ public class SpawnerManager : MonoBehaviour
                 Vector3 localPos = new Vector3(
                     (i * 0.95f) - laneOffsetX,
                     0,
-                    -(j * 0.85f)
+                    -(j * spacing)
                 );
 
                 Vector3 worldPos = pigSpawnPos.TransformPoint(localPos);
@@ -982,7 +984,7 @@ public class SpawnerManager : MonoBehaviour
                 Vector3 newLocalPos = new Vector3(
                     (laneIndex * 0.95f) - laneOffsetX,
                     0,
-                    -(pigIndex * 0.85f)
+                    -(pigIndex * spacing)
                 );
 
                 pig.MoveTo(newLocalPos);

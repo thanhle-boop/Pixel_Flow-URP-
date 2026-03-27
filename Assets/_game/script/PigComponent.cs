@@ -26,13 +26,16 @@ public class PigComponent : MonoBehaviour
     private Vector3 _rayCastDirection = Vector3.forward;
     public LayerMask blockLayer;
 
+    public GameObject pigMaterial1;
+    public GameObject pigMaterial2;
+
     private WavyLineRenderer _wavyLine;
     // private GameObject _lastCheckedBlock;
 
     public GameObject bulletText;
     public GameObject pigModel;
     public Material hiddenMaterial;
-    public Material normalMaterial;
+    // public Material normalMaterial;
     private int _lockedTargets = 0;
     public void ChangeState(PigState newState)
     {
@@ -65,15 +68,24 @@ public class PigComponent : MonoBehaviour
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
         // var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
-        var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
+        // var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
+        var meshRenderer = pigMaterial1.GetComponent<MeshRenderer>();
+        var meshRenderer2 = pigMaterial2.GetComponent<MeshRenderer>();
 
         if (isHidden)
         {
+            // meshRenderer.material = hiddenMaterial;
             meshRenderer.material = hiddenMaterial;
+            meshRenderer2.material = hiddenMaterial;
             bulletText.SetActive(false);
             return;
         }
+        // meshRenderer.material.color = GameUtility.GetColorByName(color);
+        
         meshRenderer.material.color = GameUtility.GetColorByName(color);
+        meshRenderer2.material.color = GameUtility.GetColorByName(color);
+        // pigMaterial.color = GameUtility.GetColorByName(color);
+
         bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
     }
 
@@ -162,19 +174,20 @@ public class PigComponent : MonoBehaviour
         if (value)
         {
             isHidden = false;
-            var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
-            meshRenderer.material = normalMaterial;
-            meshRenderer.material.color = GameUtility.GetColorByName(color);
+            // var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
+            // meshRenderer.material = normalMaterial;
+            // meshRenderer.material.color = GameUtility.GetColorByName(color);
+            // pigMaterial.color = GameUtility.GetColorByName(color);
+
+            pigMaterial1.GetComponent<MeshRenderer>().material.color = GameUtility.GetColorByName(color);
+            pigMaterial2.GetComponent<MeshRenderer>().material.color = GameUtility.GetColorByName(color);
+
             bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
             bulletText.SetActive(true);
 
             if (IsLinkedPig())
             {
                 EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
-            }
-            if (meshRenderer != null)
-            {
-
             }
         }
     }

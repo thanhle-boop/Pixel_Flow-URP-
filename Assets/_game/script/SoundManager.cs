@@ -1,7 +1,8 @@
 using UnityEngine;
 
 public class SoundManager : Singleton<SoundManager>
-{
+{   
+    protected override bool PersistAcrossScenes => false;
     [Header("Main Settings:")]
     [Range(0, 1)]
     public float musicVolume = 0.3f;
@@ -21,6 +22,14 @@ public class SoundManager : Singleton<SoundManager>
     public AudioClip invalidCat;
     public AudioClip[] backgroundMusics;
 
+    void OnEnable()
+    {
+        EventManager.OnStartGame += PlayBackgroundMusic;
+    }
+    void OnDestroy()
+    {
+        EventManager.OnStartGame -= PlayBackgroundMusic;
+    }
     private void Start()
     {
         PlayBackgroundMusic();
