@@ -38,7 +38,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "c8f0542c2c9c8c91bf1ee9efcabc2398b423ef85"
+      "hash": "afa1bb8672289e51f3b15d7f720a30931e5d1579"
     },
     "com.pixeption.mck": {
       "version": "https://github.com/pixeption/MobileConsoleKit.git",
@@ -365,6 +365,16 @@
       "depth": 2,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.services.cloud-diagnostics": {
+      "version": "1.0.12",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.12.5",
+        "com.unity.modules.unityanalytics": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.services.core": {
