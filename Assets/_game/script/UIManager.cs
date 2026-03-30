@@ -239,7 +239,7 @@ public class UIManager : Singleton<UIManager>
     public void OnBackToEditorClicked()
     {
         SceneManager.LoadScene("5.level_editor");
-        GameManagerForTesting.Instance.ClearPlayTestConfig();
+        // GameManagerForTesting.Instance.ClearPlayTestConfig();
     }
 
     public void OnAddTrayButtonClicked()

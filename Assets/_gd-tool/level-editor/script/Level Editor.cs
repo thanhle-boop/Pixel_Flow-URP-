@@ -1590,11 +1590,11 @@ public class LevelEditor : MonoBehaviour
     private int GetPigConnectionCount(PigLayoutData p)
     {
         int n = 0;
-        if (p.pigLeft != null) n++;
-        if (p.pigRight != null) n++;
+        // Kiểm tra xem marker có tồn tại và laneIndex có hợp lệ không
+        if (p.pigLeft != null && p.pigLeft.LaneIndex >= 0) n++;
+        if (p.pigRight != null && p.pigRight.LaneIndex >= 0) n++;
         return n;
     }
-
     private void ShiftMarkersAfterInsert(int col, int insertedRow)
     {
         foreach (var lane in _multiColumnPigs)
@@ -1843,7 +1843,7 @@ public class LevelEditor : MonoBehaviour
         int count = filePaths.Length;
         float totalHeight = count * prefabH + (count - 1) * spacing + layout.padding.top + layout.padding.bottom;
         containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, totalHeight);
-  
+
 
         for (int i = 0; i < filePaths.Length; i++)
         {
@@ -1889,61 +1889,54 @@ public class LevelEditor : MonoBehaviour
 
             if (config != null)
             {
-                levelIndex = config.levelIndex;
-                _finalWidth = config.width;
-                _finalHeight = config.height;
-                if (levelInput != null) levelInput.text = levelIndex.ToString();
-                if (widthInput != null) widthInput.text = _finalWidth.ToString();
+
                 _tempGrid = new string[TempGridSize, TempGridSize];
-                for (int cy = 0; cy < TempGridSize; cy++)
-                    for (int cx = 0; cx < TempGridSize; cx++)
-                        _tempGrid[cx, cy] = "empty";
 
-                int offsetX = (TempGridSize - _finalWidth) / 2;
-                int offsetY = (TempGridSize - _finalHeight) / 2;
+                for (int y = 0; y < TempGridSize; y++)
+                    for (int x = 0; x < TempGridSize; x++) _tempGrid[x, y] = "empty";
 
-                for (int y = 0; y < _finalHeight; y++)
+                int offsetX = (TempGridSize - config.width) / 2;
+                int offsetY = (TempGridSize - config.height) / 2;
+
+                for (int y = 0; y < config.height; y++)
                 {
-                    for (int x = 0; x < _finalWidth; x++)
+                    for (int x = 0; x < config.width; x++)
                     {
-                        int dataIdx = y * _finalWidth + x;
-                        if (dataIdx < config.gridData.Count)
-                        {
-                            _tempGrid[x + offsetX, y + offsetY] = config.gridData[dataIdx];
-                        }
+                        int idx = y * config.width + x;
+                        if (idx < config.gridData.Count)
+                            _tempGrid[x + offsetX, y + offsetY] = config.gridData[idx];
                     }
                 }
-                _queueColumns = config.lanes.Count;
-                if (columnsInput != null) columnsInput.text = _queueColumns.ToString();
 
+                _queueColumns = config.lanes.Count;
                 _multiColumnPigs = new List<PigLayoutData>[_queueColumns];
                 for (int i = 0; i < _queueColumns; i++)
                 {
                     _multiColumnPigs[i] = new List<PigLayoutData>();
-                    if (config.lanes[i]?.pigs != null)
+                    if (config.lanes[i].pigs != null)
                     {
-                        foreach (var pig in config.lanes[i].pigs)
+                        foreach (var p in config.lanes[i].pigs)
                         {
-                            // Copy data pig
-                            _multiColumnPigs[i].Add(new PigLayoutData
+                            PigLayoutData newPig = new PigLayoutData
                             {
-                                colorName = pig.colorName,
-                                bullets = pig.bullets,
-                                isHidden = pig.isHidden,
-                                linkId = pig.linkId,
-                                pigLeft = pig.pigLeft,
-                                pigRight = pig.pigRight
-                            });
+                                colorName = p.colorName,
+                                bullets = p.bullets,
+                                isHidden = p.isHidden,
+                                linkId = p.linkId,
+      
+                                pigLeft = (p.linkId >= 0) ? p.pigLeft : null,
+                                pigRight = (p.linkId >= 0) ? p.pigRight : null
+                            };
+                            _multiColumnPigs[i].Add(newPig);
                         }
                     }
                 }
 
-                ComputeFinalGrid();
                 GenerateGridUI();
-                SpawnPigUI(); 
-                UpdateSimulateFromLanes();
-
-                UpdateReport($"<color=green>Load thành công:</color> {fileName}");
+                SpawnPigUI();
+                DataConfig currentData = BuildCurrentDataConfig();
+                GameManagerForTesting.Instance.SetPlayTestConfig(currentData);
+                GameManagerForTesting.Instance.SetSavedTempGrid(_tempGrid);
             }
         }
         catch (System.Exception e)
