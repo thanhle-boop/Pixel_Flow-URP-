@@ -384,35 +384,30 @@ public class SpawnerManager : MonoBehaviour
         CleanupSpawnedObjects();
         ResetData();
 
+        // Kiểm tra tên scene mới: 6.play_test
         if (SceneManager.GetActiveScene().name == "6.play_test")
         {
-            if (GameManagerForTesting.Instance.configIndex == -1)
+            if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
             {
-                if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
-                {
-                    SpawnBlocks(playTestData.width, playTestData.height, playTestData.gridData);
-                    SpawnPigs(playTestData.lanes);
-                    return;
-                }
+                Debug.Log("<color=green>PlayTest Mode: Loading from Temp Data only.</color>");
+                SpawnBlocks(playTestData.width, playTestData.height, playTestData.gridData);
+                SpawnPigs(playTestData.lanes);
+                return;
             }
             else
             {
-                int idx = GameManagerForTesting.Instance.configIndex;
-                LevelData data = LoadLevelData(idx);
-                if (data != null)
-                {
-                    SpawnBlocks(data.width, data.height, data.gridData);
-                    SpawnPigs(data.lanes);
-                    return;
-                }
+                Debug.LogError("Không có dữ liệu Temp để PlayTest!");
+                return;
             }
         }
 
-        LevelData coreData = LoadLevelData(DataManager.Instance.CurrentLevel);
-        if (coreData != null)
+        // Logic cho Core Gameplay (Người chơi thật) - Vẫn load từ file theo LevelIndex
+        int levelToLoad = DataManager.Instance.CurrentLevel;
+        LevelData data = LoadLevelData(levelToLoad);
+        if (data != null)
         {
-            SpawnBlocks(coreData.width, coreData.height, coreData.gridData);
-            SpawnPigs(coreData.lanes);
+            SpawnBlocks(data.width, data.height, data.gridData);
+            SpawnPigs(data.lanes);
         }
     }
 
