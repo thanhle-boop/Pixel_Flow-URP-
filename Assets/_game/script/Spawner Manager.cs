@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,7 +19,6 @@ public class SpawnerManager : MonoBehaviour
 
     public Transform pigSpawnPoint;
 
-    public List<LevelDataSO> Levels;
     public float blockSpacing = 1.2f;
     public float blockAffter = 0.9f;
 
@@ -27,7 +27,6 @@ public class SpawnerManager : MonoBehaviour
 
     public List<Transform> allWaypoints;
     private Dictionary<int, List<PigComponent>> pigsByLane = new Dictionary<int, List<PigComponent>>();
-
     private List<Link> activeLinks = new List<Link>();
 
     public List<Transform> queuePos;
@@ -39,6 +38,7 @@ public class SpawnerManager : MonoBehaviour
     public int _maxstraightSlot = 5;
     private int totalBlockCount = 0;
 
+    public bool isTesting = false;
     private int tempScore = 0;
 
     private bool isProcessingClick = false;
@@ -46,9 +46,6 @@ public class SpawnerManager : MonoBehaviour
 
     [SerializeField]
     private float speed = 1f;
-
-    // [SerializeField]
-    // private float speedOnCurve = 0.5f;
 
     [SerializeField]
     private float jumpToQueueSpeed = 5f;
@@ -85,38 +82,35 @@ public class SpawnerManager : MonoBehaviour
 
         EventManager.OnUseShuffle += ProcessShufflePig;
 
-        EventManager.OnUseSuperCat += () =>
+        EventManager.OnClickBlock += ClickBlock;
+    }
+
+    public void ClickBlock(string color)
+    {
+        foreach (Transform block in blockGroup)
         {
-            // supertCatPrefab.SetActive(true);
-        };
+            Block blockComp = block.GetComponent<Block>();
+            if (blockComp != null && blockComp.color == color)
+            {
+                blockPrefabsByColor.Add(block.gameObject);
+            }
+        }
 
-        EventManager.OnClickBlock += (color) =>
+        foreach (PigComponent pig in pigSpawnPos.GetComponentsInChildren<PigComponent>())
         {
-            foreach (Transform block in blockGroup)
+            if (pig.color == color)
             {
-                Block blockComp = block.GetComponent<Block>();
-                if (blockComp != null && blockComp.color == color)
-                {
-                    blockPrefabsByColor.Add(block.gameObject);
-                }
+                pig.ExecuteDestroy();
+                RemovePigFromLane(pig);
+                HandlePigClickedFromQueue(pig, pigsInTempQueue.Contains(pig));
             }
+        }
 
-            foreach (PigComponent pig in pigSpawnPos.GetComponentsInChildren<PigComponent>())
-            {
-                if(pig.color == color)
-                {
-                    pig.ExecuteDestroy();
-                    RemovePigFromLane(pig);
-                    HandlePigClickedFromQueue(pig, pigsInTempQueue.Contains(pig));
-                }
-            }
+        supertCatPrefab.SetActive(true);
+        var cat = supertCatPrefab.GetComponent<SuperCat>();
+        cat.AddAllTarget(blockPrefabsByColor, GameUtility.GetColorByName(color));
 
-            supertCatPrefab.SetActive(true);
-            var cat = supertCatPrefab.GetComponent<SuperCat>();
-            cat.AddAllTarget(blockPrefabsByColor, GameUtility.GetColorByName(color));
-
-            blockPrefabsByColor.Clear();
-        };
+        blockPrefabsByColor.Clear();
     }
 
     private void OnDisable()
@@ -389,23 +383,55 @@ public class SpawnerManager : MonoBehaviour
     {
         CleanupSpawnedObjects();
         ResetData();
-        tempScore = DataManager.Instance.Score;
-        UIManager.Instance.UpdateScore(tempScore);
 
-        totalBlockCount = 0;
-
-        if (TryGetPlayTestData(out DataConfig playTestData))
+        if (SceneManager.GetActiveScene().name == "6.play_test")
         {
-            SpawnBlocks(playTestData.width, playTestData.height, playTestData.gridData);
-            SpawnPigs(playTestData.lanes);
-            return;
+            if (GameManagerForTesting.Instance.configIndex == -1)
+            {
+                if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
+                {
+                    SpawnBlocks(playTestData.width, playTestData.height, playTestData.gridData);
+                    SpawnPigs(playTestData.lanes);
+                    return;
+                }
+            }
+            else
+            {
+                int idx = GameManagerForTesting.Instance.configIndex;
+                LevelData data = LoadLevelData(idx);
+                if (data != null)
+                {
+                    SpawnBlocks(data.width, data.height, data.gridData);
+                    SpawnPigs(data.lanes);
+                    return;
+                }
+            }
         }
 
-        if (DataManager.Instance.CurrentLevel - 1 >= Levels.Count) return;
+        LevelData coreData = LoadLevelData(DataManager.Instance.CurrentLevel);
+        if (coreData != null)
+        {
+            SpawnBlocks(coreData.width, coreData.height, coreData.gridData);
+            SpawnPigs(coreData.lanes);
+        }
+    }
 
-        LevelDataSO data = Levels[DataManager.Instance.CurrentLevel];
-        SpawnBlocks(data.width, data.height, data.gridData);
-        SpawnPigs(data.lanes);
+    public LevelData LoadLevelData(int levelNumber)
+    {
+        LevelData currentLevel = null;
+        string fileName = $"L{levelNumber + 1:D4}_V1.json";
+        string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+
+        if (File.Exists(filePath))
+        {
+            string jsonContent = File.ReadAllText(filePath);
+
+            currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
+
+            Debug.Log($"<color=cyan>Loaded Level {levelNumber + 1} thành công!</color>");
+        }
+
+        return currentLevel;
     }
 
     private void CleanupSpawnedObjects()

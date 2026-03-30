@@ -23,7 +23,7 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/_game/scenes/5.level_editor.unity
   - m_enabled: 1
-    m_path: Assets/_game/scenes/6.playTest.unity
+    m_path: Assets/_game/scenes/6.play_test.unity
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:

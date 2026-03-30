@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class GameManagerForTesting : Singleton<GameManagerForTesting>
 {
+
+	public int configIndex = -1;
 	public DataConfig CurrentPlayTestConfig { get; private set; }
 	public string[,] SavedTempGrid { get; private set; }
 

@@ -31,4 +31,8 @@ public class EventManager
 
     public static Action<int, int> OnItemCountChanged;
 
+    public static Action<int> onClickButton;
+    public static Action<int> onClickYesButton;
+    public static Action<int> onClickNoButton;
+
 }

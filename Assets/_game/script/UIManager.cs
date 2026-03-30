@@ -49,11 +49,16 @@ public class UIManager : Singleton<UIManager>
         EventManager.OnWinGame += WinGame;
         EventManager.OnEndHand += OnEndHand;
 
-        item1Button.AddListener(OnAddTrayButtonClicked);
-        item2Button.AddListener(OnHandButtonClicked);
-        item3Button.AddListener(OnUseShuffleButtonClicked);
-        item4Button.AddListener(OnUseSuperCatClicked);
-        settingButton.AddListener(OnSettingButtonClicked);
+        if (item1Button != null)
+            item1Button.AddListener(OnAddTrayButtonClicked);
+        if (item2Button != null)
+            item2Button.AddListener(OnHandButtonClicked);
+        if (item3Button != null)
+            item3Button.AddListener(OnUseShuffleButtonClicked);
+        if (item4Button != null)
+            item4Button.AddListener(OnUseSuperCatClicked);
+        if (settingButton != null)
+            settingButton.AddListener(OnSettingButtonClicked);
     }
 
     private void OnDisable()
@@ -64,11 +69,16 @@ public class UIManager : Singleton<UIManager>
         EventManager.OnWinGame -= WinGame;
         EventManager.OnEndHand -= OnEndHand;
 
-        item1Button.RemoveListener(OnAddTrayButtonClicked);
-        item2Button.RemoveListener(OnHandButtonClicked);
-        item3Button.RemoveListener(OnUseShuffleButtonClicked);
-        item4Button.RemoveListener(OnUseSuperCatClicked);
-        settingButton.RemoveListener(OnSettingButtonClicked);
+        if (item1Button != null)
+            item1Button.RemoveListener(OnAddTrayButtonClicked);
+        if (item2Button != null)
+            item2Button.RemoveListener(OnHandButtonClicked);
+        if (item3Button != null)
+            item3Button.RemoveListener(OnUseShuffleButtonClicked);
+        if (item4Button != null)
+            item4Button.RemoveListener(OnUseSuperCatClicked);
+        if (settingButton != null)
+            settingButton.RemoveListener(OnSettingButtonClicked);
 
     }
 
@@ -80,8 +90,11 @@ public class UIManager : Singleton<UIManager>
     private void OnEndHand()
     {
         isBottomUiTranslate = true;
-        RectTransform rect = BottomUI.GetComponent<RectTransform>();
-        StartCoroutine(MoveUISmoothly(rect, new Vector2(0, 0f)));
+        if (BottomUI != null)
+        {
+            RectTransform rect = BottomUI.GetComponent<RectTransform>();
+            StartCoroutine(MoveUISmoothly(rect, new Vector2(0, 0f)));
+        }
     }
 
     private void WinGame()
@@ -226,6 +239,7 @@ public class UIManager : Singleton<UIManager>
     public void OnBackToEditorClicked()
     {
         SceneManager.LoadScene("5.level_editor");
+        GameManagerForTesting.Instance.ClearPlayTestConfig();
     }
 
     public void OnAddTrayButtonClicked()

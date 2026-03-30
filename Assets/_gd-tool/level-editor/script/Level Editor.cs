@@ -84,6 +84,23 @@ public class LevelEditor : MonoBehaviour
     private int _nextLinkId = 0;
     private List<(int col, int row)> _linkingPigs = new List<(int col, int row)>();
 
+    public GameObject btnConfigPrefab;
+    public List<ConfigBtn> configButtons;
+    public int configIndex = -1;
+    public GameObject replacePanel;
+    public Transform configContent;
+    private List<string> _availableConfigFiles = new List<string>();
+
+    void OnEnable()
+    {
+        EventManager.onClickButton += OnConfigButtonClicked;
+    }
+
+    void OnDisable()
+    {
+        EventManager.onClickButton -= OnConfigButtonClicked;
+    }
+
     private void Start()
     {
 
@@ -95,6 +112,7 @@ public class LevelEditor : MonoBehaviour
         GenerateColorUI();
         GenerateFeatureUI();
         GeneratePigFeatureUI();
+        RefreshConfigList();
 
         if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig savedConfig))
         {
@@ -376,6 +394,12 @@ public class LevelEditor : MonoBehaviour
                 return;
             }
 
+            // if (configIndex != -1)
+            // {
+            //     replacePanel.SetActive(true);
+            //     return;
+            // }
+
             string savePath = paths[0];
             if (!string.Equals(Path.GetExtension(savePath), ".json", System.StringComparison.OrdinalIgnoreCase))
             {
@@ -451,7 +475,9 @@ public class LevelEditor : MonoBehaviour
 
         GameManagerForTesting.Instance.SetPlayTestConfig(data);
         GameManagerForTesting.Instance.SetSavedTempGrid(_tempGrid);
-        SceneManager.LoadScene("6.playTest");
+
+        GameManagerForTesting.Instance.configIndex = configIndex;
+        SceneManager.LoadScene("6.play_test");
     }
 
     public void ProcessScan()
@@ -461,6 +487,9 @@ public class LevelEditor : MonoBehaviour
             UpdateReport("<color=red>Error:</color> No image loaded!");
             return;
         }
+
+        configIndex = -1;
+        GameManagerForTesting.Instance.configIndex = -1;
 
         if (widthInput != null && !string.IsNullOrEmpty(widthInput.text))
             if (int.TryParse(widthInput.text, out int w))
@@ -770,6 +799,8 @@ public class LevelEditor : MonoBehaviour
 
     public void OnClickClear()
     {
+        configIndex = -1;
+        GameManagerForTesting.Instance.configIndex = -1;
         _tempGrid = new string[TempGridSize, TempGridSize];
         for (int cy = 0; cy < TempGridSize; cy++)
             for (int cx = 0; cx < TempGridSize; cx++)
@@ -1772,5 +1803,172 @@ public class LevelEditor : MonoBehaviour
             UpdateSimulateFromLanes();
             SpawnPigUI();
         }
+    }
+
+
+    public void NoChange()
+    {
+        replacePanel.SetActive(false);
+        UpdateReport("No changes made to the level.");
+    }
+
+    public void RefreshConfigList()
+    {
+        foreach (Transform child in configContent) Destroy(child.gameObject);
+        configButtons.Clear();
+
+        string path = Application.streamingAssetsPath;
+        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+        string[] filePaths = Directory.GetFiles(path, "*.json");
+
+        Canvas.ForceUpdateCanvases();
+        RectTransform containerRect = configContent as RectTransform;
+        if (containerRect == null) return;
+
+        GridLayoutGroup layout = configContent.GetComponent<GridLayoutGroup>();
+        if (layout == null) layout = configContent.gameObject.AddComponent<GridLayoutGroup>();
+
+        const float spacing = 5f;
+        float containerW = containerRect.rect.width;
+
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = 1;
+        layout.spacing = new Vector2(0, spacing);
+        layout.childAlignment = TextAnchor.UpperCenter;
+        RectTransform prefabRect = btnConfigPrefab.GetComponent<RectTransform>();
+        float prefabH = (prefabRect != null) ? prefabRect.rect.height : 60f;
+
+        layout.cellSize = new Vector2(containerW - layout.padding.left - layout.padding.right, prefabH);
+
+        int count = filePaths.Length;
+        float totalHeight = count * prefabH + (count - 1) * spacing + layout.padding.top + layout.padding.bottom;
+        containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, totalHeight);
+  
+
+        for (int i = 0; i < filePaths.Length; i++)
+        {
+            string fullPath = filePaths[i];
+            string fileName = Path.GetFileName(fullPath);
+
+            GameObject btnGO = Instantiate(btnConfigPrefab, configContent);
+            btnGO.transform.localScale = Vector3.one;
+
+            ConfigBtn cfgBtn = btnGO.GetComponent<ConfigBtn>();
+            if (cfgBtn != null)
+            {
+                cfgBtn.index = i;
+                cfgBtn.SetText(fileName);
+                configButtons.Add(cfgBtn);
+
+                if (_availableConfigFiles.Count <= i) _availableConfigFiles.Add(fullPath);
+                else _availableConfigFiles[i] = fullPath;
+            }
+        }
+
+        UpdateReport($"Tìm thấy {filePaths.Length} file. Chiều cao Content: {totalHeight}");
+    }
+
+    private void OnConfigButtonClicked(int index)
+    {
+        configIndex = index;
+        GameManagerForTesting.Instance.configIndex = index;
+
+        string fileName = configButtons[index].text.text;
+        LoadLevelDataFromFile(fileName);
+    }
+
+    private void LoadLevelDataFromFile(string fileName)
+    {
+        string fullPath = Path.Combine(Application.streamingAssetsPath, fileName);
+        if (!File.Exists(fullPath)) return;
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            DataConfig config = JsonUtility.FromJson<DataConfig>(json);
+
+            if (config != null)
+            {
+                levelIndex = config.levelIndex;
+                _finalWidth = config.width;
+                _finalHeight = config.height;
+                if (levelInput != null) levelInput.text = levelIndex.ToString();
+                if (widthInput != null) widthInput.text = _finalWidth.ToString();
+                _tempGrid = new string[TempGridSize, TempGridSize];
+                for (int cy = 0; cy < TempGridSize; cy++)
+                    for (int cx = 0; cx < TempGridSize; cx++)
+                        _tempGrid[cx, cy] = "empty";
+
+                int offsetX = (TempGridSize - _finalWidth) / 2;
+                int offsetY = (TempGridSize - _finalHeight) / 2;
+
+                for (int y = 0; y < _finalHeight; y++)
+                {
+                    for (int x = 0; x < _finalWidth; x++)
+                    {
+                        int dataIdx = y * _finalWidth + x;
+                        if (dataIdx < config.gridData.Count)
+                        {
+                            _tempGrid[x + offsetX, y + offsetY] = config.gridData[dataIdx];
+                        }
+                    }
+                }
+                _queueColumns = config.lanes.Count;
+                if (columnsInput != null) columnsInput.text = _queueColumns.ToString();
+
+                _multiColumnPigs = new List<PigLayoutData>[_queueColumns];
+                for (int i = 0; i < _queueColumns; i++)
+                {
+                    _multiColumnPigs[i] = new List<PigLayoutData>();
+                    if (config.lanes[i]?.pigs != null)
+                    {
+                        foreach (var pig in config.lanes[i].pigs)
+                        {
+                            // Copy data pig
+                            _multiColumnPigs[i].Add(new PigLayoutData
+                            {
+                                colorName = pig.colorName,
+                                bullets = pig.bullets,
+                                isHidden = pig.isHidden,
+                                linkId = pig.linkId,
+                                pigLeft = pig.pigLeft,
+                                pigRight = pig.pigRight
+                            });
+                        }
+                    }
+                }
+
+                ComputeFinalGrid();
+                GenerateGridUI();
+                SpawnPigUI(); 
+                UpdateSimulateFromLanes();
+
+                UpdateReport($"<color=green>Load thành công:</color> {fileName}");
+            }
+        }
+        catch (System.Exception e)
+        {
+            UpdateReport($"<color=red>Lỗi Load JSON:</color> {e.Message}");
+            Debug.LogError(e);
+        }
+    }
+    public void ReplaceData()
+    {
+        if (configIndex == -1 || configIndex >= configButtons.Count)
+        {
+            UpdateReport("<color=red>Chưa chọn cấu hình để ghi đè!</color>");
+            return;
+        }
+        string fileName = configButtons[configIndex].text.text;
+        string savePath = Path.Combine(Application.streamingAssetsPath, fileName);
+
+        DataConfig data = BuildCurrentDataConfig();
+
+        File.WriteAllText(savePath, JsonUtility.ToJson(data, true));
+
+        UpdateReport($"<color=yellow>Đã cập nhật file:</color> {fileName}");
+        replacePanel.SetActive(false);
+
+        UpdateSimulateFromLanes();
     }
 }
