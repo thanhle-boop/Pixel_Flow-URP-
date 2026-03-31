@@ -55,6 +55,18 @@ public class SpawnerManager : MonoBehaviour
     public List<GameObject> blockPrefabsByColor;
 
     public float spacing = 1.2f;
+    // public List<GameObject> plate;
+
+    [Header("Plate Settings")]
+    public GameObject platePrefab;       // Prefab cái đĩa
+    public Transform traySlotOrigin;     // Vị trí mốc duy nhất (Tray Slot Pos)
+    public float plateStackOffset = 0.1f; // Khoảng cách Y nếu bạn muốn xếp chồng đĩa lên nhau
+
+    private List<Transform> allPlates = new List<Transform>();
+    private Queue<Transform> availablePlates = new Queue<Transform>();
+    private Dictionary<PigComponent, Transform> activePlateMap = new Dictionary<PigComponent, Transform>();
+
+    public Transform tray;
 
     void OnEnable()
     {
@@ -83,8 +95,48 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnUseShuffle += ProcessShufflePig;
 
         EventManager.OnClickBlock += ClickBlock;
+
+        InitializePlates();
     }
 
+    private void InitializePlates()
+    {
+        // Xóa đĩa cũ nếu có (tránh trùng lặp khi restart)
+        foreach (var p in allPlates) if (p != null) Destroy(p.gameObject);
+        allPlates.Clear();
+        availablePlates.Clear();
+        activePlateMap.Clear();
+
+        for (int i = 0; i < 5; i++)
+        {
+            // Tính toán vị trí xếp chồng (hoặc xếp hàng nếu bạn đổi Vector3.up thành Vector3.right)
+            Vector3 spawnPos = traySlotOrigin.position - Vector3.right * (i * plateStackOffset);
+
+            GameObject go = Instantiate(platePrefab, spawnPos, traySlotOrigin.rotation);
+            Transform plate = go.transform;
+            plate.SetParent(tray);
+            plate.transform.localScale = Vector3.one;
+
+            allPlates.Add(plate);
+            availablePlates.Enqueue(plate);
+        }
+    }
+
+    private void AssignPlateToPig(PigComponent pig)
+    {
+        if (availablePlates.Count > 0)
+        {
+            Transform plate = availablePlates.Dequeue();
+            pig.currentPlate = plate;
+            plate.transform.SetParent(pig.transform);
+            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.047f); // Điều chỉnh vị trí đĩa trên pig nếu cần
+            plate.transform.localRotation = Quaternion.identity;
+            plate.transform.localRotation = new Quaternion(90, 90, 0, 0); // Đảm bảo đĩa quay đúng hướng
+            plate.transform.localScale = new Vector3(80, 100, 120); // Điều chỉnh kích thước đĩa nếu cần
+
+            activePlateMap[pig] = plate;
+        }
+    }
     public void ClickBlock(string color)
     {
         foreach (Transform block in blockGroup)
@@ -126,8 +178,6 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnLoseGame -= LoseGame;
         EventManager.OnContinueGame -= ContinueGame;
         EventManager.OnPigOutOfAmmo -= HandlePigOutOfAmmo;
-
-
     }
 
     private void HandlePigOutOfAmmo(PigComponent pig)
@@ -151,6 +201,12 @@ public class SpawnerManager : MonoBehaviour
             {
                 foreach (PigComponent p in linkedGroup)
                 {
+
+                    if (p.currentPlate != null)
+                    {
+                        StartCoroutine(ReturnPlateToOrigin(p.currentPlate));
+                        p.currentPlate = null;
+                    }
                     p.ExecuteDestroy();
                     pigsInQueue.Remove(p);
                     pigsInTempQueue.Remove(p);
@@ -161,6 +217,11 @@ public class SpawnerManager : MonoBehaviour
 
         else
         {
+            if (pig.currentPlate != null)
+            {
+                StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
+                pig.currentPlate = null;
+            }
             pig.ExecuteDestroy();
 
         }
@@ -349,8 +410,9 @@ public class SpawnerManager : MonoBehaviour
             List<PigComponent> pigsInLane = pigsByLane[laneIndex];
             if (pigsInLane.Count > 0)
             {
+                // AssignPlateToPig(pig);
                 RemovePigFromLane(pig);
-                pig.JumpTo();
+                pig.JumpTo(onComplete: () => AssignPlateToPig(pig));
             }
         }
     }
@@ -823,6 +885,17 @@ public class SpawnerManager : MonoBehaviour
     {
         if (pig == null) return;
 
+        if (activePlateMap.TryGetValue(pig, out Transform plate))
+        {
+            // Bắt đầu quá trình thu hồi đĩa
+            if (pig.currentPlate != null)
+            {
+                StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
+                pig.currentPlate = null; // Xóa tham chiếu trên pig để tránh thu hồi 2 lần
+            }
+            activePlateMap.Remove(pig);
+        }
+
         if (ShouldSkipQueueForFinalRush())
         {
             var pigRemaining = pigSpawnPos.GetComponentsInChildren<PigComponent>();
@@ -870,6 +943,56 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
+    private IEnumerator ReturnPlateToOrigin(Transform plate)
+    {
+        Vector3 startPos = plate.position;
+
+        plate.transform.SetParent(null);
+        Vector3 targetPos = traySlotOrigin.position + Vector3.up * (availablePlates.Count * plateStackOffset);
+
+        float elapsed = 0;
+        float duration = 0.2f; // Thời gian đĩa bay về
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            plate.position = Vector3.Lerp(startPos, targetPos, t);
+            plate.rotation = Quaternion.Lerp(plate.rotation, traySlotOrigin.rotation, t);
+            yield return null;
+        }
+
+        plate.transform.SetParent(tray);
+        plate.position = targetPos;
+        plate.rotation = traySlotOrigin.rotation;
+        plate.localScale = Vector3.one;
+        availablePlates.Enqueue(plate);
+
+        RearrangePlatesInTray();
+    }
+
+    private void RearrangePlatesInTray()
+    {
+        int index = 0;
+        // CHỈ sắp xếp những đĩa đang rảnh (nằm trong Queue)
+        foreach (Transform p in availablePlates)
+        {
+            // Bước 1: Tính toán vị trí Local (Tương đối)
+            // Chỉ truyền giá trị khoảng cách vào đây, KHÔNG cộng thêm .position
+            ;
+            Vector3 localOffset = Vector3.right * (index * plateStackOffset);
+
+            // Bước 2: Chuyển sang World Position
+            // TransformPoint sẽ tự động tính toán dựa trên Vị trí, Xoay và Scale của traySlotOrigin
+            // Vector3 targetWorldPos = traySlotOrigin.TransformPoint(localOffset);
+
+            // Bước 3: Cập nhật (Dùng MovePosition nếu đĩa có Rigidbody, hoặc .position nếu không)
+            p.position = traySlotOrigin.position - Vector3.right * (index * plateStackOffset);
+            // p.rotation = traySlotOrigin.rotation;
+
+            index++;
+        }
+    }
     private bool ShouldSkipQueueForFinalRush()
     {
         PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
@@ -921,6 +1044,7 @@ public class SpawnerManager : MonoBehaviour
         int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
 
         if (removedIndex < 0) return;
+        AssignPlateToPig(pig);
 
         if (isFromTempQueue)
         {

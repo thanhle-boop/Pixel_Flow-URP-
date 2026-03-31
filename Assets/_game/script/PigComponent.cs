@@ -22,15 +22,16 @@ public class PigComponent : MonoBehaviour
     private int _currentCircleIndex = -1;
 
     private int _bulletsFiredCount = 0;
+    private Quaternion initialRotation;
 
     public PigComponent leftPig { get; private set; } = null;
     public PigComponent rightPig { get; private set; } = null;
     private PigState currentState = PigState.InLane;
     private Vector3 _rayCastDirection = Vector3.forward;
     private WavyLineRenderer _wavyLine;
-    private Animator animator;
 
     [Header("References")]
+    public Animator animator;
     private List<Transform> allWaypoints = new List<Transform>();
     public Transform rayCastPoint;
     public Rigidbody rb;
@@ -43,28 +44,42 @@ public class PigComponent : MonoBehaviour
     public Material hiddenMaterial;
     public Material normalMaterial;
     public List<GameObject> ammoCircles;
+    public Transform model;
+
+    public Transform canvasTransform;
+    private Vector3 initCanvasLocalPos;
+    public Transform currentPlate;
     private void ChangeState(PigState newState)
     {
 
+        int animValue = 0;
         switch (newState)
         {
             case PigState.InLane:
             case PigState.InQueue:
-
-                animator.SetInteger("state", 0);
+                animValue = 0; // Ứng với State 1 trong Animator
                 break;
-            default:
-                animator.SetInteger("state", 1);
+            case PigState.JumpingToConveyor:
+            case PigState.JumpingFromQueue:
+                animValue = 2; // Ứng với State 2 (id 2) trong Animator
                 break;
+            case PigState.OnConveyor:
+                animValue = 1; // Ứng với State 3 (id 1) trong Animator
+                break;
+        }
 
+        // Bước 2: Kiểm tra lại một lần nữa với giá trị thực tế trong Animator
+        if (animator.GetInteger("state") != animValue)
+        {
+            animator.SetInteger("state", animValue);
         }
         currentState = newState;
     }
 
-    public void OnEnable()
-    {
-        animator = GetComponent<Animator>();
-    }
+    // public void OnEnable()
+    // {
+    //     animator = GetComponent<Animator>();
+    // }
     public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed,
     float jumpSpeed, List<Transform> paths, bool isHidden)
     {
@@ -76,8 +91,11 @@ public class PigComponent : MonoBehaviour
         this.speed = _speed;
         this.baseConveyorSpeed = _speed;
         this.jumpToQueueSpeed = jumpSpeed;
+        this.initialRotation = model.rotation;
         this._bulletsFiredCount = 0;
+        initCanvasLocalPos = canvasTransform.localPosition;
 
+        ChangeState(PigState.InLane);
         allWaypoints = paths;
 
         _bulletsPerCircle = Mathf.CeilToInt((float)bulletCount / 5f);
@@ -209,7 +227,7 @@ public class PigComponent : MonoBehaviour
             var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
             meshRenderer.material = normalMaterial;
             bodyMeshRenderer.material = normalMaterial;
-            
+
             meshRenderer.material.color = GameUtility.GetColorByName(color);
             bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
 
@@ -336,7 +354,7 @@ public class PigComponent : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void JumpTo()
+    public void JumpTo(Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(1f);
 
@@ -352,14 +370,17 @@ public class PigComponent : MonoBehaviour
         //count Straight slots
         EventManager.OnJumpToConveyor?.Invoke();
 
-        StartCoroutine(ConveyorJourney());
+        canvasTransform.localPosition = new Vector3(0.0164f, 1.488f, -0.215f);
+
+        StartCoroutine(ConveyorJourney(onComplete));
     }
 
-    private IEnumerator ConveyorJourney()
+    private IEnumerator ConveyorJourney(Action onComplete)
     {
         Vector3 firstPoint = allWaypoints[0].position;
         yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
 
+        onComplete?.Invoke();
         ChangeState(PigState.OnConveyor);
         yield return new WaitForFixedUpdate();
 
@@ -394,6 +415,7 @@ public class PigComponent : MonoBehaviour
         }
 
         rb.MovePosition(target);
+        ChangeState(PigState.InLane);
         isOnTop = false;
     }
 
@@ -477,7 +499,7 @@ public class PigComponent : MonoBehaviour
 
     public IEnumerator SlideTo(Vector3 target, float speed)
     {
-        Vector3 start = rb.position;
+        Vector3 start = rb.position;// Slightly above to avoid ground collision
         float duration = Vector3.Distance(start, target) / speed;
         float elapsed = 0;
         while (elapsed < duration)
@@ -485,7 +507,10 @@ public class PigComponent : MonoBehaviour
             elapsed += Time.deltaTime;
             Vector3 newPos = Vector3.Lerp(start, target, elapsed / duration);
             rb.MovePosition(newPos);
-
+            if (currentPlate != null)
+            {
+                // currentPlate.position = newPos;
+            }
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(target);
@@ -497,6 +522,9 @@ public class PigComponent : MonoBehaviour
         while (true)
         {
             var current = path[i];
+            var next = path[(i + 1) % path.Count];
+
+            Quaternion targetRot = Quaternion.LookRotation(current.up, current.forward);
 
             if (Mathf.Abs(Vector3.Dot(_rayCastDirection, current.forward)) < 0.01f)
             {
@@ -508,28 +536,32 @@ public class PigComponent : MonoBehaviour
                 Vector3 start = path[i].position;
                 Vector3 control = path[i + 1].position;
                 Vector3 end = path[i + 2].position;
-                Quaternion startRot = path[i].rotation;
-                Quaternion endRot = path[i + 2].rotation;
 
-                yield return StartCoroutine(SlideOnCurve(start, control, end, startRot, endRot, speed));
+                Quaternion startRotAligned = Quaternion.LookRotation(path[i].up, path[i].forward);
+                Quaternion endRotAligned = Quaternion.LookRotation(path[i + 2].up, path[i + 2].forward);
+
+                yield return StartCoroutine(SlideOnCurve(start, control, end, startRotAligned, endRotAligned, speed));
                 i += 2;
-
             }
             else
             {
-                rb.MoveRotation(path[i].rotation);
+                model.rotation = targetRot;
                 Vector3 end = path[i + 1].position;
                 yield return StartCoroutine(SlideTo(end, speed));
                 i++;
             }
 
-            if (i >= path.Count - 1)
-            {
-                i = 0;
-            }
+            if (i >= path.Count - 1) i = 0;
         }
     }
 
+    private Quaternion GetRotationWithUpAligned(Transform waypoint)
+    {
+        return Quaternion.LookRotation(waypoint.up, waypoint.forward);
+
+        // Nếu bạn muốn model.up = waypoint.forward và model.forward = waypoint.up:
+        // return Quaternion.LookRotation(waypoint.up, -waypoint.forward);
+    }
     public IEnumerator SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float speed)
     {
         // Estimate Bezier curve length by sampling
@@ -559,17 +591,25 @@ public class PigComponent : MonoBehaviour
                                Mathf.Pow(t, 2) * end;
 
             rb.MovePosition(position);
-            rb.MoveRotation(Quaternion.Slerp(startRotation, endRotation, t));
+
+            model.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+            if (currentPlate != null)
+            {
+                // currentPlate.rotation = model.rotation;
+            }
+            // rb.MoveRotation(Quaternion.Slerp(startRotation, endRotation, t));
 
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(end);
-        rb.MoveRotation(endRotation);
+        // rb.MoveRotation(endRotation);
+        model.rotation = endRotation;
     }
 
 
     public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, int targetQueueIndex)
     {
+
         ChangeState(PigState.MovingToQueue);
 
         if (_wavyLine != null)
@@ -602,13 +642,17 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * height;
             rb.MovePosition(currentPos);
 
-            rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
+            // rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
+            model.rotation = Quaternion.Lerp(startRot, targetRot, t);
 
             yield return new WaitForFixedUpdate();
         }
 
         rb.MovePosition(targetPos);
-        rb.MoveRotation(targetRot);
+        // rb.MoveRotation(targetRot);
+        model.rotation = targetRot;
+        model.rotation = Quaternion.identity;
+        model.localRotation = initialRotation;
         isOnTop = true;
 
         ChangeState(PigState.InQueue);
@@ -638,7 +682,7 @@ public class PigComponent : MonoBehaviour
     }
 
     private IEnumerator MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot)
-    {
+    { // Slightly above to avoid ground collision
         Vector3 startPos = rb.position;
         Quaternion startRot = rb.rotation;
 
@@ -662,7 +706,8 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
             rb.MovePosition(currentPos);
-            rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
+            // rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
+            model.rotation = Quaternion.Lerp(startRot, targetRot, t);
 
             yield return new WaitForFixedUpdate();
         }
@@ -670,7 +715,8 @@ public class PigComponent : MonoBehaviour
         if (this != null)
         {
             rb.MovePosition(targetPos);
-            rb.MoveRotation(targetRot);
+            // rb.MoveRotation(targetRot);
+            model.rotation = targetRot;
             isOnTop = true;
 
             ChangeState(PigState.InQueue);
