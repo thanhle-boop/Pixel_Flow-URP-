@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class PigComponent : MonoBehaviour
 {
+    [Header("Pig Info")]
     public string color;
     public int Bullet;
     public int laneIndex;
@@ -15,33 +16,55 @@ public class PigComponent : MonoBehaviour
     public bool isOnBelt = false;
     private float speed = 0f;
     private float baseConveyorSpeed = 0f;
-    // private float speedOnCurve = 0f;
-    public bool isLinkPig = false;
-    public PigComponent leftPig = null;
-    public PigComponent rightPig = null;
-    public Transform rayCastPoint;
-    private List<Transform> allWaypoints = new List<Transform>();
-    public Rigidbody rb;
+    private int _lockedTargets = 0;
+
+    private int _bulletsPerCircle;
+    private int _currentCircleIndex = -1;
+
+    private int _bulletsFiredCount = 0;
+
+    public PigComponent leftPig { get; private set; } = null;
+    public PigComponent rightPig { get; private set; } = null;
     private PigState currentState = PigState.InLane;
     private Vector3 _rayCastDirection = Vector3.forward;
+    private WavyLineRenderer _wavyLine;
+    private Animator animator;
+
+    [Header("References")]
+    private List<Transform> allWaypoints = new List<Transform>();
+    public Transform rayCastPoint;
+    public Rigidbody rb;
     public LayerMask blockLayer;
 
-    public GameObject pigMaterial1;
-    public GameObject pigMaterial2;
+    public GameObject faceModel;
+    public GameObject bodyModel;
 
-    private WavyLineRenderer _wavyLine;
-    // private GameObject _lastCheckedBlock;
-
-    public GameObject bulletText;
-    public GameObject pigModel;
+    public TextMeshProUGUI bulletText;
     public Material hiddenMaterial;
-    // public Material normalMaterial;
-    private int _lockedTargets = 0;
-    public void ChangeState(PigState newState)
+    public Material normalMaterial;
+    public List<GameObject> ammoCircles;
+    private void ChangeState(PigState newState)
     {
+
+        switch (newState)
+        {
+            case PigState.InLane:
+            case PigState.InQueue:
+
+                animator.SetInteger("state", 0);
+                break;
+            default:
+                animator.SetInteger("state", 1);
+                break;
+
+        }
         currentState = newState;
     }
 
+    public void OnEnable()
+    {
+        animator = GetComponent<Animator>();
+    }
     public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed,
     float jumpSpeed, List<Transform> paths, bool isHidden)
     {
@@ -53,8 +76,17 @@ public class PigComponent : MonoBehaviour
         this.speed = _speed;
         this.baseConveyorSpeed = _speed;
         this.jumpToQueueSpeed = jumpSpeed;
+        this._bulletsFiredCount = 0;
 
         allWaypoints = paths;
+
+        _bulletsPerCircle = Mathf.CeilToInt((float)bulletCount / 5f);
+
+        foreach (var circle in ammoCircles)
+        {
+            if (circle != null) circle.SetActive(false);
+        }
+        _currentCircleIndex = -1;
 
         if (_wavyLine == null)
         {
@@ -67,26 +99,25 @@ public class PigComponent : MonoBehaviour
 
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
-        // var meshRenderer = pigModel.GetComponentInChildren<SkinnedMeshRenderer>();
-        // var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
-        var meshRenderer = pigMaterial1.GetComponent<MeshRenderer>();
-        var meshRenderer2 = pigMaterial2.GetComponent<MeshRenderer>();
+        var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+        var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
 
+        for (int i = 0; i < ammoCircles.Count; i++)
+        {
+            var meshRenderer2 = ammoCircles[i].GetComponent<MeshRenderer>();
+            meshRenderer2.material.color = GameUtility.GetColorByName(color);
+
+        }
         if (isHidden)
         {
-            // meshRenderer.material = hiddenMaterial;
             meshRenderer.material = hiddenMaterial;
-            meshRenderer2.material = hiddenMaterial;
-            bulletText.SetActive(false);
+            bodyMeshRenderer.material = hiddenMaterial;
+            bulletText.text = "?";
             return;
         }
-        // meshRenderer.material.color = GameUtility.GetColorByName(color);
-        
+        bulletText.text = bulletCount.ToString();
         meshRenderer.material.color = GameUtility.GetColorByName(color);
-        meshRenderer2.material.color = GameUtility.GetColorByName(color);
-        // pigMaterial.color = GameUtility.GetColorByName(color);
-
-        bulletText.GetComponent<TextMeshProUGUI>().text = bulletCount.ToString();
+        bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
     }
 
     public bool IsOnFirstRow()
@@ -174,16 +205,15 @@ public class PigComponent : MonoBehaviour
         if (value)
         {
             isHidden = false;
-            // var meshRenderer = pigModel.GetComponentInChildren<MeshRenderer>();
-            // meshRenderer.material = normalMaterial;
-            // meshRenderer.material.color = GameUtility.GetColorByName(color);
-            // pigMaterial.color = GameUtility.GetColorByName(color);
+            var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+            var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+            meshRenderer.material = normalMaterial;
+            bodyMeshRenderer.material = normalMaterial;
+            
+            meshRenderer.material.color = GameUtility.GetColorByName(color);
+            bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
 
-            pigMaterial1.GetComponent<MeshRenderer>().material.color = GameUtility.GetColorByName(color);
-            pigMaterial2.GetComponent<MeshRenderer>().material.color = GameUtility.GetColorByName(color);
-
-            bulletText.GetComponent<TextMeshProUGUI>().text = Bullet.ToString();
-            bulletText.SetActive(true);
+            bulletText.text = Bullet.ToString();
 
             if (IsLinkedPig())
             {
@@ -199,10 +229,63 @@ public class PigComponent : MonoBehaviour
             _lockedTargets--;
         }
 
+        _bulletsFiredCount++;
+
+        int targetCircleIdx = (_bulletsFiredCount - 1) / _bulletsPerCircle;
+        if (targetCircleIdx >= 0 && targetCircleIdx < ammoCircles.Count && targetCircleIdx > _currentCircleIndex)
+        {
+            if (_currentCircleIndex >= 0)
+            {
+                StartCoroutine(ScaleCircleRoutine(ammoCircles[_currentCircleIndex]));
+            }
+
+            _currentCircleIndex = targetCircleIdx;
+            ammoCircles[_currentCircleIndex].SetActive(true);
+            ammoCircles[_currentCircleIndex].transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+
+        // Xử lý khi hết đạn
         if (Bullet <= 0 && isOnBelt)
         {
+            // Chạy hiệu ứng cho vòng cuối cùng
+            if (_currentCircleIndex >= 0)
+            {
+                StartCoroutine(ScaleCircleRoutine(ammoCircles[_currentCircleIndex]));
+            }
+
             EventManager.OnPigOutOfAmmo?.Invoke(this);
         }
+    }
+
+    private IEnumerator ScaleCircleRoutine(GameObject circle)
+    {
+        if (circle == null) yield break;
+        Transform t = circle.transform;
+        float durationScaleUp = 0.1f; // Tốc độ hiệu ứng
+        float durationScaleDown = 0.25f; // Tốc độ hiệu ứng
+
+        // 1. Phóng to lên 1.5x (Z và X)
+        float elapsed = 0;
+        Vector3 startScale = new Vector3(1f, 1f, 1f);
+        Vector3 peakScale = new Vector3(1.7f, 1f, 1.7f);
+
+        while (elapsed < durationScaleUp)
+        {
+            elapsed += Time.deltaTime;
+            t.localScale = Vector3.Lerp(startScale, peakScale, elapsed / durationScaleUp);
+            yield return null;
+        }
+
+        // 2. Co lại về 1.2f
+        elapsed = 0;
+        while (elapsed < durationScaleDown)
+        {
+            elapsed += Time.deltaTime;
+            t.localScale = Vector3.Lerp(peakScale, startScale, elapsed / durationScaleDown);
+            yield return null;
+        }
+
+        t.localScale = startScale;
     }
 
     public void ExecuteDestroy()
@@ -272,7 +355,7 @@ public class PigComponent : MonoBehaviour
         StartCoroutine(ConveyorJourney());
     }
 
-private IEnumerator ConveyorJourney()
+    private IEnumerator ConveyorJourney()
     {
         Vector3 firstPoint = allWaypoints[0].position;
         yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
@@ -489,7 +572,6 @@ private IEnumerator ConveyorJourney()
     {
         ChangeState(PigState.MovingToQueue);
 
-        StopAllCoroutines();
         if (_wavyLine != null)
         {
             _wavyLine.ClearAllTargets();
@@ -530,6 +612,7 @@ private IEnumerator ConveyorJourney()
         isOnTop = true;
 
         ChangeState(PigState.InQueue);
+        StopAllCoroutines();
     }
 
     public void MoveInQueue(Vector3 targetPos, Quaternion targetRot, int newQueueIndex)

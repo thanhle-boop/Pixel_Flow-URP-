@@ -194,7 +194,7 @@ public class WavyLineRenderer : MonoBehaviour
                     _pigComponent.Bullet--;
                     if (_pigComponent.bulletText != null)
                     {
-                        _pigComponent.bulletText.GetComponent<TextMeshProUGUI>().text = _pigComponent.Bullet.ToString();
+                        _pigComponent.bulletText.text = _pigComponent.Bullet.ToString();
                     }
                     _onBulletChanged?.Invoke();
                 }
