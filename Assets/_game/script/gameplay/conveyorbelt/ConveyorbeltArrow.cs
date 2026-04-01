@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class ConveyorbeltArrow : MonoBehaviour
+public partial class ConveyorbeltArrow : MonoBehaviour
 {
     [SerializeField] LineRenderer lineRenderer;
     [SerializeField] float speedAnim = 1;
@@ -19,5 +20,5 @@ public class ConveyorbeltArrow : MonoBehaviour
     public void SetPauseAnimConveyorbelt(bool val)
     {
         isPause = val;
-    }    
+    }
 }
