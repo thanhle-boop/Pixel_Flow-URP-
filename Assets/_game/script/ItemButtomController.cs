@@ -5,19 +5,21 @@ using UnityEngine.UI;
 
 public class ItemButtomController : MonoBehaviour
 {
+    public Image panelSprite;
+    public Image iconSprite;
+    
+    public TextMeshProUGUI countText;
+    public GameObject plusIcon;
+    public GameObject countObject;
+
+    [Header("sprite")]
     public Sprite lockIcon;
     public Sprite lockPanel;
     public Sprite unlockIcon;
     public Sprite unlockPanel;
 
-    public Image panelSprite;
-    public Image iconSprite;
-    
     public Sprite greenSprite;
     public Sprite blueSprite;
-    public TextMeshProUGUI countText;
-    public GameObject plusIcon;
-    public GameObject countObject;
 
     public int itemType;
 
