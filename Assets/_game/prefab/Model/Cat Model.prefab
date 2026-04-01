@@ -211,7 +211,7 @@ MonoBehaviour:
   faceModel: {fileID: 7549459756862887470}
   bodyModel: {fileID: 7168933918986397040}
   bulletText: {fileID: 1054517380337963550}
-  hiddenMaterial: {fileID: 2100000, guid: 250bfb7fed032a64898a8f00c8eec65e, type: 2}
+  hiddenMaterial: {fileID: 2100000, guid: 627464e3f54529c4a8c19a175385d3c3, type: 2}
   normalMaterial: {fileID: 2100000, guid: 9cae354042bc66846aa9aa0a22b037fb, type: 2}
   ammoCircles:
   - {fileID: 4300460024733739260}
@@ -342,8 +342,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.88914996, b: 0, a: 1}
-      key1: {r: 0.8584906, g: 0.25511748, b: 0.25511748, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -374,7 +374,7 @@ LineRenderer:
     numCapVertices: 0
     alignment: 0
     textureMode: 1
-    textureScale: {x: 1, y: 1}
+    textureScale: {x: 5, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
   m_UseWorldSpace: 1

@@ -73,12 +73,16 @@ public class WavyLineRenderer : MonoBehaviour
     public void SetColor(Color color)
     {
         _baseColor = color;
+
+        _lineRenderer.material = lineMaterial;
+        _lineRenderer.material.color = _baseColor;
+        _lineRenderer.startColor = color;
+        _lineRenderer.endColor = color;
+
+        Debug.Log($" Set color to {_baseColor}");
         if (_lineRenderer != null)
         {
-            _lineRenderer.material = lineMaterial;
-            _lineRenderer.material.color = _baseColor;
-            _lineRenderer.startColor = color;
-            _lineRenderer.endColor = color;
+
             // _lineRenderer.endColor = _baseColor;
         }
     }
