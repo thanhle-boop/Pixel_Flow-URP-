@@ -3118,6 +3118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5fa0c936c8117d4b8708a2f2600211e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isTesting: 0
   supertCatPrefab: {fileID: 454243561976167103}
   blockPrefab: {fileID: 4886328685167030700, guid: a4e13b989d360c248906fc7864625213, type: 3}
   blockSpawnPoint: {fileID: 559098098}
@@ -3148,9 +3149,6 @@ MonoBehaviour:
   - {fileID: 743297714}
   - {fileID: 271582465}
   startTempQueuePos: {fileID: 77724187}
-  _straightSlot: 5
-  _maxstraightSlot: 5
-  isTesting: 0
   speed: 4.5
   jumpToQueueSpeed: 10
   linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
@@ -3160,6 +3158,7 @@ MonoBehaviour:
   traySlotOrigin: {fileID: 3842790677922476581}
   plateStackOffset: 0.08
   tray: {fileID: 7299698376936293976}
+  clickVFXPrefab: {fileID: 2559863911155596046, guid: 920cb0fcbb16f494a93f225b4f56b492, type: 3}
 --- !u!1 &1975314016
 GameObject:
   m_ObjectHideFlags: 0

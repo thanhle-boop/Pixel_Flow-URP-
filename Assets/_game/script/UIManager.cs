@@ -161,7 +161,6 @@ public class UIManager : Singleton<UIManager>
     {
         if (gameOverUI == null || gameplayUI == null)
         {
-            Debug.Log("congthanh");
             return;
         }
         GameManager.Instance.ContinueGame();

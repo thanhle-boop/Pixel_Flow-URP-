@@ -222,6 +222,8 @@ MonoBehaviour:
   model: {fileID: 6920970110129771155}
   canvasTransform: {fileID: 1975030970053115210}
   currentPlate: {fileID: 0}
+  spoolDissapearVFX: {fileID: 2495930780412197746, guid: b8dcb235e9e5f584ebf0f3ccb9dcd1cc, type: 3}
+  landOnDiskVFX: {fileID: 4187419000024877630, guid: d49d5be653928c54a93cabe5d93aae56, type: 3}
 --- !u!65 &7977785496157537190
 BoxCollider:
   m_ObjectHideFlags: 0

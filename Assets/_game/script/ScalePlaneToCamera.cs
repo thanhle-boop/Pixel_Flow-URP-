@@ -36,7 +36,6 @@ public class ScalePlaneToCamera : MonoBehaviour
     {
         if (orthoCamera == null || !orthoCamera.orthographic)
         {
-            Debug.LogWarning("Camera không tồn tại hoặc không phải là Orthographic!");
             return;
         }
 

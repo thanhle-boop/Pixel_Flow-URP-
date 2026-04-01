@@ -1,42 +1,27 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class PlayerInput : MonoBehaviour
 {
     public LayerMask pigLayerMask;
     public LayerMask blockLayerMask;
 
-    private bool canClick = false;
+    // private bool canClick = false;
     private bool isUseSuperCat = false;
 
     void OnEnable()
     {
-        EventManager.OnStartGame += EnableInput;
-        EventManager.OnContinueGame += EnableInput;
-        EventManager.OnLoseGame += DisableInput;
-
-        EventManager.OnUseSuperCat += () =>
-        {
-            isUseSuperCat = true;
-        };
+        EventManager.OnUseSuperCat += UseSuperCat;
     }
+
     private void OnDisable()
     {
-        EventManager.OnStartGame -= EnableInput;
-        EventManager.OnContinueGame -= EnableInput;
-        EventManager.OnLoseGame -= DisableInput;
+        EventManager.OnUseSuperCat -= UseSuperCat;
     }
 
-    private void DisableInput()
+    public void UseSuperCat()
     {
-        canClick = false;
+        isUseSuperCat = true;
     }
-
-    private void EnableInput()
-    {
-        canClick = true;
-    }
-
     void Update()
     {
         HandleInput();

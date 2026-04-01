@@ -78,13 +78,6 @@ public class WavyLineRenderer : MonoBehaviour
         _lineRenderer.material.color = _baseColor;
         _lineRenderer.startColor = color;
         _lineRenderer.endColor = color;
-
-        Debug.Log($" Set color to {_baseColor}");
-        if (_lineRenderer != null)
-        {
-
-            // _lineRenderer.endColor = _baseColor;
-        }
     }
 
     public void AddTarget(GameObject block)
@@ -94,7 +87,6 @@ public class WavyLineRenderer : MonoBehaviour
         if (_targetProcessCoroutine == null)
         {
             _targetProcessCoroutine = StartCoroutine(ProcessTargets());
-            // SoundManager.Instance.PlaySoundLoop(SoundManager.Instance.yarn);
         }
     }
 
@@ -131,8 +123,6 @@ public class WavyLineRenderer : MonoBehaviour
             }
 
             float distance = Vector3.Distance(_startPoint, _endPoint);
-            // Giả sử 1 đơn vị Unity là 1 lần lặp lại của lưới. 
-            // Bạn có thể nhân với một hệ số nếu muốn lưới dày hơn (ví dụ: distance * 2f)
             _lineRenderer.material.mainTextureScale = new Vector2(1f, distance * 2f);
             for (int i = 0; i < waveSegments; i++)
             {

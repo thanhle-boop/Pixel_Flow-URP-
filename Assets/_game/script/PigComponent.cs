@@ -49,7 +49,9 @@ public class PigComponent : MonoBehaviour
     public Transform canvasTransform;
     private Vector3 initCanvasLocalPos;
     public Transform currentPlate;
-    private float _currentShakeAngle = 0f;
+    public GameObject spoolDissapearVFX;
+    public GameObject landOnDiskVFX;
+    public GameObject unlockVFX;
     private void ChangeState(PigState newState)
     {
 
@@ -229,6 +231,13 @@ public class PigComponent : MonoBehaviour
         isOnTop = value;
         if (value)
         {
+            if(isHidden)
+            {
+                ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
+                unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
+                unlockEffect.transform.position = transform.position + Vector3.up * 0.5f;
+                unlockEffect.Play();
+            }
             isHidden = false;   
             var meshRenderer = faceModel.GetComponent<MeshRenderer>();
             var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
@@ -340,24 +349,30 @@ public class PigComponent : MonoBehaviour
 
     private IEnumerator DestroyAnimationInternal()
     {
-        Vector3 startScale = transform.localScale;
-        Quaternion startRotation = rb.rotation;
-        Vector3 currentPos = rb.position;
-        float duration = 0.5f;
+        // Vector3 startScale = transform.localScale;
+        // Quaternion startRotation = rb.rotation;
+        // Vector3 currentPos = rb.position;
+        model.gameObject.SetActive(false);
+        bulletText.gameObject.SetActive(false);
+        ParticleSystem ps = Instantiate(spoolDissapearVFX).GetComponent<ParticleSystem>();
+        // ps.transform.position = transform.position + Vector3.up * 0.5f;
+        ps.gameObject.transform.SetParent(this.transform); // Đảm bảo VFX không bị ảnh hưởng bởi scale của pig
+        ps.transform.localPosition = Vector3.up * 0.5f - Vector3.forward * 0.2f;
+        ps.Play();
+        float duration = 0.3f;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
+            // float t = elapsed / duration;
 
-            rb.MovePosition(currentPos);
-            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
-            rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
+            // rb.MovePosition(currentPos);
+            // transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+            // rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
 
             yield return new WaitForFixedUpdate();
         }
-
         EventManager.OnPigDestroyed?.Invoke(this);
         Destroy(gameObject);
     }
@@ -365,11 +380,8 @@ public class PigComponent : MonoBehaviour
     public void JumpTo(Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(1f);
-
-        //count Straight slots
         EventManager.OnJumpToConveyor?.Invoke();
         StartCoroutine(ReadyToJump(0.1f, onComplete));
-
     }
 
     private IEnumerator ConveyorJourney(Action onComplete)
@@ -378,6 +390,9 @@ public class PigComponent : MonoBehaviour
         Vector3 firstPoint = allWaypoints[0].position;
         yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
 
+        ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
+        ps.transform.position = transform.position + new Vector3(-0.2f, 0.4f, 0);
+        ps.Play();
         onComplete?.Invoke();
         ChangeState(PigState.OnConveyor);
         yield return new WaitForFixedUpdate();

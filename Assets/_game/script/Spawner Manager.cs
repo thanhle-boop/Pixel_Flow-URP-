@@ -6,12 +6,20 @@ using UnityEngine.SceneManagement;
 
 public class SpawnerManager : MonoBehaviour
 {
-
     private struct PendingLink
     {
         public PigComponent sourcePig;
         public PigComponent targetPig;
     }
+    private int _straightSlot = 0;
+    private int _maxstraightSlot = 5;
+    private int totalBlockCount = 0;
+
+    public bool isTesting = false;
+    // private int tempScore = 0;
+
+    private bool isProcessingClick = false;
+    private bool onHandItemUsed = false;
     public GameObject supertCatPrefab;
     public GameObject blockPrefab;
     public Transform blockSpawnPoint;
@@ -34,15 +42,6 @@ public class SpawnerManager : MonoBehaviour
     private List<PigComponent> pigsInTempQueue = new List<PigComponent>();
     public Transform startTempQueuePos;
     private List<PigComponent> pigsInConveyor = new List<PigComponent>();
-    public int _straightSlot = 0;
-    public int _maxstraightSlot = 5;
-    private int totalBlockCount = 0;
-
-    public bool isTesting = false;
-    private int tempScore = 0;
-
-    private bool isProcessingClick = false;
-    private bool onHandItemUsed = false;
 
     [SerializeField]
     private float speed = 1f;
@@ -55,18 +54,18 @@ public class SpawnerManager : MonoBehaviour
     public List<GameObject> blockPrefabsByColor;
 
     public float spacing = 1.2f;
-    // public List<GameObject> plate;
 
     [Header("Plate Settings")]
-    public GameObject platePrefab;       // Prefab cái đĩa
-    public Transform traySlotOrigin;     // Vị trí mốc duy nhất (Tray Slot Pos)
-    public float plateStackOffset = 0.1f; // Khoảng cách Y nếu bạn muốn xếp chồng đĩa lên nhau
+    public GameObject platePrefab;
+    public Transform traySlotOrigin;
+    public float plateStackOffset = 0.1f;
 
     private List<Transform> allPlates = new List<Transform>();
     private Queue<Transform> availablePlates = new Queue<Transform>();
     private Dictionary<PigComponent, Transform> activePlateMap = new Dictionary<PigComponent, Transform>();
 
     public Transform tray;
+    public GameObject clickVFXPrefab;
 
     void OnEnable()
     {
@@ -81,22 +80,47 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnContinueGame += ContinueGame;
         EventManager.OnPigOutOfAmmo += HandlePigOutOfAmmo;
 
-        EventManager.OnUseAddTray += () =>
-        {
-            _maxstraightSlot++;
-            UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
-        };
+        EventManager.OnUseAddTray += UseItemAddTray;
 
-        EventManager.OnUseHand += () =>
-        {
-            onHandItemUsed = true;
-        };
+        EventManager.OnUseHand += UseItemHand;
 
-        EventManager.OnUseShuffle += ProcessShufflePig;
+        EventManager.OnUseShuffle += UseItemShufflePig;
 
         EventManager.OnClickBlock += ClickBlock;
 
         InitializePlates();
+    }
+
+    private void OnDisable() {
+        EventManager.OnStartGame -= SpawnMap;
+        EventManager.OnClickPig -= SelectPig;
+        EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
+        EventManager.OnBlockDestroyed -= OnBlockDestroyed;
+        EventManager.OnPigDestroyed -= RefundStraightSlot;
+        EventManager.OnJumpToConveyor -= IncreaseStraightSlot;
+        EventManager.OnWinGame -= WinGame;
+        EventManager.OnLoseGame -= LoseGame;
+        EventManager.OnContinueGame -= ContinueGame;
+        EventManager.OnPigOutOfAmmo -= HandlePigOutOfAmmo;
+
+        EventManager.OnUseAddTray -= UseItemAddTray;
+
+        EventManager.OnUseHand -= UseItemHand;
+
+        EventManager.OnUseShuffle -= UseItemShufflePig;
+
+        EventManager.OnClickBlock -= ClickBlock;
+    }
+
+    public void UseItemHand()
+    {
+        onHandItemUsed = true;
+    }
+
+    public void UseItemAddTray()
+    {
+        _maxstraightSlot++;
+        UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
     }
 
     private void InitializePlates()
@@ -163,21 +187,6 @@ public class SpawnerManager : MonoBehaviour
         blockPrefabsByColor.Clear();
     }
 
-    private void OnDisable()
-    {
-        EventManager.OnStartGame -= SpawnMap;
-        EventManager.OnClickPig -= SelectPig;
-        EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
-        EventManager.OnBlockDestroyed -= OnBlockDestroyed;
-        EventManager.OnPigDestroyed -= RefundStraightSlot;
-
-        EventManager.OnJumpToConveyor -= IncreaseStraightSlot;
-        EventManager.OnWinGame -= WinGame;
-        EventManager.OnLoseGame -= LoseGame;
-        EventManager.OnContinueGame -= ContinueGame;
-        EventManager.OnPigOutOfAmmo -= HandlePigOutOfAmmo;
-    }
-
     private void HandlePigOutOfAmmo(PigComponent pig)
     {
         if (pig.IsLinkedPig())
@@ -232,7 +241,7 @@ public class SpawnerManager : MonoBehaviour
 
     private void LoseGame()
     {
-        tempScore = 0;
+        // tempScore = 0;
         StopAllPigAnimations();
     }
     private void WinGame()
@@ -242,17 +251,15 @@ public class SpawnerManager : MonoBehaviour
 
     private void ContinueGame()
     {
-        for (int i = 0; i < pigsInConveyor.Count; i++)
-        {
-            pigsInTempQueue.Add(pigsInConveyor[i]);
-            _straightSlot--;
-            pigsInConveyor[i].transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
-            UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
-
-            int index = pigsInTempQueue.IndexOf(pigsInConveyor[i]);
-            pigsInConveyor[i].JumpToQueue(startTempQueuePos.position + 0.9f * index * Vector3.right, startTempQueuePos.rotation, index);
-        }
+        List<PigComponent> tempMovingPigs = new List<PigComponent>(pigsInConveyor);
         pigsInConveyor.Clear();
+
+        foreach (PigComponent pig in tempMovingPigs)
+        {
+            if (pig == null) continue;
+
+            MovePigToTempQueue(pig);
+        }
 
         if (pigsInQueue.Count > 0)
         {
@@ -263,7 +270,6 @@ public class SpawnerManager : MonoBehaviour
             {
                 PigComponent leftmost = lastPig.GetLeftmostPig();
                 PigComponent current = leftmost;
-
                 while (current != null)
                 {
                     pigsToMove.Add(current);
@@ -275,19 +281,37 @@ public class SpawnerManager : MonoBehaviour
                 pigsToMove.Add(lastPig);
             }
 
-            foreach (PigComponent pig in pigsToMove)
-            {
-                if (pigsInQueue.Contains(pig))
-                {
-                    pigsInQueue.Remove(pig);
-                    pigsInTempQueue.Add(pig);
 
-                    int tempIndex = pigsInTempQueue.Count - 1;
-                    pig.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
-                    pig.JumpToQueue(startTempQueuePos.position + 0.9f * tempIndex * Vector3.right, startTempQueuePos.rotation, tempIndex);
+            foreach (PigComponent p in pigsToMove)
+            {
+                if (pigsInQueue.Contains(p))
+                {
+                    pigsInQueue.Remove(p);
+                    MovePigToTempQueue(p);
                 }
             }
         }
+    }
+
+    private void MovePigToTempQueue(PigComponent pig)
+    {
+        pigsInTempQueue.Add(pig);
+
+        if (pig.currentPlate != null)
+        {
+            StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
+            pig.currentPlate = null;
+            activePlateMap.Remove(pig);
+        }
+
+        _straightSlot = Mathf.Max(0, _straightSlot - 1);
+        UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+
+        pig.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+        int index = pigsInTempQueue.Count - 1;
+        Vector3 targetPos = startTempQueuePos.position + 0.9f * index * Vector3.right;
+
+        pig.JumpToQueue(targetPos, startTempQueuePos.rotation, index);
     }
 
     private void RefundStraightSlot(PigComponent pig)
@@ -312,6 +336,11 @@ public class SpawnerManager : MonoBehaviour
     public void SelectPig(PigComponent pig)
     {
         if (pig == null || isProcessingClick) return;
+        
+        ParticleSystem clickVFX = Instantiate(clickVFXPrefab).GetComponent<ParticleSystem>();
+        clickVFX.transform.position = pig.transform.position + Vector3.up - Vector3.forward * 0.2f;
+        clickVFX.Play();
+
 
         if (!pig.IsPigValid() && !onHandItemUsed)
         {
@@ -460,12 +489,10 @@ public class SpawnerManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Không có dữ liệu Temp để PlayTest!");
                 return;
             }
         }
 
-        // Logic cho Core Gameplay (Người chơi thật) - Vẫn load từ file theo LevelIndex
         int levelToLoad = DataManager.Instance.CurrentLevel;
         LevelData data = LoadLevelData(levelToLoad);
         if (data != null)
@@ -484,10 +511,7 @@ public class SpawnerManager : MonoBehaviour
         if (File.Exists(filePath))
         {
             string jsonContent = File.ReadAllText(filePath);
-
             currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
-
-            Debug.Log($"<color=cyan>Loaded Level {levelNumber + 1} thành công!</color>");
         }
 
         return currentLevel;
@@ -953,7 +977,7 @@ public class SpawnerManager : MonoBehaviour
         Vector3 targetPos = traySlotOrigin.position + Vector3.up * (availablePlates.Count * plateStackOffset);
 
         float elapsed = 0;
-        float duration = 0.2f; // Thời gian đĩa bay về
+        float duration = 0.2f;
 
         while (elapsed < duration)
         {
@@ -1029,13 +1053,13 @@ public class SpawnerManager : MonoBehaviour
     private void OnBlockDestroyed()
     {
         totalBlockCount--;
-        tempScore += 100;
-        UIManager.Instance.UpdateScore(tempScore);
+        // tempScore += 100;
+        // UIManager.Instance.UpdateScore(tempScore);
         if (totalBlockCount <= 0)
         {
             if (GameManager.Instance != null)
             {
-                DataManager.Instance.AddScore(tempScore);
+                // DataManager.Instance.AddScore(tempScore);
                 GameManager.Instance.WinStage();
             }
         }
@@ -1116,7 +1140,7 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-    public void ProcessShufflePig()
+    public void UseItemShufflePig()
     {
         pigsByLane = Helper.ShuffleHeoDictionary(pigsByLane);
 

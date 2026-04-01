@@ -54,7 +54,6 @@ public class SuperCat : MonoBehaviour
 
     void Update()
     {
-        Debug.Log("currentState: " + currentState);
         if (currentState == SuperCatState.Rotate)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(90f, 0, 0), Time.deltaTime * 10f);
@@ -66,7 +65,6 @@ public class SuperCat : MonoBehaviour
         if (currentState == SuperCatState.Move)
         {
             transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.World);
-            Debug.Log("Moving super cat, current position: " + (initPosition + new Vector3(0, 0, 10)));
             if (Vector3.Distance(initPosition, transform.position) >= 10f)
             {
                 currentState = SuperCatState.Idel;
