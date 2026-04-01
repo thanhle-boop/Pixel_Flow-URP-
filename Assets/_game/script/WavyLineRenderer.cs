@@ -1,19 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class WavyLineRenderer : MonoBehaviour
 {
     private LineRenderer _lineRenderer;
-    
+
     [Header("Wave Settings")]
     public int waveSegments = 30;
     public float waveAmplitudeMin = 0.05f;
     public float waveAmplitudeMax = 0.1f;
     public float amplitudeChangeSpeed = 2f;
     public float waveFrequency = 1.5f;
-    public float waveSpeed = 30f; 
+    public float waveSpeed = 30f;
 
     private float _waveTime;
     private float _amplitudeTime;
@@ -22,33 +21,33 @@ public class WavyLineRenderer : MonoBehaviour
     private Vector3 _endPoint;
     private Vector3 _targetEndPoint;
     private Color _baseColor = Color.yellow;
-    
+
     [Header("Target Management")]
-    private float targetDuration = 0.03f; 
+    private float targetDuration = 0.03f;
     private List<GameObject> _targetBlocks = new List<GameObject>();
     private Coroutine _targetProcessCoroutine;
     private GameObject _currentTarget;
     private PigComponent _pigComponent;
     private System.Action _onBulletChanged;
-    
+
     public Material lineMaterial;
-    
+
     private void Awake()
     {
         InitializeLineRenderer();
         _pigComponent = GetComponent<PigComponent>();
     }
-    
+
     private void OnDestroy()
     {
         ClearAllTargets();
     }
-    
+
     public void SetBulletChangedCallback(System.Action callback)
     {
         _onBulletChanged = callback;
     }
-    
+
     public void InitializeLineRenderer(float startWidth = 0.08f, float endWidth = 0.08f, float amplitude = 0.03f)
     {
         _lineRenderer = GetComponent<LineRenderer>();
@@ -56,21 +55,21 @@ public class WavyLineRenderer : MonoBehaviour
         {
             return;
         }
-        
+
         _lineRenderer.startWidth = startWidth;
         _lineRenderer.endWidth = endWidth;
         _lineRenderer.positionCount = waveSegments;
         _currentAmplitude = amplitude;
-        
+
         _lineRenderer.material = lineMaterial;
-        
+
         _lineRenderer.startColor = Color.yellow;
         _lineRenderer.endColor = Color.yellow;
         _lineRenderer.enabled = false;
         _lineRenderer.sortingOrder = 100;
         _lineRenderer.useWorldSpace = true;
     }
-    
+
     public void SetColor(Color color)
     {
         _baseColor = color;
@@ -78,14 +77,16 @@ public class WavyLineRenderer : MonoBehaviour
         {
             _lineRenderer.material = lineMaterial;
             _lineRenderer.material.color = _baseColor;
+            _lineRenderer.startColor = color;
+            _lineRenderer.endColor = color;
             // _lineRenderer.endColor = _baseColor;
         }
     }
-    
+
     public void AddTarget(GameObject block)
     {
         _targetBlocks.Add(block);
-        
+
         if (_targetProcessCoroutine == null)
         {
             _targetProcessCoroutine = StartCoroutine(ProcessTargets());
@@ -97,14 +98,14 @@ public class WavyLineRenderer : MonoBehaviour
     {
         while (_targetBlocks.Count > 0)
         {
-            
+
             if (_targetBlocks.Count == 0)
             {
                 break;
             }
-            
+
             _currentTarget = _targetBlocks[0];
-            
+
             if (_currentTarget == null)
             {
                 if (_targetBlocks.Count > 0)
@@ -113,33 +114,37 @@ public class WavyLineRenderer : MonoBehaviour
                 }
                 continue;
             }
-            
+
             _targetEndPoint = _currentTarget.transform.position;
             _endPoint = _targetEndPoint;
-            
+
             Vector3 direction = _endPoint - _startPoint;
             Vector3 right = Vector3.Cross(direction.normalized, Vector3.up).normalized;
-            
+
             if (right == Vector3.zero)
             {
                 right = Vector3.Cross(direction.normalized, Vector3.forward).normalized;
             }
-            
+
+            float distance = Vector3.Distance(_startPoint, _endPoint);
+            // Giả sử 1 đơn vị Unity là 1 lần lặp lại của lưới. 
+            // Bạn có thể nhân với một hệ số nếu muốn lưới dày hơn (ví dụ: distance * 2f)
+            _lineRenderer.material.mainTextureScale = new Vector2(1f, distance * 2f);
             for (int i = 0; i < waveSegments; i++)
             {
                 float t = i / (float)(waveSegments - 1);
                 Vector3 point = Vector3.Lerp(_startPoint, _endPoint, t);
-                
+
                 float wave = Mathf.Sin((t * waveFrequency * 2f * Mathf.PI) + _waveTime) * _currentAmplitude;
                 point += right * wave;
-                
+
                 _lineRenderer.SetPosition(i, point);
             }
-            
+
             _lineRenderer.enabled = true;
             SoundManager.Instance.PlaySoundWhenSourceAvailable(SoundManager.Instance.yarn);
 
-            
+
             float elapsed = 0f;
             while (elapsed < targetDuration)
             {
@@ -150,30 +155,30 @@ public class WavyLineRenderer : MonoBehaviour
 
                 _targetEndPoint = _currentTarget.transform.position;
                 _endPoint = _targetEndPoint;
-                
+
                 _waveTime += Time.deltaTime * waveSpeed;
                 _amplitudeTime += Time.deltaTime * amplitudeChangeSpeed;
-                _currentAmplitude = Mathf.Lerp(waveAmplitudeMin, waveAmplitudeMax, 
+                _currentAmplitude = Mathf.Lerp(waveAmplitudeMin, waveAmplitudeMax,
                     (Mathf.Sin(_amplitudeTime) + 1f) * 0.5f);
-                
+
                 Vector3 waveDirection = _endPoint - _startPoint;
                 Vector3 waveRight = Vector3.Cross(waveDirection.normalized, Vector3.up).normalized;
-                
+
                 if (waveRight == Vector3.zero)
                 {
                     waveRight = Vector3.Cross(waveDirection.normalized, Vector3.forward).normalized;
                 }
-                
+
                 for (int i = 0; i < waveSegments; i++)
                 {
                     float t = i / (float)(waveSegments - 1);
                     Vector3 point = Vector3.Lerp(_startPoint, _endPoint, t);
                     float wave = Mathf.Sin((t * waveFrequency * 2f * Mathf.PI) + _waveTime) * _currentAmplitude;
                     point += waveRight * wave;
-                    
+
                     _lineRenderer.SetPosition(i, point);
                 }
-                
+
                 elapsed += Time.deltaTime;
                 yield return null;
             }
@@ -188,7 +193,7 @@ public class WavyLineRenderer : MonoBehaviour
                 _currentTarget.SetActive(false);
                 Destroy(_currentTarget);
                 EventManager.OnBlockDestroyed?.Invoke();
-                
+
                 if (_pigComponent != null)
                 {
                     _pigComponent.Bullet--;
@@ -204,13 +209,13 @@ public class WavyLineRenderer : MonoBehaviour
                 _targetBlocks.RemoveAt(0);
             }
         }
-        
+
         SoundManager.Instance.StopSound(SoundManager.Instance.yarn);
         _lineRenderer.enabled = false;
         _targetProcessCoroutine = null;
         _currentTarget = null;
     }
-    
+
     public void ClearAllTargets()
     {
         if (_targetProcessCoroutine != null)
@@ -234,14 +239,14 @@ public class WavyLineRenderer : MonoBehaviour
     {
         _startPoint = new Vector3(startPoint.x, startPoint.y + 0.5f, startPoint.z);
     }
-    
+
     public void HideLineImmediately()
     {
         _lineRenderer.enabled = false;
     }
 
     public bool IsProcessing => _targetProcessCoroutine != null;
-    
+
     public Vector3? GetCurrentTargetPosition()
     {
         if (_currentTarget != null)

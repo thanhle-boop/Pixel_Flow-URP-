@@ -101,7 +101,6 @@ public class SpawnerManager : MonoBehaviour
 
     private void InitializePlates()
     {
-        // Xóa đĩa cũ nếu có (tránh trùng lặp khi restart)
         foreach (var p in allPlates) if (p != null) Destroy(p.gameObject);
         allPlates.Clear();
         availablePlates.Clear();
@@ -109,7 +108,6 @@ public class SpawnerManager : MonoBehaviour
 
         for (int i = 0; i < 5; i++)
         {
-            // Tính toán vị trí xếp chồng (hoặc xếp hàng nếu bạn đổi Vector3.up thành Vector3.right)
             Vector3 spawnPos = traySlotOrigin.position - Vector3.right * (i * plateStackOffset);
 
             GameObject go = Instantiate(platePrefab, spawnPos, traySlotOrigin.rotation);
@@ -129,10 +127,10 @@ public class SpawnerManager : MonoBehaviour
             Transform plate = availablePlates.Dequeue();
             pig.currentPlate = plate;
             plate.transform.SetParent(pig.transform);
-            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.047f); // Điều chỉnh vị trí đĩa trên pig nếu cần
+            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.047f);
             plate.transform.localRotation = Quaternion.identity;
-            plate.transform.localRotation = new Quaternion(90, 90, 0, 0); // Đảm bảo đĩa quay đúng hướng
-            plate.transform.localScale = new Vector3(80, 100, 120); // Điều chỉnh kích thước đĩa nếu cần
+            plate.transform.localRotation = new Quaternion(90, 90, 0, 0);
+            plate.transform.localScale = new Vector3(80, 100, 120);
 
             activePlateMap[pig] = plate;
         }

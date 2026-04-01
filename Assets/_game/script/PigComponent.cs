@@ -49,6 +49,7 @@ public class PigComponent : MonoBehaviour
     public Transform canvasTransform;
     private Vector3 initCanvasLocalPos;
     public Transform currentPlate;
+    private float _currentShakeAngle = 0f;
     private void ChangeState(PigState newState)
     {
 
@@ -68,9 +69,12 @@ public class PigComponent : MonoBehaviour
             case PigState.ReadyToJump:
                 animValue = 3; // Ứng với State 4 (id 3) trong Animator
                 break;
+
+            case PigState.Shooting:
+                animValue = 4; // Ứng với State 5 (id 4) trong Animator
+                break;
         }
 
-        // Bước 2: Kiểm tra lại một lần nữa với giá trị thực tế trong Animator
         if (animator.GetInteger("state") != animValue)
         {
             animator.SetInteger("state", animValue);
@@ -133,6 +137,7 @@ public class PigComponent : MonoBehaviour
             meshRenderer.material = hiddenMaterial;
             bodyMeshRenderer.material = hiddenMaterial;
             bulletText.text = "?";
+            bulletText.fontSize = 50f;
             return;
         }
         bulletText.text = bulletCount.ToString();
@@ -234,6 +239,7 @@ public class PigComponent : MonoBehaviour
             bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
 
             bulletText.text = Bullet.ToString();
+            bulletText.fontSize = 40f;
 
             if (IsLinkedPig())
             {
@@ -362,8 +368,6 @@ public class PigComponent : MonoBehaviour
 
         //count Straight slots
         EventManager.OnJumpToConveyor?.Invoke();
-
-        canvasTransform.localPosition = new Vector3(0.0164f, 1.488f, -0.215f);
         StartCoroutine(ReadyToJump(0.1f, onComplete));
 
     }
@@ -400,6 +404,7 @@ public class PigComponent : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
         StartCoroutine(ConveyorJourney(onComplete));
+        canvasTransform.localPosition = new Vector3(0.053f,1.488f,-0.215f);
     }
 
     private IEnumerator JumpCoroutine(Vector3 target, float duration, float height)
@@ -463,6 +468,16 @@ public class PigComponent : MonoBehaviour
 
             CheckAndAddTargetBlocks();
 
+            if (_lockedTargets > 0)
+            {
+                // Bật animation lắc (giả sử bạn đặt trigger hoặc bool trong Animator)
+                ChangeState(PigState.Shooting);
+            }
+            else
+            {
+                ChangeState(PigState.OnConveyor);
+            }
+
             yield return new WaitForFixedUpdate();
         }
     }
@@ -484,30 +499,16 @@ public class PigComponent : MonoBehaviour
 
             if (hit.collider.CompareTag("Block") && blockComp != null && blockComp.color == color && !blockComp.isAlreadyDestroyed)
             {
-                // _lastCheckedBlock = hitObject;
                 _wavyLine.AddTarget(hitObject);
                 blockComp.isAlreadyDestroyed = true;
-
                 _lockedTargets++;
-                Debug.DrawRay(currentPos, _rayCastDirection * checkDistance, Color.green);
             }
-            else
-            {
-                Debug.DrawRay(currentPos, _rayCastDirection * checkDistance, Color.blue);
-
-                // _lastCheckedBlock = null;
-            }
-
-        }
-        else
-        {
-            // _lastCheckedBlock = null;
         }
     }
 
     public IEnumerator SlideTo(Vector3 target, float speed)
     {
-        Vector3 start = rb.position;// Slightly above to avoid ground collision
+        Vector3 start = rb.position;
         float duration = Vector3.Distance(start, target) / speed;
         float elapsed = 0;
         while (elapsed < duration)
@@ -515,10 +516,6 @@ public class PigComponent : MonoBehaviour
             elapsed += Time.deltaTime;
             Vector3 newPos = Vector3.Lerp(start, target, elapsed / duration);
             rb.MovePosition(newPos);
-            if (currentPlate != null)
-            {
-                // currentPlate.position = newPos;
-            }
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(target);
@@ -563,16 +560,8 @@ public class PigComponent : MonoBehaviour
         }
     }
 
-    private Quaternion GetRotationWithUpAligned(Transform waypoint)
-    {
-        return Quaternion.LookRotation(waypoint.up, waypoint.forward);
-
-        // Nếu bạn muốn model.up = waypoint.forward và model.forward = waypoint.up:
-        // return Quaternion.LookRotation(waypoint.up, -waypoint.forward);
-    }
     public IEnumerator SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float speed)
     {
-        // Estimate Bezier curve length by sampling
         const int samples = 20;
         float curveLength = 0f;
         Vector3 prev = start;
@@ -601,16 +590,10 @@ public class PigComponent : MonoBehaviour
             rb.MovePosition(position);
 
             model.rotation = Quaternion.Lerp(startRotation, endRotation, t);
-            if (currentPlate != null)
-            {
-                // currentPlate.rotation = model.rotation;
-            }
-            // rb.MoveRotation(Quaternion.Slerp(startRotation, endRotation, t));
 
             yield return new WaitForFixedUpdate();
         }
         rb.MovePosition(end);
-        // rb.MoveRotation(endRotation);
         model.rotation = endRotation;
     }
 
@@ -619,14 +602,13 @@ public class PigComponent : MonoBehaviour
     {
 
         ChangeState(PigState.MovingToQueue);
-
+        canvasTransform.localPosition = initCanvasLocalPos;
         if (_wavyLine != null)
         {
             _wavyLine.ClearAllTargets();
             _wavyLine.HideLineImmediately();
         }
 
-        // _lastCheckedBlock = null;
         isOnBelt = false;
         StartCoroutine(JumpToQueueCoroutine(targetPosition, targetRotation));
     }
@@ -649,15 +631,12 @@ public class PigComponent : MonoBehaviour
             Vector3 currentPos = Vector3.Lerp(startPos, targetPos, t);
             currentPos.y += Mathf.Sin(t * Mathf.PI) * height;
             rb.MovePosition(currentPos);
-
-            // rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
             model.rotation = Quaternion.Lerp(startRot, targetRot, t);
 
             yield return new WaitForFixedUpdate();
         }
 
         rb.MovePosition(targetPos);
-        // rb.MoveRotation(targetRot);
         model.rotation = targetRot;
         model.rotation = Quaternion.identity;
         model.localRotation = initialRotation;
@@ -714,7 +693,6 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
             rb.MovePosition(currentPos);
-            // rb.MoveRotation(Quaternion.Lerp(startRot, targetRot, t));
             model.rotation = Quaternion.Lerp(startRot, targetRot, t);
 
             yield return new WaitForFixedUpdate();
@@ -723,7 +701,6 @@ public class PigComponent : MonoBehaviour
         if (this != null)
         {
             rb.MovePosition(targetPos);
-            // rb.MoveRotation(targetRot);
             model.rotation = targetRot;
             isOnTop = true;
 

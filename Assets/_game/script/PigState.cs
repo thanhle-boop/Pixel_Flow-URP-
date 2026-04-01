@@ -8,6 +8,7 @@ public enum PigState
     MovingInQueue,  
     Jumping,
     ReadyToJump,    
-    Destroying 
+    Destroying,
+    Shooting,
 }
 
