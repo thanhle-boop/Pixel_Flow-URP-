@@ -411,8 +411,12 @@ public class SpawnerManager : MonoBehaviour
             if (pigsInLane.Count > 0)
             {
                 // AssignPlateToPig(pig);
-                RemovePigFromLane(pig);
-                pig.JumpTo(onComplete: () => AssignPlateToPig(pig));
+
+                pig.JumpTo(onComplete: () =>
+                {
+                    RemovePigFromLane(pig);
+                    AssignPlateToPig(pig);
+                });
             }
         }
     }
@@ -1063,8 +1067,12 @@ public class SpawnerManager : MonoBehaviour
             EventManager.OnQueueNotFull?.Invoke();
         }
 
-        RearrangeQueue(removedIndex, isFromTempQueue);
-        pig.JumpTo(()=> AssignPlateToPig(pig));
+        pig.JumpTo(() =>
+        {
+            AssignPlateToPig(pig);
+            RearrangeQueue(removedIndex, isFromTempQueue);
+
+        });
     }
 
     private void RearrangeQueue(int startIndex, bool isFromTempQueue = false)

@@ -10001,6 +10001,10 @@ MonoBehaviour:
   linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
   blockPrefabsByColor: []
   spacing: 1.2
+  platePrefab: {fileID: 8748534461424016363, guid: b794253dc69262b45bc032592ee21f8f, type: 3}
+  traySlotOrigin: {fileID: 3842790677922476581}
+  plateStackOffset: 0.1
+  tray: {fileID: 7299698376936293976}
 --- !u!1 &1975314016
 GameObject:
   m_ObjectHideFlags: 0
