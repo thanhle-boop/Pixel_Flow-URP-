@@ -1,12 +1,13 @@
 public enum PigState
 {
     InLane,           
-    JumpingToConveyor,  
+    // JumpingToConveyor,  
     OnConveyor,        
     MovingToQueue,     
     InQueue,         
     MovingInQueue,  
-    JumpingFromQueue,    
+    Jumping,
+    ReadyToJump,    
     Destroying 
 }
 

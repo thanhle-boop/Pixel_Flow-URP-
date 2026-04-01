@@ -1044,7 +1044,7 @@ public class SpawnerManager : MonoBehaviour
         int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
 
         if (removedIndex < 0) return;
-        AssignPlateToPig(pig);
+
 
         if (isFromTempQueue)
         {
@@ -1064,7 +1064,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         RearrangeQueue(removedIndex, isFromTempQueue);
-        pig.JumpTo();
+        pig.JumpTo(()=> AssignPlateToPig(pig));
     }
 
     private void RearrangeQueue(int startIndex, bool isFromTempQueue = false)

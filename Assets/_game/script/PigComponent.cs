@@ -59,12 +59,14 @@ public class PigComponent : MonoBehaviour
             case PigState.InQueue:
                 animValue = 0; // Ứng với State 1 trong Animator
                 break;
-            case PigState.JumpingToConveyor:
-            case PigState.JumpingFromQueue:
+            case PigState.Jumping:
                 animValue = 2; // Ứng với State 2 (id 2) trong Animator
                 break;
             case PigState.OnConveyor:
                 animValue = 1; // Ứng với State 3 (id 1) trong Animator
+                break;
+            case PigState.ReadyToJump:
+                animValue = 3; // Ứng với State 4 (id 3) trong Animator
                 break;
         }
 
@@ -358,25 +360,17 @@ public class PigComponent : MonoBehaviour
     {
         SetConveyorSpeedMultiplier(1f);
 
-        if (currentState == PigState.InQueue)
-        {
-            ChangeState(PigState.JumpingFromQueue);
-        }
-        else
-        {
-            ChangeState(PigState.JumpingToConveyor);
-        }
-
         //count Straight slots
         EventManager.OnJumpToConveyor?.Invoke();
 
         canvasTransform.localPosition = new Vector3(0.0164f, 1.488f, -0.215f);
+        StartCoroutine(ReadyToJump(0.1f, onComplete));
 
-        StartCoroutine(ConveyorJourney(onComplete));
     }
 
     private IEnumerator ConveyorJourney(Action onComplete)
     {
+        ChangeState(PigState.Jumping);
         Vector3 firstPoint = allWaypoints[0].position;
         yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
 
@@ -394,6 +388,20 @@ public class PigComponent : MonoBehaviour
         StartCoroutine(ShootingRoutine());
         StartCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
     }
+
+    private IEnumerator ReadyToJump(float duration, Action onComplete)
+    {
+        float elapsed = 0;
+        ChangeState(PigState.ReadyToJump);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+        StartCoroutine(ConveyorJourney(onComplete));
+    }
+
     private IEnumerator JumpCoroutine(Vector3 target, float duration, float height)
     {
         isOnTop = true;
@@ -415,7 +423,7 @@ public class PigComponent : MonoBehaviour
         }
 
         rb.MovePosition(target);
-        ChangeState(PigState.InLane);
+        // ChangeState(PigState.InLane);
         isOnTop = false;
     }
 
