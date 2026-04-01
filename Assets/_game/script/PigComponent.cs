@@ -129,7 +129,7 @@ public class PigComponent : MonoBehaviour
         for (int i = 0; i < ammoCircles.Count; i++)
         {
             var meshRenderer2 = ammoCircles[i].GetComponent<MeshRenderer>();
-            meshRenderer2.material.color = GameUtility.GetColorByName(color);
+            meshRenderer2.material.color = ColorGameConfig.instance.GetColorByName(color);
 
         }
         if (isHidden)
@@ -141,8 +141,8 @@ public class PigComponent : MonoBehaviour
             return;
         }
         bulletText.text = bulletCount.ToString();
-        meshRenderer.material.color = GameUtility.GetColorByName(color);
-        bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
+        meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
     }
 
     public bool IsOnFirstRow()
@@ -229,14 +229,14 @@ public class PigComponent : MonoBehaviour
         isOnTop = value;
         if (value)
         {
-            isHidden = false;
+            isHidden = false;   
             var meshRenderer = faceModel.GetComponent<MeshRenderer>();
             var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
             meshRenderer.material = normalMaterial;
             bodyMeshRenderer.material = normalMaterial;
 
-            meshRenderer.material.color = GameUtility.GetColorByName(color);
-            bodyMeshRenderer.material.color = GameUtility.GetColorByName(color);
+            meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+            bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
             bulletText.text = Bullet.ToString();
             bulletText.fontSize = 40f;

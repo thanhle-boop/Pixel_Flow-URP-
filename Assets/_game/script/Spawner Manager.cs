@@ -158,7 +158,7 @@ public class SpawnerManager : MonoBehaviour
 
         supertCatPrefab.SetActive(true);
         var cat = supertCatPrefab.GetComponent<SuperCat>();
-        cat.AddAllTarget(blockPrefabsByColor, GameUtility.GetColorByName(color));
+        cat.AddAllTarget(blockPrefabsByColor, ColorGameConfig.instance.GetColorByName(color));
 
         blockPrefabsByColor.Clear();
     }
@@ -590,7 +590,7 @@ public class SpawnerManager : MonoBehaviour
             {
                 string colorType = currentLane.pigs[j].colorName;
                 var bulletCount = currentLane.pigs[j].bullets;
-                var color = GameUtility.GetColorByName(colorType);
+                var color = ColorGameConfig.instance.GetColorByName(colorType);
                 if (colorType == "empty") continue;
                 Vector3 localPos = new Vector3(
                     (i * 0.95f) - laneOffsetX,
@@ -880,7 +880,7 @@ public class SpawnerManager : MonoBehaviour
         if (renderer == null || blockComponent == null) return;
 
         blockComponent.color = colorName;
-        renderer.material.color = GameUtility.GetColorByName(colorName);
+        renderer.material.color = ColorGameConfig.instance.GetColorByName(colorName);
     }
 
     private void HandlePigEnterQueue(PigComponent pig)

@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f20709f381e83244e818bd04c314cea6, type: 3}
+  m_Name: ColorGameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGameConfig
+  colorConfigs:
+  - name: c01
+    color: {r: 0.98823535, g: 0.38823533, b: 0.7960785, a: 1}
+  - name: c02
+    color: {r: 0.29803923, g: 0.92549026, b: 0.9725491, a: 1}
+  - name: c03
+    color: {r: 0.5294118, g: 0.29803923, b: 0.98823535, a: 1}
+  - name: c04
+    color: {r: 1, g: 0.8470589, b: 0.19607845, a: 1}
+  - name: c05
+    color: {r: 0.37254903, g: 0.9294118, b: 0.24705884, a: 0}
+  - name: c06
+    color: {r: 1, g: 0.6117647, b: 0.25490198, a: 0}
+  - name: c07
+    color: {r: 0.9568628, g: 0.97647065, b: 1, a: 0}
+  - name: c08
+    color: {r: 0.24313727, g: 0.2627451, b: 0.2784314, a: 1}
+  - name: c09
+    color: {r: 0.41176474, g: 0.7176471, b: 1, a: 1}
+  - name: c10
+    color: {r: 0.007843138, g: 0.5019608, b: 0.007843138, a: 1}
+  - name: c11
+    color: {r: 0.98823535, g: 0.31764707, b: 0.34901962, a: 1}
+  - name: c12
+    color: {r: 0.2901961, g: 0.47058827, b: 0.94117653, a: 1}
+  - name: c13
+    color: {r: 0.16078432, g: 0.5294118, b: 0.4666667, a: 1}
+  - name: c14
+    color: {r: 0.86666673, g: 0.5803922, b: 1, a: 1}
+  - name: c15
+    color: {r: 0.7137255, g: 0.7725491, b: 1, a: 1}
+  - name: c16
+    color: {r: 0.38431376, g: 0.23529413, b: 0.14509805, a: 1}
+  - name: c17
+    color: {r: 0.9725491, g: 0.8352942, b: 0.58431375, a: 1}
+  - name: c18
+    color: {r: 1, g: 0.6627451, b: 0.7294118, a: 1}
+  - name: c19
+    color: {r: 0.6666667, g: 0.2509804, b: 0.40000004, a: 1}
+  - name: c20
+    color: {r: 0.6313726, g: 0.8078432, b: 0.5372549, a: 1}
+  - name: c21
+    color: {r: 0.2509804, g: 0.10980393, b: 0.49411768, a: 1}
+  - name: c22
+    color: {r: 0.76470596, g: 0.28627452, b: 0.3372549, a: 1}
+  - name: c23
+    color: {r: 0.6666667, g: 0.68235296, b: 0.8196079, a: 1}
+  - name: c24
+    color: {r: 0.34117648, g: 0.34901962, b: 0.43137258, a: 1}
+  - name: c25
+    color: {r: 0.8078432, g: 0.027450982, b: 0.49411768, a: 1}
+  - name: c26
+    color: {r: 0.9843138, g: 0.7019608, b: 0.4039216, a: 1}
+  - name: c27
+    color: {r: 0.54509807, g: 0.03137255, b: 0.10196079, a: 1}
+  - name: c28
+    color: {r: 0.4666667, g: 0.7294118, b: 0.75294125, a: 1}

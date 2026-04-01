@@ -38,14 +38,14 @@ public class Link : MonoBehaviour
         {
             var material1 = link1.GetComponent<Renderer>();
             material1.material = mesh1;
-            material1.material.color = GameUtility.GetColorByName(color1);
+            material1.material.color = ColorGameConfig.instance.GetColorByName(color1);
 
         }
         else if (pig == pigObject2)
         {
             var material2 = link2.GetComponent<Renderer>();
             material2.material = mesh2;
-            material2.material.color = GameUtility.GetColorByName(color2);
+            material2.material.color = ColorGameConfig.instance.GetColorByName(color2);
         }
     }
 
@@ -86,7 +86,7 @@ public class Link : MonoBehaviour
         else
         {
             material1.material = mesh1;
-            material1.material.color = GameUtility.GetColorByName(color1);
+            material1.material.color = ColorGameConfig.instance.GetColorByName(color1);
         }
 
 
@@ -99,7 +99,7 @@ public class Link : MonoBehaviour
         else
         {
             material2.material = mesh2;
-            material2.material.color = GameUtility.GetColorByName(color2);
+            material2.material.color = ColorGameConfig.instance.GetColorByName(color2);
         }
     }
 }
