@@ -237,7 +237,7 @@ public class SpawnerManager : MonoBehaviour
     }
     private void WinGame()
     {
-        DataManager.Instance.IncreaseLevel();
+        DataManager.instance.IncreaseLevel();
     }
 
     private void ContinueGame()
@@ -466,7 +466,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         // Logic cho Core Gameplay (Người chơi thật) - Vẫn load từ file theo LevelIndex
-        int levelToLoad = DataManager.Instance.CurrentLevel;
+        int levelToLoad = DataManager.instance.CurrentLevel;
         LevelData data = LoadLevelData(levelToLoad);
         if (data != null)
         {
@@ -1035,7 +1035,7 @@ public class SpawnerManager : MonoBehaviour
         {
             if (GameManager.Instance != null)
             {
-                DataManager.Instance.AddScore(tempScore);
+                DataManager.instance.AddScore(tempScore);
                 GameManager.Instance.WinStage();
             }
         }
