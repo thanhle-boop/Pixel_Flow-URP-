@@ -1,6 +1,7 @@
 using UnityEngine;
+using R3;
 
-public class DataManager : Singleton<DataManager>
+public class DataManager : SingletonMonoBehaviour<DataManager>
 {
     private GameData _playerData;
 
@@ -8,7 +9,7 @@ public class DataManager : Singleton<DataManager>
     {
         base.Awake();
         _playerData = GetData();
-        
+
         // if (_playerData == null)
         // {
         //     _playerData = new GameData();
@@ -21,11 +22,12 @@ public class DataManager : Singleton<DataManager>
     }
 
     public int CurrentLevel => _playerData.CurrentLevel;
-    public int Score        => _playerData.CurrentScore;
-    public int Lives        => _playerData.CurrentLives;
-    public int Coins        => _playerData.CurrentCoins;
-    
-public int GetItemCount(int itemType)
+    public int Score => _playerData.CurrentScore;
+    public int Lives => _playerData.CurrentLives;
+    public int Coins => _playerData.CurrentCoins;
+    public ReactiveProperty<int> CoinsRx => _playerData.CurrentCoinsRx;
+
+    public int GetItemCount(int itemType)
     {
         switch (itemType)
         {
@@ -39,7 +41,7 @@ public int GetItemCount(int itemType)
 
     public void ConsumeItem(int itemType)
     {
-        int newCount = 0; 
+        int newCount = 0;
 
         switch (itemType)
         {
@@ -85,18 +87,18 @@ public int GetItemCount(int itemType)
     {
         _playerData.CurrentLevel++;
     }
-    
+
     public void AddScore(int amount)
     {
         _playerData.CurrentScore += amount;
         UIManager.Instance.UpdateScore(_playerData.CurrentScore);
     }
-    
+
     public void AddCoins(int amount)
     {
         _playerData.CurrentCoins += amount;
     }
-    
+
     public void LoseLife()
     {
         if (_playerData.CurrentLives > 0)
@@ -119,7 +121,7 @@ public int GetItemCount(int itemType)
         }
         return data;
     }
-    
+
     public void SaveData()
     {
         string json = JsonUtility.ToJson(_playerData);

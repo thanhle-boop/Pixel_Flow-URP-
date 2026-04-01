@@ -19,11 +19,11 @@ public class MainMenu : MonoBehaviour
     void Start()
     {
 
-        int currentLevel = DataManager.Instance.CurrentLevel + 1;
+        int currentLevel = DataManager.instance.CurrentLevel + 1;
         currentLevelText.text = "" + currentLevel;
         nextLevelText.text = "" + (currentLevel + 1);
         nextNextLevelText.text = "" + (currentLevel + 2);
-        currentCoinText.text = "" + DataManager.Instance.Coins;
+        currentCoinText.text = "" + DataManager.instance.Coins;
     }
 
     // Update is called once per frame

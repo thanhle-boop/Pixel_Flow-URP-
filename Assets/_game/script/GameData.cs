@@ -1,4 +1,5 @@
 using System;
+using R3;
 
 [System.Serializable]
 public class GameData 
@@ -6,13 +7,14 @@ public class GameData
     public int CurrentLevel = 0;
     public int CurrentScore = 0;
     public int CurrentLives = 5;
-    public int CurrentCoins = 5000;
+    public ReactiveProperty<int> CurrentCoinsRx = new ReactiveProperty<int>(5000);
+    public int CurrentCoins { get => CurrentCoinsRx.Value; set => CurrentCoinsRx.Value = value; }   
 
     // public int item1 = 5;
     // public int item2 = 5;
     // public int item3 = 5;
     // public int item4 = 5;
-    
+
     public itemData item1 = new itemData { count = 5, isOpened = true, itemType = 1 };
     public itemData item2 = new itemData { count = 5, isOpened = true, itemType = 2 };
     public itemData item3 = new itemData { count = 5, isOpened = true, itemType = 3 };

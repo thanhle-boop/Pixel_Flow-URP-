@@ -57,7 +57,7 @@ public class ItemButtomController : MonoBehaviour
     private void UpdateItemStatus()
     {
 
-        var isOpen = DataManager.Instance.GetStatus(itemType);
+        var isOpen = DataManager.instance.GetStatus(itemType);
 
 
         if (isOpen)
@@ -65,7 +65,7 @@ public class ItemButtomController : MonoBehaviour
             iconSprite.sprite = unlockIcon;
             panelSprite.sprite = unlockPanel;
 
-            OnItemCountChanged(itemType, DataManager.Instance.GetItemCount(itemType));
+            OnItemCountChanged(itemType, DataManager.instance.GetItemCount(itemType));
             countObject.SetActive(true);
         }
         else
