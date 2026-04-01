@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -27,8 +28,7 @@ public class SpawnerManager : MonoBehaviour
 
     public Transform pigSpawnPoint;
 
-    public float blockSpacing = 1.2f;
-    public float blockAffter = 0.9f;
+    private float blockSpacing = 1.2f;
 
     public Transform pigSpawnPos;
     public GameObject pigPrefab;
@@ -493,7 +493,6 @@ public class SpawnerManager : MonoBehaviour
             }
         }
 
-        // Logic cho Core Gameplay (Người chơi thật) - Vẫn load từ file theo LevelIndex
         int levelToLoad = DataManager.instance.CurrentLevel;
         LevelData data = LoadLevelData(levelToLoad);
         if (data != null)
@@ -559,6 +558,25 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
 
+        Vector3 scale = Vector3.one;
+
+        int nonEmptyCount = gridData.Count(s => s != "empty");
+        if(nonEmptyCount > 400)
+        {
+            scale = new Vector3(0.8f, 1, 0.8f);
+            blockSpacing = 0.45f;
+        }
+        else if (nonEmptyCount > 900)
+        {
+            scale = new Vector3(0.6f, 1, 0.6f);
+            blockSpacing = 0.25f;
+        }
+        else
+        {
+            scale = Vector3.one;
+            blockSpacing = 0.75f;
+        }
+ 
         int W = width;
         int H = height;
         float offsetX = (W - 1) * blockSpacing / 2f;
@@ -581,6 +599,8 @@ public class SpawnerManager : MonoBehaviour
                 );
                 Vector3 worldPos = blockSpawnPoint.TransformPoint(localPos);
                 GameObject newBlock = Instantiate(blockPrefab, worldPos, Quaternion.identity, blockGroup);
+                newBlock.transform.localScale = scale;
+
                 ApplyMaterial(newBlock, colorType);
 
                 totalBlockCount++;

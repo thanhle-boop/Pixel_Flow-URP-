@@ -177,7 +177,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2, y: 0, z: -6.94}
-  m_LocalScale: {x: 1, y: 1, z: 0.81}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1975030970053115210}
@@ -224,6 +224,7 @@ MonoBehaviour:
   currentPlate: {fileID: 0}
   spoolDissapearVFX: {fileID: 2495930780412197746, guid: b8dcb235e9e5f584ebf0f3ccb9dcd1cc, type: 3}
   landOnDiskVFX: {fileID: 4187419000024877630, guid: d49d5be653928c54a93cabe5d93aae56, type: 3}
+  unlockVFX: {fileID: 7972261107238505220, guid: 22aa345ef58a9ae47a9136aa504c6e30, type: 3}
 --- !u!65 &7977785496157537190
 BoxCollider:
   m_ObjectHideFlags: 0

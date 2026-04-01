@@ -234,8 +234,8 @@ public class PigComponent : MonoBehaviour
             if(isHidden)
             {
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
-                unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
-                unlockEffect.transform.position = transform.position + Vector3.up * 0.5f;
+                // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
+                unlockEffect.transform.position = transform.position + Vector3.forward * 1f + Vector3.up * 0.5f;
                 unlockEffect.Play();
             }
             isHidden = false;   
