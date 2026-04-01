@@ -55,7 +55,7 @@ MonoBehaviour:
   animType: 0
   content: {fileID: 5639713549519423466}
   canCloseByBackKey: 1
-  btnRetry: {fileID: 216071680238421639}
+  btnRetry: {fileID: 4744482297896910708}
 --- !u!1 &1991786492791099329
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,7 +360,7 @@ GameObject:
   - component: {fileID: 8027029066321252508}
   - component: {fileID: 4045166675588575228}
   - component: {fileID: 8777250626360574786}
-  - component: {fileID: 216071680238421639}
+  - component: {fileID: 4744482297896910708}
   m_Layer: 5
   m_Name: btn-retry
   m_TagString: Untagged
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &216071680238421639
+--- !u!114 &4744482297896910708
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -445,7 +445,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -469,19 +469,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8777250626360574786}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: OnRetryButtonClicked
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &8225835900420874939
 GameObject:
   m_ObjectHideFlags: 0
@@ -875,19 +863,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4501874110019069920}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: CloseRetryUI
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &8944435858473669182
 GameObject:
   m_ObjectHideFlags: 0

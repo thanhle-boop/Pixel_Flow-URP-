@@ -192,8 +192,7 @@ MonoBehaviour:
   animType: 0
   content: {fileID: 8856204075015103518}
   canCloseByBackKey: 1
-  btnContinue: {fileID: 7613261491797833650}
-  winCoinText: {fileID: 0}
+  btnContinue: {fileID: 5314788396939731949}
 --- !u!1 &4210666418833888318
 GameObject:
   m_ObjectHideFlags: 0
@@ -555,7 +554,7 @@ GameObject:
   - component: {fileID: 8701455067511483470}
   - component: {fileID: 5991359268388294537}
   - component: {fileID: 5331629692294678124}
-  - component: {fileID: 7613261491797833650}
+  - component: {fileID: 5314788396939731949}
   m_Layer: 5
   m_Name: btn-continue
   m_TagString: Untagged
@@ -621,7 +620,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7613261491797833650
+--- !u!114 &5314788396939731949
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -640,7 +639,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -664,19 +663,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5331629692294678124}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: CollectCoin
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &8347002954844194974
 GameObject:
   m_ObjectHideFlags: 0
