@@ -231,14 +231,14 @@ public class PigComponent : MonoBehaviour
         isOnTop = value;
         if (value)
         {
-            if(isHidden)
+            if (isHidden)
             {
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
                 // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
                 unlockEffect.transform.position = transform.position + Vector3.forward * 1f + Vector3.up * 0.5f;
                 unlockEffect.Play();
             }
-            isHidden = false;   
+            isHidden = false;
             var meshRenderer = faceModel.GetComponent<MeshRenderer>();
             var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
             meshRenderer.material = normalMaterial;
@@ -348,31 +348,38 @@ public class PigComponent : MonoBehaviour
 
     private IEnumerator DestroyAnimationInternal()
     {
-        // Vector3 startScale = transform.localScale;
-        // Quaternion startRotation = rb.rotation;
-        // Vector3 currentPos = rb.position;
-        model.gameObject.SetActive(false);
+        Quaternion originalRot = transform.rotation;
+        model.gameObject.SetActive(true);
         bulletText.gameObject.SetActive(false);
-        ParticleSystem ps = Instantiate(spoolDissapearVFX).GetComponent<ParticleSystem>();
-        // ps.transform.position = transform.position + Vector3.up * 0.5f;
-        ps.gameObject.transform.SetParent(this.transform); // Đảm bảo VFX không bị ảnh hưởng bởi scale của pig
-        ps.transform.localPosition = Vector3.up * 0.5f - Vector3.forward * 0.2f;
-        ps.Play();
+
+
+
         float duration = 0.3f;
         float elapsed = 0f;
+
+        float shakeSpeed = 50f; // Lắc rất nhanh
+        float maxAngle = 10f;   // Lắc qua trái 10 độ, qua phải 10 độ
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            // float t = elapsed / duration;
 
-            // rb.MovePosition(currentPos);
-            // transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
-            // rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
+            float angleY = Mathf.Sin(Time.time * shakeSpeed) * maxAngle;
+            transform.rotation = originalRot * Quaternion.Euler(0, angleY, 0);
 
-            yield return new WaitForFixedUpdate();
+            yield return null;
         }
+
         EventManager.OnPigDestroyed?.Invoke(this);
+        ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0,0.5f,-0.2f), Quaternion.identity).GetComponent<ParticleSystem>();
+
+        // Bạn có thể thêm dòng này để Unity tự xóa Particle sau khi nổ xong (tránh rác bộ nhớ)
+        // Destroy(ps.gameObject, ps.main.duration);
+
+        ps.Play();
+
+        // Giờ thoải mái xóa Pig
+        // Destroy(gameObject);
         Destroy(gameObject);
     }
 
@@ -421,7 +428,7 @@ public class PigComponent : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
         StartCoroutine(ConveyorJourney(onComplete));
-        canvasTransform.localPosition = new Vector3(0.053f,1.488f,-0.215f);
+        canvasTransform.localPosition = new Vector3(0.04f, 1.36f, 0.02f);
     }
 
     private IEnumerator JumpCoroutine(Vector3 target, float duration, float height)

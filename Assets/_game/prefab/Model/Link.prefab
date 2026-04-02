@@ -48,9 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Link
   link1: {fileID: 5440670258858141315}
   link2: {fileID: 7880247454677744965}
-  mesh1: {fileID: 2100000, guid: 184b60862c8641143b94828f102ad078, type: 2}
-  mesh2: {fileID: 2100000, guid: be147c7fbf46b9542a8f3c4445ebe5b7, type: 2}
-  hiddenMesh: {fileID: 2100000, guid: 250bfb7fed032a64898a8f00c8eec65e, type: 2}
+  mesh1: {fileID: 2100000, guid: b571e8cd3d89b644e9568c49ab7bfda7, type: 2}
+  mesh2: {fileID: 2100000, guid: 8764c15e078437d4ba564ec68aa7b70a, type: 2}
+  hiddenMesh: {fileID: 2100000, guid: 627464e3f54529c4a8c19a175385d3c3, type: 2}
 --- !u!1 &5440670258858141315
 GameObject:
   m_ObjectHideFlags: 0
@@ -117,7 +117,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 184b60862c8641143b94828f102ad078, type: 2}
+  - {fileID: 2100000, guid: b571e8cd3d89b644e9568c49ab7bfda7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -207,7 +207,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: be147c7fbf46b9542a8f3c4445ebe5b7, type: 2}
+  - {fileID: 2100000, guid: 8764c15e078437d4ba564ec68aa7b70a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
