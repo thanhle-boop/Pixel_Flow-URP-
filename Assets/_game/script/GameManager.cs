@@ -57,7 +57,6 @@ public class GameManager : Singleton<GameManager>
         _mGameState = GameState.Win;
         EventManager.OnWinGame?.Invoke();
         SoundManager.Instance.PlaySound(SoundManager.Instance.win);
-        DataManager.instance.SaveData();
     }
 
     public void GameOver()

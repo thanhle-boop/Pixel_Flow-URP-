@@ -12,7 +12,6 @@ public class PopupRetry : BasePopup
         btnRetry.OnClickAsObservable()
             .Subscribe(_ =>
             {
-                DataManager.instance.LoseLife();
                 GameManager.Instance.StartGame();
 
                 ClosePopup();
@@ -21,7 +20,6 @@ public class PopupRetry : BasePopup
 
     protected override void AfterRunAnimClose()
     {
-        DataManager.instance.LoseLife();
         GameManager.Instance.StartGame();
 
         base.AfterRunAnimClose();
