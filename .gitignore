@@ -2,6 +2,7 @@
 #unity local folder
 
 /.claude/
+/.utmp/
 /Library/
 /Logs/
 /Temp/
