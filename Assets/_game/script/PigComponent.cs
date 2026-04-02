@@ -246,19 +246,22 @@ public class PigComponent : MonoBehaviour
                 // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
                 unlockEffect.transform.localPosition = Vector3.up * 0.5f;
                 unlockEffect.Play();
+
+                StartCoroutine(ChangeColorCorountine(0.1f, () =>
+                {
+                    isHidden = false;
+                    var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+                    var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+                    meshRenderer.material = normalMaterial;
+                    bodyMeshRenderer.material = normalMaterial;
+
+                    meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                    bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+
+                    bulletText.text = Bullet.ToString();
+                    bulletText.fontSize = 40f;
+                }));
             }
-            isHidden = false;
-            var meshRenderer = faceModel.GetComponent<MeshRenderer>();
-            var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
-            meshRenderer.material = normalMaterial;
-            bodyMeshRenderer.material = normalMaterial;
-
-            meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-            bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-
-            bulletText.text = Bullet.ToString();
-            bulletText.fontSize = 40f;
-
             if (IsLinkedPig())
             {
                 EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
@@ -266,6 +269,18 @@ public class PigComponent : MonoBehaviour
         }
     }
 
+    private IEnumerator ChangeColorCorountine(float duration, Action onComplete)
+    {
+
+        float elapsed = 0;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+        onComplete?.Invoke();
+    }
     private void OnBulletChanged()
     {
         if (_lockedTargets > 0)

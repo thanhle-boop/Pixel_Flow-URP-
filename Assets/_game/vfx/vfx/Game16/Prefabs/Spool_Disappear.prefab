@@ -20737,21 +20737,21 @@ ParticleSystem:
           outWeight: 0.2584692
         - serializedVersion: 3
           time: 0.17948654
-          value: 1
-          inSlope: 0
-          outSlope: 0
+          value: 0.9642849
+          inSlope: -0.287339
+          outSlope: -0.287339
           tangentMode: 0
           weightedMode: 0
           inWeight: 0.33333334
-          outWeight: 0.33333334
+          outWeight: 0.302961
         - serializedVersion: 3
           time: 1
           value: 0.28781128
-          inSlope: -2.0080607
-          outSlope: -2.0080607
+          inSlope: -0.8053937
+          outSlope: -0.8053937
           tangentMode: 0
           weightedMode: 0
-          inWeight: 0.33333334
+          inWeight: 0.48322338
           outWeight: 0.33333334
         m_PreInfinity: 2
         m_PostInfinity: 2
@@ -21060,7 +21060,7 @@ ParticleSystem:
         serializedVersion: 2
         key0: {r: 1, g: 0.9844471, b: 0.7971698, a: 0}
         key1: {r: 1, g: 0.9983554, b: 0.8066038, a: 0.31227306}
-        key2: {r: 0.5137255, g: 0.7902294, b: 1, a: 1}
+        key2: {r: 0.5137255, g: 0.7902294, b: 1, a: 0.78431374}
         key3: {r: 0.25, g: 0.6173314, b: 1, a: 0.60311544}
         key4: {r: 0.25, g: 0.6173314, b: 1, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
@@ -21075,9 +21075,9 @@ ParticleSystem:
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 14842
+        atime1: 16577
         atime2: 21203
-        atime3: 26985
+        atime3: 26214
         atime4: 65535
         atime5: 65535
         atime6: 0

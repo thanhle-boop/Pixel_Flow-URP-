@@ -427,7 +427,7 @@
                 {
                     "colorName": "c04",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -441,7 +441,7 @@
                 {
                     "colorName": "c02",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -455,7 +455,7 @@
                 {
                     "colorName": "c02",
                     "bullets": 10,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
