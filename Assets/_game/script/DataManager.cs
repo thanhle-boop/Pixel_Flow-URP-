@@ -20,16 +20,8 @@ public class DataManager : SingletonMonoBehaviour<DataManager>
         // PlayerPrefs.SetString("GameData", json);
         // PlayerPrefs.Save();
     }
-
-    public int CurrentLevel => _playerData.CurrentLevel;
     public int Score => _playerData.CurrentScore;
     public int Lives => _playerData.CurrentLives;
-
-
-    public void IncreaseLevel()
-    {
-        _playerData.CurrentLevel++;
-    }
 
     public void AddScore(int amount)
     {

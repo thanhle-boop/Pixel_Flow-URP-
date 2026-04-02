@@ -283,7 +283,7 @@ public class SpawnerManager : MonoBehaviour
     }
     private void WinGame()
     {
-        DataManager.instance.IncreaseLevel();
+        LevelController.ClearLevel(LevelController.GetMaxLevelUnlock() + 1);
     }
 
     private void ContinueGame()
@@ -533,7 +533,7 @@ public class SpawnerManager : MonoBehaviour
             }
         }
 
-        int levelToLoad = DataManager.instance.CurrentLevel;
+        int levelToLoad = LevelController.GetMaxLevelUnlock();
         LevelData data = LoadLevelData(levelToLoad);
         if (data != null)
         {

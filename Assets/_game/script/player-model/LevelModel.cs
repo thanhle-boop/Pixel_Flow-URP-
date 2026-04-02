@@ -41,4 +41,11 @@ public class LevelModel : BasePlayerModel
     {
         stream.ReadOrWriteRxListObj(ref lLevel, nameof(lLevel));
     }
+
+    public override void OnModelInitializing()
+    {
+        base.OnModelInitializing();
+
+        lLevel.Add(new LevelModelItem { level = 1 });
+    }
 }

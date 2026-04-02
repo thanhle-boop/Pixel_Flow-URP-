@@ -19,7 +19,7 @@ public class MainMenu : MonoBehaviour
     void Start()
     {
 
-        int currentLevel = DataManager.instance.CurrentLevel + 1;
+        int currentLevel = LevelController.GetMaxLevelUnlock();
         currentLevelText.text = "" + currentLevel;
         nextLevelText.text = "" + (currentLevel + 1);
         nextNextLevelText.text = "" + (currentLevel + 2);
