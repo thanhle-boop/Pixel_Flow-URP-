@@ -491,9 +491,51 @@
         {
             "pigs": [
                 {
-                    "colorName": "c04",
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": true,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
                     "bullets": 40,
                     "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c04",
+                    "bullets": 30,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -506,49 +548,7 @@
                 },
                 {
                     "colorName": "c08",
-                    "bullets": 40,
-                    "isHidden": true,
-                    "linkId": -1,
-                    "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    },
-                    "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    }
-                },
-                {
-                    "colorName": "c07",
-                    "bullets": 40,
-                    "isHidden": false,
-                    "linkId": -1,
-                    "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    },
-                    "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    }
-                },
-                {
-                    "colorName": "c07",
-                    "bullets": 20,
-                    "isHidden": true,
-                    "linkId": -1,
-                    "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    },
-                    "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    }
-                },
-                {
-                    "colorName": "c07",
-                    "bullets": 20,
+                    "bullets": 30,
                     "isHidden": false,
                     "linkId": -1,
                     "pigLeft": {
@@ -565,35 +565,7 @@
         {
             "pigs": [
                 {
-                    "colorName": "c04",
-                    "bullets": 40,
-                    "isHidden": false,
-                    "linkId": -1,
-                    "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    },
-                    "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    }
-                },
-                {
                     "colorName": "c08",
-                    "bullets": 40,
-                    "isHidden": true,
-                    "linkId": -1,
-                    "pigLeft": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    },
-                    "pigRight": {
-                        "LaneIndex": -1,
-                        "index": -1
-                    }
-                },
-                {
-                    "colorName": "c07",
                     "bullets": 40,
                     "isHidden": false,
                     "linkId": -1,
@@ -621,6 +593,34 @@
                     }
                 },
                 {
+                    "colorName": "c04",
+                    "bullets": 40,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c08",
+                    "bullets": 40,
+                    "isHidden": true,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
                     "colorName": "c07",
                     "bullets": 20,
                     "isHidden": false,
@@ -653,7 +653,7 @@
                     }
                 },
                 {
-                    "colorName": "c08",
+                    "colorName": "c07",
                     "bullets": 40,
                     "isHidden": true,
                     "linkId": -1,
@@ -667,8 +667,8 @@
                     }
                 },
                 {
-                    "colorName": "c07",
-                    "bullets": 30,
+                    "colorName": "c08",
+                    "bullets": 40,
                     "isHidden": false,
                     "linkId": -1,
                     "pigLeft": {
@@ -681,7 +681,7 @@
                     }
                 },
                 {
-                    "colorName": "c08",
+                    "colorName": "c07",
                     "bullets": 30,
                     "isHidden": true,
                     "linkId": -1,

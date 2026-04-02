@@ -1,0 +1,688 @@
+{
+    "sourceJson": {
+        "instanceID": 0
+    },
+    "levelIndex": 1,
+    "width": 19,
+    "height": 20,
+    "gridData": [
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c08",
+        "c08",
+        "c08",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c04",
+        "c04",
+        "c04",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c04",
+        "c08",
+        "c08",
+        "c08",
+        "c04",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c08",
+        "c07",
+        "c07",
+        "c04",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c04",
+        "c08",
+        "c11",
+        "c07",
+        "c11",
+        "c08",
+        "c04",
+        "c08",
+        "c07",
+        "c04",
+        "c04",
+        "c04",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c11",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c04",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c07",
+        "c11",
+        "c11",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c07",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c08",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c11",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c11",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c07",
+        "c08"
+    ],
+    "lanes": [
+        {
+            "pigs": [
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c11",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c04",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c08",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c11",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                }
+            ]
+        },
+        {
+            "pigs": [
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 10,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                }
+            ]
+        },
+        {
+            "pigs": [
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c11",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                }
+            ]
+        },
+        {
+            "pigs": [
+                {
+                    "colorName": "c11",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c08",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c08",
+                    "bullets": 20,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                },
+                {
+                    "colorName": "c07",
+                    "bullets": 10,
+                    "isHidden": false,
+                    "linkId": -1,
+                    "pigLeft": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": -1,
+                        "index": -1
+                    }
+                }
+            ]
+        }
+    ]
+}

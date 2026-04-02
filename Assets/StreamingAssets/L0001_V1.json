@@ -299,8 +299,8 @@
         {
             "pigs": [
                 {
-                    "colorName": "c02",
-                    "bullets": 40,
+                    "colorName": "c01",
+                    "bullets": 30,
                     "isHidden": false,
                     "linkId": -1,
                     "pigLeft": {
@@ -313,7 +313,7 @@
                     }
                 },
                 {
-                    "colorName": "c01",
+                    "colorName": "c02",
                     "bullets": 40,
                     "isHidden": false,
                     "linkId": -1,
@@ -360,7 +360,7 @@
                 },
                 {
                     "colorName": "c01",
-                    "bullets": 30,
+                    "bullets": 40,
                     "isHidden": false,
                     "linkId": -1,
                     "pigLeft": {

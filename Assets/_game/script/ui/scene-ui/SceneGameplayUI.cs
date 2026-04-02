@@ -2,11 +2,8 @@ using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections;
 using TMPro;
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Video;
 
 public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
 {
