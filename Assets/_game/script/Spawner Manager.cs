@@ -540,22 +540,35 @@ public class SpawnerManager : MonoBehaviour
             SpawnBlocks(data.width, data.height, data.gridData);
             SpawnPigs(data.lanes);
         }
+        else
+        {
+            Debug.LogError("Failed to load level data for level: " + levelToLoad);
+        }
     }
 
-    public LevelData LoadLevelData(int levelNumber)
-    {
-        LevelData currentLevel = null;
-        string fileName = $"L{levelNumber + 1:D4}_V1.json";
-        string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+public LevelData LoadLevelData(int levelNumber)
+{
+    LevelData currentLevel = null;
+    string folderPath = Application.streamingAssetsPath;
+    string searchPattern = $"L{levelNumber:D4}_*.json"; 
 
-        if (File.Exists(filePath))
+    if (Directory.Exists(folderPath))
+    {
+        string[] matchingFiles = Directory.GetFiles(folderPath, searchPattern);
+
+        if (matchingFiles.Length > 0)
         {
+
+            string filePath = matchingFiles[matchingFiles.Length - 1]; 
+            
+            Debug.Log($"Found and loading: {Path.GetFileName(filePath)}");
+
             string jsonContent = File.ReadAllText(filePath);
             currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
         }
-
-        return currentLevel;
     }
+    return currentLevel;
+}
 
     private void CleanupSpawnedObjects()
     {

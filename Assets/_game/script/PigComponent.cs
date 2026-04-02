@@ -244,7 +244,7 @@ public class PigComponent : MonoBehaviour
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
                 unlockEffect.transform.SetParent(transform);
                 // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
-                unlockEffect.transform.localPosition = Vector3.up * 0.5f;
+                unlockEffect.transform.localPosition = Vector3.up * 1f;
                 unlockEffect.Play();
 
                 StartCoroutine(ChangeColorCorountine(0.1f, () =>
