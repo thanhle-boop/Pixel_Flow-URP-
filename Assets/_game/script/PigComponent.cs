@@ -54,6 +54,7 @@ public class PigComponent : MonoBehaviour
     public GameObject spoolDissapearVFX;
     public GameObject landOnDiskVFX;
     public GameObject unlockVFX;
+    public bool isPlayeVFX = false;
     private void ChangeState(PigState newState)
     {
 
@@ -354,66 +355,50 @@ public class PigComponent : MonoBehaviour
         yield break;
     }
 
-    // private IEnumerator DestroyAnimationInternal()
-    // {
-    //     Quaternion originalRot = transform.rotation;
-    //     model.gameObject.SetActive(true);
-    //     bulletText.gameObject.SetActive(false);
-
-
-
-    //     float duration = 0.3f;
-    //     float elapsed = 0f;
-
-    //     float shakeSpeed = 50f;
-    //     float maxAngle = 10f;
-
-    //     while (elapsed < duration)
-    //     {
-    //         elapsed += Time.deltaTime;
-
-    //         float angleY = Mathf.Sin(Time.time * shakeSpeed) * maxAngle;
-    //         transform.rotation = originalRot * Quaternion.Euler(0, angleY, 0);
-
-    //         yield return null;
-    //     }
-
-    //     EventManager.OnPigDestroyed?.Invoke(this);
-    //     ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0,0.5f,-0.2f), Quaternion.identity).GetComponent<ParticleSystem>();
-    //     ps.Play();
-
-    //     Destroy(gameObject);
-    // }
-
-
     private IEnumerator DestroyAnimationInternal()
     {
         Vector3 startScale = transform.localScale;
         Quaternion startRotation = rb.rotation;
         Vector3 currentPos = rb.position;
         float duration = 0.3f;
-
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
+            float t = elapsed / duration; // t chạy từ 0 -> 1
 
             rb.MovePosition(currentPos);
 
-            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+            float scaleT;
+            if (t <= 0.4f)
+            {
+                scaleT = 0f;
+            }
+            else if (t <= 0.9f)
+            {
+                scaleT = (t - 0.4f) / 0.5f;
+            }
+            else
+            {
+                scaleT = 1f;
+                if (!isPlayeVFX)
+                {
+                    ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0, 0.5f, 0), Quaternion.identity).GetComponent<ParticleSystem>();
+                    ps.Play();
+                    isPlayeVFX = true;
+                }
+            }
 
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, scaleT);
             rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
+
             yield return new WaitForFixedUpdate();
         }
-        EventManager.OnPigDestroyed?.Invoke(this);
-        ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0, 0.5f,0), Quaternion.identity).GetComponent<ParticleSystem>();
-        ps.Play();
 
+        EventManager.OnPigDestroyed?.Invoke(this);
         Destroy(gameObject);
     }
-
     public void JumpTo(Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(1f);
