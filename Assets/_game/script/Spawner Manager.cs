@@ -91,7 +91,8 @@ public class SpawnerManager : MonoBehaviour
         InitializePlates();
     }
 
-    private void OnDisable() {
+    private void OnDisable()
+    {
         EventManager.OnStartGame -= SpawnMap;
         EventManager.OnClickPig -= SelectPig;
         EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
@@ -336,7 +337,7 @@ public class SpawnerManager : MonoBehaviour
     public void SelectPig(PigComponent pig)
     {
         if (pig == null || isProcessingClick) return;
-        
+
         ParticleSystem clickVFX = Instantiate(clickVFXPrefab).GetComponent<ParticleSystem>();
         clickVFX.transform.position = pig.transform.position + Vector3.up - Vector3.forward * 0.2f;
         clickVFX.Play();
@@ -437,7 +438,6 @@ public class SpawnerManager : MonoBehaviour
             List<PigComponent> pigsInLane = pigsByLane[laneIndex];
             if (pigsInLane.Count > 0)
             {
-                // AssignPlateToPig(pig);
 
                 pig.JumpTo(onComplete: () =>
                 {
@@ -463,12 +463,18 @@ public class SpawnerManager : MonoBehaviour
         for (int i = 0; i < pigsInLane.Count; i++)
         {
             Vector3 newLocalPos = pigsInLane[i].transform.localPosition;
-
             newLocalPos.z = -(i * spacing);
 
-            pigsInLane[i].MoveTo(newLocalPos);
-
+            bool wasHidden = pigsInLane[i].isHidden;
             pigsInLane[i].SetIsOnTop(i == 0);
+            if (wasHidden && i == 0)
+            {
+                pigsInLane[i].JumpToTarget(newLocalPos);
+            }
+            else
+            {
+                pigsInLane[i].MoveTo(newLocalPos);
+            }
         }
     }
 
@@ -476,8 +482,6 @@ public class SpawnerManager : MonoBehaviour
     {
         CleanupSpawnedObjects();
         ResetData();
-
-        // Kiểm tra tên scene mới: 6.play_test
         if (SceneManager.GetActiveScene().name == "6.play_test")
         {
             if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
@@ -561,22 +565,26 @@ public class SpawnerManager : MonoBehaviour
         Vector3 scale = Vector3.one;
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
-        if(nonEmptyCount > 400)
-        {
-            scale = new Vector3(0.8f, 1, 0.8f);
-            blockSpacing = 0.45f;
-        }
-        else if (nonEmptyCount > 900)
-        {
-            scale = new Vector3(0.6f, 1, 0.6f);
-            blockSpacing = 0.25f;
-        }
-        else
-        {
-            scale = Vector3.one;
-            blockSpacing = 0.75f;
-        }
- 
+        Debug.Log("count non empty: " + nonEmptyCount);
+        // if(nonEmptyCount > 400)
+        // {
+        //     scale = new Vector3(0.8f, 1, 0.8f);
+        //     blockSpacing = 0.45f;
+        // }
+        // else if (nonEmptyCount > 900)
+        // {
+        //     scale = new Vector3(0.6f, 1, 0.6f);
+        //     blockSpacing = 0.25f;
+        // }
+        // else
+        // {
+
+        //     scale = Vector3.one;
+        //     blockSpacing = 0.88f;
+        // }
+        scale = Vector3.one;
+        blockSpacing = 0.75f;
+
         int W = width;
         int H = height;
         float offsetX = (W - 1) * blockSpacing / 2f;

@@ -171,16 +171,23 @@ public class PigComponent : MonoBehaviour
 
         return true;
     }
+    // public bool IsPigValid()
+    // {
+    //     if (currentState != PigState.InLane && currentState != PigState.InQueue || !IsOnFirstRow())
+    //     {
+    //         return false;
+    //     }
+
+
+    //     return true;
+    // }
+
     public bool IsPigValid()
-    {
-        if (currentState != PigState.InLane && currentState != PigState.InQueue || !IsOnFirstRow())
-        {
-            return false;
-        }
-
-
-        return true;
-    }
+{
+    // Cho phép click nếu đang ở trong Lane và là con đầu hàng
+    // Đừng check currentState quá khắt khe khi nó đang nhích lên
+    return (currentState == PigState.InLane || currentState == PigState.InQueue) && isOnTop;
+}
 
     public PigComponent GetLeftmostPig()
     {
@@ -234,8 +241,9 @@ public class PigComponent : MonoBehaviour
             if (isHidden)
             {
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
+                unlockEffect.transform.SetParent(transform);
                 // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
-                unlockEffect.transform.position = transform.position + Vector3.forward * 1f + Vector3.up * 0.5f;
+                unlockEffect.transform.localPosition = Vector3.up * 0.5f;
                 unlockEffect.Play();
             }
             isHidden = false;
@@ -357,8 +365,8 @@ public class PigComponent : MonoBehaviour
         float duration = 0.3f;
         float elapsed = 0f;
 
-        float shakeSpeed = 50f; // Lắc rất nhanh
-        float maxAngle = 10f;   // Lắc qua trái 10 độ, qua phải 10 độ
+        float shakeSpeed = 50f;
+        float maxAngle = 10f;
 
         while (elapsed < duration)
         {
@@ -372,14 +380,8 @@ public class PigComponent : MonoBehaviour
 
         EventManager.OnPigDestroyed?.Invoke(this);
         ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0,0.5f,-0.2f), Quaternion.identity).GetComponent<ParticleSystem>();
-
-        // Bạn có thể thêm dòng này để Unity tự xóa Particle sau khi nổ xong (tránh rác bộ nhớ)
-        // Destroy(ps.gameObject, ps.main.duration);
-
         ps.Play();
 
-        // Giờ thoải mái xóa Pig
-        // Destroy(gameObject);
         Destroy(gameObject);
     }
 
@@ -390,6 +392,13 @@ public class PigComponent : MonoBehaviour
         StartCoroutine(ReadyToJump(0.1f, onComplete));
     }
 
+public void JumpToTarget(Vector3 localTargetPos)
+{
+    // Quan trọng: Chuyển từ tọa độ Local của Cha sang tọa độ World
+    // transform.parent chính là cái "PigSpawnPos" hoặc "Lane" chứa con heo
+    Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
+    StartCoroutine(JumpCoroutine(worldTargetPos, 0.4f, 1.5f));
+}
     private IEnumerator ConveyorJourney(Action onComplete)
     {
         ChangeState(PigState.Jumping);
@@ -453,7 +462,7 @@ public class PigComponent : MonoBehaviour
 
         rb.MovePosition(target);
         // ChangeState(PigState.InLane);
-        isOnTop = false;
+        // isOnTop = false;
     }
 
     public void MoveTo(Vector3 newLocalPos)
