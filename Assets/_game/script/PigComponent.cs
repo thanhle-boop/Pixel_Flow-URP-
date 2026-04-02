@@ -63,20 +63,21 @@ public class PigComponent : MonoBehaviour
             case PigState.InLane:
             case PigState.InQueue:
                 model.localScale = initScale;
-                animValue = 0; // Ứng với State 1 trong Animator
+                animValue = 0;
                 break;
             case PigState.Jumping:
-                animValue = 2; // Ứng với State 2 (id 2) trong Animator
+                animValue = 2;
                 break;
+            case PigState.Destroying:
             case PigState.OnConveyor:
-                animValue = 1; // Ứng với State 3 (id 1) trong Animator
+                animValue = 1;
                 break;
             case PigState.ReadyToJump:
-                animValue = 3; // Ứng với State 4 (id 3) trong Animator
+                animValue = 3;
                 break;
 
             case PigState.Shooting:
-                animValue = 4; // Ứng với State 5 (id 4) trong Animator
+                animValue = 4;
                 break;
         }
 
@@ -86,11 +87,6 @@ public class PigComponent : MonoBehaviour
         }
         currentState = newState;
     }
-
-    // public void OnEnable()
-    // {
-    //     animator = GetComponent<Animator>();
-    // }
     public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed,
     float jumpSpeed, List<Transform> paths, bool isHidden)
     {
@@ -283,15 +279,15 @@ public class PigComponent : MonoBehaviour
             ammoCircles[_currentCircleIndex].transform.localScale = new Vector3(1f, 1f, 1f);
         }
 
-        // Xử lý khi hết đạn
         if (Bullet <= 0 && isOnBelt)
         {
-            // Chạy hiệu ứng cho vòng cuối cùng
+
             if (_currentCircleIndex >= 0)
             {
                 StartCoroutine(ScaleCircleRoutine(ammoCircles[_currentCircleIndex]));
             }
 
+            ChangeState(PigState.OnConveyor);
             EventManager.OnPigOutOfAmmo?.Invoke(this);
         }
     }
@@ -300,10 +296,9 @@ public class PigComponent : MonoBehaviour
     {
         if (circle == null) yield break;
         Transform t = circle.transform;
-        float durationScaleUp = 0.1f; // Tốc độ hiệu ứng
-        float durationScaleDown = 0.25f; // Tốc độ hiệu ứng
+        float durationScaleUp = 0.1f;
+        float durationScaleDown = 0.25f;
 
-        // 1. Phóng to lên 1.5x (Z và X)
         float elapsed = 0;
         Vector3 startScale = new Vector3(1f, 1f, 1f);
         Vector3 peakScale = new Vector3(1.7f, 1f, 1.7f);
