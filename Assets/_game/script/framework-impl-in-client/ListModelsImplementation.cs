@@ -7,5 +7,6 @@ public class ListModelsImplementation : IListModelDeclaration
     {
         new CurrencyModel(),
         new LevelModel(),
+        new BoosterModel(),
     };
 }

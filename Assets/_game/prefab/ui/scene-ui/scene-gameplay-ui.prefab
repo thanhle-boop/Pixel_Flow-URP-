@@ -134,6 +134,7 @@ MonoBehaviour:
   coinText: {fileID: 3262664444901835904}
   levelText: {fileID: 6385872144280887082}
   rectBottomUI: {fileID: 7037036627057730142}
+  isBottomUiTranslate: 0
 --- !u!1 &2337115672143761066
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,7 +913,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: itemType
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: unlockIcon
@@ -1053,7 +1054,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: itemType
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: unlockIcon
@@ -1297,6 +1298,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: btn-add-tray
       objectReference: {fileID: 0}
+    - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
+      propertyPath: itemType
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1428,7 +1433,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: itemType
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5885685508633449465, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: unlockIcon

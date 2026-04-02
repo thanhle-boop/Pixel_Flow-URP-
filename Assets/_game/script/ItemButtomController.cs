@@ -1,4 +1,5 @@
-
+using Cysharp.Threading.Tasks;
+using R3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,10 +8,12 @@ public class ItemButtomController : MonoBehaviour
 {
     public Image panelSprite;
     public Image iconSprite;
-    
+
     public TextMeshProUGUI countText;
     public GameObject plusIcon;
     public GameObject countObject;
+
+    [SerializeField] Button btnUseBooster;
 
     [Header("sprite")]
     public Sprite lockIcon;
@@ -21,53 +24,49 @@ public class ItemButtomController : MonoBehaviour
     public Sprite greenSprite;
     public Sprite blueSprite;
 
-    public int itemType;
+    public BoosterIndex itemType;
 
     void OnEnable()
     {
         EventManager.OnStartGame += UpdateItemStatus;
-
-        EventManager.OnItemCountChanged += OnItemCountChanged;
     }
+
     void OnDisable()
     {
         EventManager.OnStartGame -= UpdateItemStatus;
-
-        EventManager.OnItemCountChanged -= OnItemCountChanged;
-
     }
 
-    private void OnItemCountChanged(int itemType, int newValue)
+    private void Start()
     {
-        if (this.itemType == itemType)
-        {
-            if (newValue > 0)
+        BoosterController.GetBoosterCountRx(itemType)
+           .Subscribe(val =>
+           {
+               bool isHaveValue = val > 0;
+
+               countText.text = isHaveValue ? val.ToString() : "";
+               countObject.GetComponent<Image>().sprite = isHaveValue ? blueSprite : greenSprite;
+               plusIcon.SetActive(!isHaveValue);
+           }).AddTo(this);
+
+        btnUseBooster.OnClickAsObservable()
+            .Subscribe(_ =>
             {
-                countText.text = newValue.ToString();
-                countObject.GetComponent<Image>().sprite = blueSprite;
-                plusIcon.SetActive(false);
-            }
-            else
-            {
-                countText.text = "";
-                countObject.GetComponent<Image>().sprite = greenSprite;
-                plusIcon.SetActive(true);
-            }
-        }
+                if (BoosterController.IsCanUseBooster(itemType))
+                {
+                    BoosterController.HandleUseBooster(itemType);
+                }
+            }).AddTo(this);
     }
 
     private void UpdateItemStatus()
     {
-
-        var isOpen = DataManager.instance.GetStatus(itemType);
-
+        var isOpen = BoosterController.IsBoosterAvailable(itemType);
 
         if (isOpen)
         {
             iconSprite.sprite = unlockIcon;
             panelSprite.sprite = unlockPanel;
 
-            OnItemCountChanged(itemType, DataManager.instance.GetItemCount(itemType));
             countObject.SetActive(true);
         }
         else
@@ -76,8 +75,6 @@ public class ItemButtomController : MonoBehaviour
             panelSprite.sprite = lockPanel;
             countObject.SetActive(false);
         }
-
-
     }
 }
 

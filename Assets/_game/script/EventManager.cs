@@ -29,8 +29,6 @@ public class EventManager
     public static Action OnUseSuperCat;
     public static Action<string> OnClickBlock;
 
-    public static Action<int, int> OnItemCountChanged;
-
     public static Action<int> onClickButton;
     public static Action<int> onClickYesButton;
     public static Action<int> onClickNoButton;

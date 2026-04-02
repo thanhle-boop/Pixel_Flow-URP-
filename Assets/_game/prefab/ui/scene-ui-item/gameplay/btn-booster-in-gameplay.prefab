@@ -301,7 +301,7 @@ GameObject:
   - component: {fileID: 6611199120484368659}
   - component: {fileID: 5885685508633449465}
   m_Layer: 5
-  m_Name: btn-add-tray
+  m_Name: btn-booster-in-gameplay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -422,17 +422,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b36ce5eab17e0374d989fb9e08a41ba8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemButtomController
+  panelSprite: {fileID: 7296138293916921616}
+  iconSprite: {fileID: 9012938530837421264}
+  countText: {fileID: 1194814498443402173}
+  plusIcon: {fileID: 2457051610605403067}
+  countObject: {fileID: 6990160974107423718}
+  btnUseBooster: {fileID: 6611199120484368659}
   lockIcon: {fileID: 21300000, guid: 8c05f28aaf76e2348a848b7c3be9b090, type: 3}
   lockPanel: {fileID: 21300000, guid: 79d1e26e98e3a8342b9fe45ad9223250, type: 3}
   unlockIcon: {fileID: 21300000, guid: cda21b2860c41414babef77122766db4, type: 3}
   unlockPanel: {fileID: 21300000, guid: bd6cd1bb2de687940aeb6bd03eef8e93, type: 3}
-  panelSprite: {fileID: 7296138293916921616}
-  iconSprite: {fileID: 9012938530837421264}
   greenSprite: {fileID: 21300000, guid: a0b7d1a4372deba489659cd35f15c8c4, type: 3}
   blueSprite: {fileID: 21300000, guid: 0503278b8eb30b04686bce1b7f257f86, type: 3}
-  countText: {fileID: 1194814498443402173}
-  plusIcon: {fileID: 2457051610605403067}
-  countObject: {fileID: 6990160974107423718}
   itemType: 1
 --- !u!1 &6990160974107423718
 GameObject:

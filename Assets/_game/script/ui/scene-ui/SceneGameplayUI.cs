@@ -18,7 +18,7 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
 
     [SerializeField] RectTransform rectBottomUI;
 
-    bool isBottomUiTranslate = false;
+    public bool isBottomUiTranslate = false;
 
     private void OnEnable()
     {
@@ -40,59 +40,6 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
 
     private void Start()
     {
-        btnAddTray.OnClickAsObservable()
-            .Subscribe(_ =>
-            {
-                if (DataManager.instance.GetItemCount(1) <= 0)
-                {
-                    return;
-                }
-                UIManager.Instance.straightSlot.SetActive(true);
-                EventManager.OnUseAddTray?.Invoke();
-                DataManager.instance.ConsumeItem(1);
-            }).AddTo(this);
-
-        btnHand.OnClickAsObservable()
-            .Subscribe(_ =>
-            {
-                if (isBottomUiTranslate)
-                {
-                    return;
-                }
-
-                if (DataManager.instance.GetItemCount(2) <= 0)
-                {
-                    return;
-                }
-                EventManager.OnUseHand?.Invoke();
-                Vector2 targetPos = rectBottomUI.anchoredPosition + new Vector2(0, -230f);
-                isBottomUiTranslate = true;
-                StartCoroutine(MoveUISmoothly(rectBottomUI, targetPos));
-                DataManager.instance.ConsumeItem(2);
-            }).AddTo(this);
-
-        btnUseShuff.OnClickAsObservable()
-            .Subscribe(_ =>
-            {
-                if (DataManager.instance.GetItemCount(3) <= 0)
-                {
-                    return;
-                }
-                EventManager.OnUseShuffle?.Invoke();
-                DataManager.instance.ConsumeItem(3);
-            }).AddTo(this);
-
-        btnUseSuper.OnClickAsObservable()
-            .Subscribe(_ =>
-            {
-                if (DataManager.instance.GetItemCount(4) <= 0)
-                {
-                    return;
-                }
-                EventManager.OnUseSuperCat?.Invoke();
-                DataManager.instance.ConsumeItem(4);
-            }).AddTo(this);
-
         btnSetting.OnClickAsObservable()
             .Subscribe(_ =>
             {
@@ -119,6 +66,13 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
     {
         levelText.text = "Level " + (DataManager.instance.CurrentLevel + 1);
         coinText.text = "" + CurrencyController.GetGold();
+    }
+
+    public void HandleBoosterHand()
+    {
+        Vector2 targetPos = rectBottomUI.anchoredPosition + new Vector2(0, -230f);
+        isBottomUiTranslate = true;
+        StartCoroutine(MoveUISmoothly(rectBottomUI, targetPos));
     }
 
     private void OnInvalidExecution()
