@@ -59,7 +59,7 @@ public class Link : MonoBehaviour
         startPos = pigObject1.transform.position;
         endPos = pigObject2.transform.position;
 
-        transform.position = Vector3.Lerp(startPos, endPos, 0.5f) + new Vector3(0, 1f, 0);
+        transform.position = Vector3.Lerp(startPos, endPos, 0.5f) + new Vector3(0, 0.5f, 0);
         Vector3 dir = endPos - startPos;
         Vector3 huongZ = Vector3.Cross(Vector3.up, dir).normalized;
         if (huongZ == Vector3.zero)

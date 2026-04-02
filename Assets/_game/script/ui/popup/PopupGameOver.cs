@@ -10,6 +10,7 @@ public class PopupGameOver : BasePopup
     [SerializeField] TextMeshProUGUI txtGoldContinue;
     [SerializeField] VideoPlayer loseGameVideo;
     [SerializeField] Button btnContinue;
+    [SerializeField] Button closeContinue;
 
     protected override void Start()
     {
@@ -26,12 +27,17 @@ public class PopupGameOver : BasePopup
 
                 ClosePopup();
             }).AddTo(this);
+        closeContinue.OnClickAsObservable()
+            .Subscribe(_ =>
+            {
+                PopupManager.instance.OpenPopup<PopupRetry>().Forget();
+                ClosePopup();
+            }).AddTo(this);
+
     }
 
     public override void OnClosePopup(bool isRunAnim = true)
     {
         base.OnClosePopup(isRunAnim);
-
-        PopupManager.instance.OpenPopup<PopupRetry>().Forget();
     }
 }

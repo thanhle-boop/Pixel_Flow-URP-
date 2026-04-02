@@ -1,8 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,7 +18,6 @@ public class SpawnerManager : MonoBehaviour
     private int totalBlockCount = 0;
 
     public bool isTesting = false;
-    // private int tempScore = 0;
 
     private bool isProcessingClick = false;
     private bool onHandItemUsed = false;
@@ -211,9 +210,12 @@ public class SpawnerManager : MonoBehaviour
         {
             if (pig.color == color)
             {
-                pig.ExecuteDestroy();
-                RemovePigFromLane(pig);
-                HandlePigClickedFromQueue(pig, pigsInTempQueue.Contains(pig));
+
+                HandlePigClickedFromQueue(pig, () =>
+                {
+                    pig.ExecuteDestroy();
+                    RemovePigFromLane(pig);
+                }, pigsInTempQueue.Contains(pig));
             }
         }
 
@@ -278,7 +280,6 @@ public class SpawnerManager : MonoBehaviour
 
     private void LoseGame()
     {
-        // tempScore = 0;
         StopAllPigAnimations();
     }
     private void WinGame()
@@ -288,50 +289,60 @@ public class SpawnerManager : MonoBehaviour
 
     private void ContinueGame()
     {
-        List<PigComponent> tempMovingPigs = new List<PigComponent>(pigsInConveyor);
+        List<PigComponent> beltPigs = new List<PigComponent>(pigsInConveyor);
+        beltPigs.RemoveAll(p => pigsInQueue.Contains(p) || pigsInTempQueue.Contains(p));
         pigsInConveyor.Clear();
 
-        foreach (PigComponent pig in tempMovingPigs)
+        List<PigComponent> queuePigsToFree = new List<PigComponent>();
+        if (pigsInQueue.Count >= queuePos.Count)
         {
-            if (pig == null) continue;
-
-            MovePigToTempQueue(pig);
-        }
-
-        if (pigsInQueue.Count > 0)
-        {
-            PigComponent lastPig = pigsInQueue[pigsInQueue.Count - 1];
-            List<PigComponent> pigsToMove = new List<PigComponent>();
-
-            if (lastPig.IsLinkedPig())
+            int lastSlotIndex = queuePos.Count - 1; 
+            if (lastSlotIndex < pigsInQueue.Count)
             {
-                PigComponent leftmost = lastPig.GetLeftmostPig();
-                PigComponent current = leftmost;
-                while (current != null)
+                PigComponent lastPig = pigsInQueue[lastSlotIndex];
+
+                if (lastPig.IsLinkedPig())
                 {
-                    pigsToMove.Add(current);
-                    current = current.rightPig;
+                    PigComponent leftmost = lastPig.GetLeftmostPig();
+                    PigComponent current = leftmost;
+                    while (current != null)
+                    {
+                        if (pigsInQueue.Contains(current) && !queuePigsToFree.Contains(current))
+                            queuePigsToFree.Add(current);
+                        current = current.rightPig;
+                    }
                 }
-            }
-            else
-            {
-                pigsToMove.Add(lastPig);
-            }
-
-
-            foreach (PigComponent p in pigsToMove)
-            {
-                if (pigsInQueue.Contains(p))
+                else
                 {
-                    pigsInQueue.Remove(p);
-                    MovePigToTempQueue(p);
+                    queuePigsToFree.Add(lastPig);
                 }
             }
         }
+
+        foreach (PigComponent p in queuePigsToFree)
+            pigsInQueue.Remove(p);
+
+        foreach (PigComponent pig in beltPigs)
+        {
+            if (pig != null) MovePigToTempQueueInternal(pig);
+        }
+
+        foreach (PigComponent p in queuePigsToFree)
+        {
+            if (p != null) MovePigToTempQueueInternal(p);
+        }
+
+        _straightSlot = 0;
+        UIManager.Instance.UpdateStraightSlot(0, _maxstraightSlot);
+
+        RearrangeQueue(0, false);
+        RearrangeQueue(0, true);
+
+        EventManager.OnQueueNotFull?.Invoke();
     }
-
-    private void MovePigToTempQueue(PigComponent pig)
+    private void MovePigToTempQueueInternal(PigComponent pig)
     {
+        if (pigsInTempQueue.Contains(pig)) return;
         pigsInTempQueue.Add(pig);
 
         if (pig.currentPlate != null)
@@ -341,12 +352,11 @@ public class SpawnerManager : MonoBehaviour
             activePlateMap.Remove(pig);
         }
 
-        _straightSlot = Mathf.Max(0, _straightSlot - 1);
-        UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
-
         pig.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+
         int index = pigsInTempQueue.Count - 1;
-        Vector3 targetPos = startTempQueuePos.position + 0.9f * index * Vector3.right;
+
+        Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.9f));
 
         pig.JumpToQueue(targetPos, startTempQueuePos.rotation, index);
     }
@@ -447,16 +457,53 @@ public class SpawnerManager : MonoBehaviour
     {
         isProcessingClick = true;
 
+        bool isFromTemp = pigsInTempQueue.Contains(linkedPigs[0]);
+        bool isFromQueue = pigsInQueue.Contains(linkedPigs[0]);
+
+        bool isFromLane = !isFromTemp && !isFromQueue;
+
+        int firstQueueIndex = -1;
+        if (isFromTemp) firstQueueIndex = pigsInTempQueue.IndexOf(linkedPigs[0]);
+        else if (isFromQueue) firstQueueIndex = pigsInQueue.IndexOf(linkedPigs[0]);
+
         foreach (PigComponent p in linkedPigs)
         {
-            ProcessPigData(p);
-            yield return new WaitForSeconds(0.25f);
+            bool hasFinishedJump = false;
+
+            if (!isFromLane && !pigsInConveyor.Contains(p)) pigsInConveyor.Add(p);
+
+            AssignPlateToPig(p);
+
+            p.JumpTo(() =>
+            {
+                if (isFromLane)
+                {
+                    RemovePigFromLane(p);
+                }
+                hasFinishedJump = true;
+            });
+
+            yield return new WaitUntil(() => hasFinishedJump);
+        }
+
+        if (!isFromLane)
+        {
+            List<PigComponent> targetQueue = isFromTemp ? pigsInTempQueue : pigsInQueue;
+            foreach (PigComponent p in linkedPigs)
+            {
+                if (targetQueue.Contains(p)) targetQueue.Remove(p);
+            }
+            _straightSlot = Mathf.Max(0, _straightSlot - linkedPigs.Count);
+            UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+
+            if (firstQueueIndex != -1)
+                RearrangeQueue(firstQueueIndex, isFromTemp);
         }
 
         yield return StartCoroutine(ResetClickFlag());
     }
 
-    private void ProcessPigData(PigComponent pig)
+    private void ProcessPigData(PigComponent pig, Action onComplete = null)
     {
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
         SoundManager.Instance.PlaySound(SoundManager.Instance.validCat);
@@ -464,7 +511,7 @@ public class SpawnerManager : MonoBehaviour
         if (pigsInQueue.Contains(pig) || pigsInTempQueue.Contains(pig))
         {
             bool isFromTempQueue = pigsInTempQueue.Contains(pig);
-            HandlePigClickedFromQueue(pig, isFromTempQueue);
+            HandlePigClickedFromQueue(pig, onComplete, isFromTempQueue);
             return;
         }
 
@@ -479,6 +526,7 @@ public class SpawnerManager : MonoBehaviour
                 pig.JumpTo(onComplete: () =>
                 {
                     RemovePigFromLane(pig);
+                    onComplete?.Invoke();
                 });
             }
         }
@@ -517,6 +565,7 @@ public class SpawnerManager : MonoBehaviour
     private void SpawnMap()
     {
         CleanupSpawnedObjects();
+        _maxstraightSlot = 5;
         ResetData();
         if (SceneManager.GetActiveScene().name == "6.play_test")
         {
@@ -546,29 +595,29 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-public LevelData LoadLevelData(int levelNumber)
-{
-    LevelData currentLevel = null;
-    string folderPath = Application.streamingAssetsPath;
-    string searchPattern = $"L{levelNumber:D4}_*.json"; 
-
-    if (Directory.Exists(folderPath))
+    public LevelData LoadLevelData(int levelNumber)
     {
-        string[] matchingFiles = Directory.GetFiles(folderPath, searchPattern);
+        LevelData currentLevel = null;
+        string folderPath = Application.streamingAssetsPath;
+        string searchPattern = $"L{levelNumber:D4}_*.json";
 
-        if (matchingFiles.Length > 0)
+        if (Directory.Exists(folderPath))
         {
+            string[] matchingFiles = Directory.GetFiles(folderPath, searchPattern);
 
-            string filePath = matchingFiles[matchingFiles.Length - 1]; 
-            
-            Debug.Log($"Found and loading: {Path.GetFileName(filePath)}");
+            if (matchingFiles.Length > 0)
+            {
 
-            string jsonContent = File.ReadAllText(filePath);
-            currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
+                string filePath = matchingFiles[matchingFiles.Length - 1];
+
+                Debug.Log($"Found and loading: {Path.GetFileName(filePath)}");
+
+                string jsonContent = File.ReadAllText(filePath);
+                currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
+            }
         }
+        return currentLevel;
     }
-    return currentLevel;
-}
 
     private void CleanupSpawnedObjects()
     {
@@ -592,18 +641,6 @@ public LevelData LoadLevelData(int levelNumber)
         activeLinks.Clear();
     }
 
-    private bool TryGetPlayTestData(out DataConfig playTestData)
-    {
-        playTestData = null;
-
-        if (SceneManager.GetActiveScene().name != "6.playTest")
-        {
-            return false;
-        }
-
-        return GameManagerForTesting.Instance.TryGetPlayTestConfig(out playTestData);
-    }
-
     private void SpawnBlocks(int width, int height, List<string> gridData)
     {
         if (gridData == null || width <= 0 || height <= 0)
@@ -615,24 +652,27 @@ public LevelData LoadLevelData(int levelNumber)
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
         Debug.Log("count non empty: " + nonEmptyCount);
-        // if(nonEmptyCount > 400)
-        // {
-        //     scale = new Vector3(0.8f, 1, 0.8f);
-        //     blockSpacing = 0.45f;
-        // }
-        // else if (nonEmptyCount > 900)
-        // {
-        //     scale = new Vector3(0.6f, 1, 0.6f);
-        //     blockSpacing = 0.25f;
-        // }
-        // else
-        // {
+        if (nonEmptyCount > 600)
+        {
+            scale = new Vector3(0.8f, 1, 0.8f);
+            blockSpacing = 0.55f;
+        }
+        else if (nonEmptyCount > 1200)
+        {
+            scale = new Vector3(0.6f, 1, 0.6f);
+            blockSpacing = 0.25f;
+        }
+        else if (nonEmptyCount > 200)
+        {
 
-        //     scale = Vector3.one;
-        //     blockSpacing = 0.88f;
-        // }
-        scale = Vector3.one;
-        blockSpacing = 0.75f;
+            scale = Vector3.one;
+            blockSpacing = 0.75f;
+        }
+        else
+        {
+            scale = new Vector3(1.2f, 1, 1.2f);
+            blockSpacing = 0.85f;
+        }
 
         int W = width;
         int H = height;
@@ -754,6 +794,7 @@ public LevelData LoadLevelData(int levelNumber)
             AddLinkToGraph(linkGraph, pendingLink.sourcePig, pendingLink.targetPig);
 
             Link linkObject = Instantiate(linkPrefabs);
+            linkObject.transform.position = Vector3.up * -2f;
             activeLinks.Add(linkObject);
             linkObject.SetColor(
                 pendingLink.sourcePig.color,
@@ -891,7 +932,6 @@ public LevelData LoadLevelData(int levelNumber)
 
         return component;
     }
-
     private PigComponent GetOrderedComponentStart(List<PigComponent> component, Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
     {
         PigComponent startPig = null;
@@ -991,11 +1031,10 @@ public LevelData LoadLevelData(int levelNumber)
 
         if (activePlateMap.TryGetValue(pig, out Transform plate))
         {
-            // Bắt đầu quá trình thu hồi đĩa
             if (pig.currentPlate != null)
             {
                 StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
-                pig.currentPlate = null; // Xóa tham chiếu trên pig để tránh thu hồi 2 lần
+                pig.currentPlate = null;
             }
             activePlateMap.Remove(pig);
         }
@@ -1117,8 +1156,6 @@ public LevelData LoadLevelData(int levelNumber)
     private void OnBlockDestroyed()
     {
         totalBlockCount--;
-        // tempScore += 100;
-        // UIManager.Instance.UpdateScore(tempScore);
         if (totalBlockCount <= 0)
         {
             if (GameManager.Instance != null)
@@ -1128,8 +1165,17 @@ public LevelData LoadLevelData(int levelNumber)
         }
     }
 
-    private void HandlePigClickedFromQueue(PigComponent pig, bool isFromTempQueue = false)
+    private void HandlePigClickedFromQueue(PigComponent pig, Action complete, bool isFromTempQueue = false)
     {
+        if (pig.IsLinkedPig())
+        {
+            PigComponent leftmost = pig.GetLeftmostPig();
+            List<PigComponent> linkedPigs = GetPigChain(leftmost);
+
+            StartCoroutine(ProcessLinkedPigsRoutine(linkedPigs));
+            complete?.Invoke();
+            return;
+        }
         int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
 
         if (removedIndex < 0) return;
@@ -1156,7 +1202,7 @@ public LevelData LoadLevelData(int levelNumber)
         pig.JumpTo(() =>
         {
             RearrangeQueue(removedIndex, isFromTempQueue);
-
+            complete?.Invoke();
         });
     }
 

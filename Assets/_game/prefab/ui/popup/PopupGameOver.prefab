@@ -598,6 +598,7 @@ MonoBehaviour:
   txtGoldContinue: {fileID: 7827582910433934280}
   loseGameVideo: {fileID: 3749496946740311219}
   btnContinue: {fileID: 1869748938526403291}
+  closeContinue: {fileID: 4491687713475377036}
 --- !u!1 &4327364013793185591
 GameObject:
   m_ObjectHideFlags: 0

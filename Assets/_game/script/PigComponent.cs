@@ -172,21 +172,10 @@ public class PigComponent : MonoBehaviour
 
         return true;
     }
-    // public bool IsPigValid()
-    // {
-    //     if (currentState != PigState.InLane && currentState != PigState.InQueue || !IsOnFirstRow())
-    //     {
-    //         return false;
-    //     }
 
-
-    //     return true;
-    // }
 
     public bool IsPigValid()
     {
-        // Cho phép click nếu đang ở trong Lane và là con đầu hàng
-        // Đừng check currentState quá khắt khe khi nó đang nhích lên
         return (currentState == PigState.InLane || currentState == PigState.InQueue) && isOnTop;
     }
 
@@ -334,7 +323,6 @@ public class PigComponent : MonoBehaviour
             yield return null;
         }
 
-        // 2. Co lại về 1.2f
         elapsed = 0;
         while (elapsed < durationScaleDown)
         {
@@ -381,7 +369,7 @@ public class PigComponent : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration; // t chạy từ 0 -> 1
+            float t = elapsed / duration;
 
             rb.MovePosition(currentPos);
 
@@ -488,8 +476,6 @@ public class PigComponent : MonoBehaviour
         }
 
         rb.MovePosition(target);
-        // ChangeState(PigState.InLane);
-        // isOnTop = false;
     }
 
     public void MoveTo(Vector3 newLocalPos)
@@ -530,7 +516,6 @@ public class PigComponent : MonoBehaviour
 
             if (_lockedTargets > 0)
             {
-                // Bật animation lắc (giả sử bạn đặt trigger hoặc bool trong Animator)
                 ChangeState(PigState.Shooting);
             }
             else
