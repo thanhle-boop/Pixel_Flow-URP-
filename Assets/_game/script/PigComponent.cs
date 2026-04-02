@@ -183,11 +183,11 @@ public class PigComponent : MonoBehaviour
     // }
 
     public bool IsPigValid()
-{
-    // Cho phép click nếu đang ở trong Lane và là con đầu hàng
-    // Đừng check currentState quá khắt khe khi nó đang nhích lên
-    return (currentState == PigState.InLane || currentState == PigState.InQueue) && isOnTop;
-}
+    {
+        // Cho phép click nếu đang ở trong Lane và là con đầu hàng
+        // Đừng check currentState quá khắt khe khi nó đang nhích lên
+        return (currentState == PigState.InLane || currentState == PigState.InQueue) && isOnTop;
+    }
 
     public PigComponent GetLeftmostPig()
     {
@@ -354,32 +354,61 @@ public class PigComponent : MonoBehaviour
         yield break;
     }
 
+    // private IEnumerator DestroyAnimationInternal()
+    // {
+    //     Quaternion originalRot = transform.rotation;
+    //     model.gameObject.SetActive(true);
+    //     bulletText.gameObject.SetActive(false);
+
+
+
+    //     float duration = 0.3f;
+    //     float elapsed = 0f;
+
+    //     float shakeSpeed = 50f;
+    //     float maxAngle = 10f;
+
+    //     while (elapsed < duration)
+    //     {
+    //         elapsed += Time.deltaTime;
+
+    //         float angleY = Mathf.Sin(Time.time * shakeSpeed) * maxAngle;
+    //         transform.rotation = originalRot * Quaternion.Euler(0, angleY, 0);
+
+    //         yield return null;
+    //     }
+
+    //     EventManager.OnPigDestroyed?.Invoke(this);
+    //     ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0,0.5f,-0.2f), Quaternion.identity).GetComponent<ParticleSystem>();
+    //     ps.Play();
+
+    //     Destroy(gameObject);
+    // }
+
+
     private IEnumerator DestroyAnimationInternal()
     {
-        Quaternion originalRot = transform.rotation;
-        model.gameObject.SetActive(true);
-        bulletText.gameObject.SetActive(false);
-
-
-
+        Vector3 startScale = transform.localScale;
+        Quaternion startRotation = rb.rotation;
+        Vector3 currentPos = rb.position;
         float duration = 0.3f;
-        float elapsed = 0f;
 
-        float shakeSpeed = 50f;
-        float maxAngle = 10f;
+        float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
+            float t = elapsed / duration;
 
-            float angleY = Mathf.Sin(Time.time * shakeSpeed) * maxAngle;
-            transform.rotation = originalRot * Quaternion.Euler(0, angleY, 0);
+            rb.MovePosition(currentPos);
 
-            yield return null;
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+
+            rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
+            yield return new WaitForFixedUpdate();
         }
-
         EventManager.OnPigDestroyed?.Invoke(this);
-        ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0,0.5f,-0.2f), Quaternion.identity).GetComponent<ParticleSystem>();
+        ParticleSystem ps = Instantiate(spoolDissapearVFX, transform.position + new Vector3(0, 0.5f,0), Quaternion.identity).GetComponent<ParticleSystem>();
         ps.Play();
 
         Destroy(gameObject);
@@ -392,13 +421,11 @@ public class PigComponent : MonoBehaviour
         StartCoroutine(ReadyToJump(0.1f, onComplete));
     }
 
-public void JumpToTarget(Vector3 localTargetPos)
-{
-    // Quan trọng: Chuyển từ tọa độ Local của Cha sang tọa độ World
-    // transform.parent chính là cái "PigSpawnPos" hoặc "Lane" chứa con heo
-    Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
-    StartCoroutine(JumpCoroutine(worldTargetPos, 0.4f, 1.5f));
-}
+    public void JumpToTarget(Vector3 localTargetPos)
+    {
+        Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
+        StartCoroutine(JumpCoroutine(worldTargetPos, 0.4f, 1.5f));
+    }
     private IEnumerator ConveyorJourney(Action onComplete)
     {
         ChangeState(PigState.Jumping);

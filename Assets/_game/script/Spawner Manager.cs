@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -135,8 +136,10 @@ public class SpawnerManager : MonoBehaviour
         {
             Vector3 spawnPos = traySlotOrigin.position - Vector3.right * (i * plateStackOffset);
 
-            GameObject go = Instantiate(platePrefab, spawnPos, traySlotOrigin.rotation);
+            GameObject go = Instantiate(platePrefab);
             Transform plate = go.transform;
+            plate.position = spawnPos;
+            plate.localRotation = Quaternion.Euler(0, 0, -45);
             plate.SetParent(tray);
             plate.transform.localScale = Vector3.one;
 
@@ -150,14 +153,47 @@ public class SpawnerManager : MonoBehaviour
         if (availablePlates.Count > 0)
         {
             Transform plate = availablePlates.Dequeue();
-            pig.currentPlate = plate;
-            plate.transform.SetParent(pig.transform);
-            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.067f);
-            plate.transform.localRotation = Quaternion.identity;
-            plate.transform.localRotation = new Quaternion(90, 90, 0, 0);
-            plate.transform.localScale = new Vector3(80, 100, 100);
+            StartCoroutine(AnimatePlateToPig(plate, pig));
+        }
+    }
 
+    private IEnumerator AnimatePlateToPig(Transform plate, PigComponent pig)
+    {
+        if (plate == null || pig == null) yield break;
+
+        Vector3 startPos = plate.position;
+        Quaternion startRot = plate.rotation;
+
+        Vector3 intermediatePos = traySlotOrigin.position + Vector3.right * 0.5f;
+
+        float elapsed = 0;
+        float duration = 0.5f;
+
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            plate.position = Vector3.Lerp(plate.position, intermediatePos, t);
+
+            plate.rotation = Quaternion.Lerp(startRot, Quaternion.Euler(0, 0, 90), t);
+
+            yield return null;
+        }
+
+        if (pig != null)
+        {
+            plate.SetParent(pig.transform);
+            plate.localPosition = new Vector3(-0.02f, 0.184f, -0.101f);
+            plate.localRotation = Quaternion.Euler(0, 0, 90);
+            plate.localScale = new Vector3(80, 100, 100);
+
+            pig.currentPlate = plate;
             activePlateMap[pig] = plate;
+        }
+        else
+        {
+            StartCoroutine(ReturnPlateToOrigin(plate));
         }
     }
     public void ClickBlock(string color)
@@ -439,10 +475,10 @@ public class SpawnerManager : MonoBehaviour
             if (pigsInLane.Count > 0)
             {
 
+                AssignPlateToPig(pig);
                 pig.JumpTo(onComplete: () =>
                 {
                     RemovePigFromLane(pig);
-                    AssignPlateToPig(pig);
                 });
             }
         }
@@ -1019,7 +1055,7 @@ public class SpawnerManager : MonoBehaviour
 
         plate.transform.SetParent(tray);
         plate.position = targetPos;
-        plate.rotation = traySlotOrigin.rotation;
+        plate.rotation = Quaternion.Euler(0, 0, -45);
         plate.localScale = Vector3.one;
         availablePlates.Enqueue(plate);
 
@@ -1029,22 +1065,10 @@ public class SpawnerManager : MonoBehaviour
     private void RearrangePlatesInTray()
     {
         int index = 0;
-        // CHỈ sắp xếp những đĩa đang rảnh (nằm trong Queue)
         foreach (Transform p in availablePlates)
         {
-            // Bước 1: Tính toán vị trí Local (Tương đối)
-            // Chỉ truyền giá trị khoảng cách vào đây, KHÔNG cộng thêm .position
-            ;
             Vector3 localOffset = Vector3.right * (index * plateStackOffset);
-
-            // Bước 2: Chuyển sang World Position
-            // TransformPoint sẽ tự động tính toán dựa trên Vị trí, Xoay và Scale của traySlotOrigin
-            // Vector3 targetWorldPos = traySlotOrigin.TransformPoint(localOffset);
-
-            // Bước 3: Cập nhật (Dùng MovePosition nếu đĩa có Rigidbody, hoặc .position nếu không)
             p.position = traySlotOrigin.position - Vector3.right * (index * plateStackOffset);
-            // p.rotation = traySlotOrigin.rotation;
-
             index++;
         }
     }
@@ -1053,8 +1077,6 @@ public class SpawnerManager : MonoBehaviour
         PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
         return allPigs.Length <= 5;
     }
-
-
 
     private void ApplyConveyorSpeedMultiplier(float multiplier)
     {
@@ -1117,9 +1139,9 @@ public class SpawnerManager : MonoBehaviour
             EventManager.OnQueueNotFull?.Invoke();
         }
 
+        AssignPlateToPig(pig);
         pig.JumpTo(() =>
         {
-            AssignPlateToPig(pig);
             RearrangeQueue(removedIndex, isFromTempQueue);
 
         });
