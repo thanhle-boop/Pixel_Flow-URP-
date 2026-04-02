@@ -1,19 +1,38 @@
 
-// using System.IO;
+using System.IO;
 
-// public class MapLevelConfigIO : ExtraConfigReadWriteManager
-// {
-//     public override string configFilename => "map_level_cfg";
+public class MapLevelConfigIO : ExtraConfigReadWriteManager
+{
+    private MapLevelConfig mapLevelConfig;
 
-//     protected override void OnReadConfig_binary(BinaryReader reader)
-//     {
-//     }
+    public static MapLevelConfig MapLevelConfig => ConfigManager.instance.GetExtraConfig<MapLevelConfigIO>().mapLevelConfig;
 
-//     protected override void OnReadConfig_text(string text)
-//     {
-//     }
+    public override string configFilename => "map_level_cfg";
 
-//     protected override void OnWriteConfig_binary(BinaryWriter writer)
-//     {
-//     }
-// }
+    #region config text
+
+    protected override void OnReadConfig_text(string text)
+    {
+        mapLevelConfig = new MapLevelConfig();
+        mapLevelConfig.test = StaticUtils.StringToInt(text);
+    }
+
+    #endregion
+
+    #region config binary
+
+    protected override void OnReadConfig_binary(BinaryReader reader)
+    {
+        mapLevelConfig = new MapLevelConfig();
+        mapLevelConfig.test = reader.ReadInt32();
+    }
+
+    protected override void OnWriteConfig_binary(BinaryWriter writer)
+    {
+        writer.Write(mapLevelConfig.test);
+    }
+
+    #endregion
+
+    
+}
