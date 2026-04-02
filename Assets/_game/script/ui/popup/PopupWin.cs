@@ -13,7 +13,7 @@ public class PopupWin : BasePopup
         btnContinue.OnClickAsObservable()
             .Subscribe(_ =>
             {
-                DataManager.instance.AddCoins(40);
+                CurrencyController.AddGold(HardCodeInGame.REWARD_GOLD_WIN);
                 GameManager.Instance.StartGame();
 
                 ClosePopup();

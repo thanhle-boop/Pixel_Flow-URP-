@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using R3;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -19,7 +18,7 @@ public class PopupGameOver : BasePopup
             .Subscribe(_ =>
             {
                 GameManager.Instance.ContinueGame();
-                DataManager.instance.AddCoins(-900);
+                CurrencyController.SubtractGold(HardCodeInGame.COST_GOLD_CONTINUE);
 
                 ClosePopup();
             }).AddTo(this);

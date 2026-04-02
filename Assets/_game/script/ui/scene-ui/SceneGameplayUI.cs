@@ -118,7 +118,7 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
     private void StartGame()
     {
         levelText.text = "Level " + (DataManager.instance.CurrentLevel + 1);
-        coinText.text = "" + DataManager.instance.Coins;
+        coinText.text = "" + CurrencyController.GetGold();
     }
 
     private void OnInvalidExecution()

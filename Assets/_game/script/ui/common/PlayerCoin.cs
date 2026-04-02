@@ -11,7 +11,7 @@ public class PlayerCoin : MonoBehaviour
 
     void Start()
     {
-        DataManager.instance.CoinsRx
+        CurrencyController.GetGoldRx()
             .Subscribe(coins =>
             {
                 txtCoin.text = coins.ToString();

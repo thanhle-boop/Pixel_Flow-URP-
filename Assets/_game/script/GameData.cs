@@ -7,8 +7,6 @@ public class GameData
     public int CurrentLevel = 0;
     public int CurrentScore = 0;
     public int CurrentLives = 5;
-    public ReactiveProperty<int> CurrentCoinsRx = new ReactiveProperty<int>(5000);
-    public int CurrentCoins { get => CurrentCoinsRx.Value; set => CurrentCoinsRx.Value = value; }   
 
     // public int item1 = 5;
     // public int item2 = 5;

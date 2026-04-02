@@ -24,8 +24,6 @@ public class DataManager : SingletonMonoBehaviour<DataManager>
     public int CurrentLevel => _playerData.CurrentLevel;
     public int Score => _playerData.CurrentScore;
     public int Lives => _playerData.CurrentLives;
-    public int Coins => _playerData.CurrentCoins;
-    public ReactiveProperty<int> CoinsRx => _playerData.CurrentCoinsRx;
 
     public int GetItemCount(int itemType)
     {
@@ -92,11 +90,6 @@ public class DataManager : SingletonMonoBehaviour<DataManager>
     {
         _playerData.CurrentScore += amount;
         UIManager.Instance.UpdateScore(_playerData.CurrentScore);
-    }
-
-    public void AddCoins(int amount)
-    {
-        _playerData.CurrentCoins += amount;
     }
 
     public void LoseLife()

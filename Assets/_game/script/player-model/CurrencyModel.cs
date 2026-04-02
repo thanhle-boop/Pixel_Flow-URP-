@@ -1,6 +1,6 @@
 
-using System;
 using R3;
+using System;
 
 public class CurrencyModel : BasePlayerModel
 {
@@ -12,16 +12,20 @@ public class CurrencyModel : BasePlayerModel
     {
         switch (version)
         {
-            case 1:
-            ReadOrWrite_v1(stream);
-            break;
-            default:
-            throw new Exception($"model {nameof(CurrencyModel)} has invalid version {version}");
+            case 1: ReadOrWrite_v1(stream); break;
+            default: throw new Exception($"model {nameof(CurrencyModel)} has invalid version {version}");
         }
     }
 
     private void ReadOrWrite_v1(IFileStream stream)
     {
         stream.ReadOrWriteRxLong(ref gold, nameof(gold));
+    }
+
+    public override void OnModelInitializing()
+    {
+        base.OnModelInitializing();
+
+        gold.Value = 5000;
     }
 }

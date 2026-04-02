@@ -23,7 +23,7 @@ public class MainMenu : MonoBehaviour
         currentLevelText.text = "" + currentLevel;
         nextLevelText.text = "" + (currentLevel + 1);
         nextNextLevelText.text = "" + (currentLevel + 2);
-        currentCoinText.text = "" + DataManager.instance.Coins;
+        currentCoinText.text = "" + CurrencyController.GetGold();
     }
 
     // Update is called once per frame
