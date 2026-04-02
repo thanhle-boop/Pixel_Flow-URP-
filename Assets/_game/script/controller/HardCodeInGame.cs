@@ -10,4 +10,6 @@ public static class HardCodeInGame
     public const bool SHUFFLE_AVAILABLE = true;
     //need to determine when unlock this booster, for now just set false
     public const bool SUPER_AVAILABLE = false;
+
+    public const int BOUNE_REWARD_GOLD_MULTI = 2;
 }
