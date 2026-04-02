@@ -1,11 +1,13 @@
 using Cysharp.Threading.Tasks;
 using R3;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
 public class PopupGameOver : BasePopup
 {
+    [SerializeField] TextMeshProUGUI txtGoldContinue;
     [SerializeField] VideoPlayer loseGameVideo;
     [SerializeField] Button btnContinue;
 
@@ -13,6 +15,8 @@ public class PopupGameOver : BasePopup
     {
         base.Start();
         loseGameVideo.Play();
+
+        txtGoldContinue.text = $"{HardCodeInGame.COST_GOLD_CONTINUE}";
 
         btnContinue.OnClickAsObservable()
             .Subscribe(_ =>
