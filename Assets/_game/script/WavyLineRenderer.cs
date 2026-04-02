@@ -184,8 +184,8 @@ public class WavyLineRenderer : MonoBehaviour
 
             if (_currentTarget != null)
             {
-                _currentTarget.SetActive(false);
-                Destroy(_currentTarget);
+                // _currentTarget.SetActive(false);
+                _currentTarget.GetComponent<Block>().StartDestroy();
                 EventManager.OnBlockDestroyed?.Invoke();
 
                 if (_pigComponent != null)
