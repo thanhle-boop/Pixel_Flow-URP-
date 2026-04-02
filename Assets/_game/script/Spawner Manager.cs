@@ -151,10 +151,10 @@ public class SpawnerManager : MonoBehaviour
             Transform plate = availablePlates.Dequeue();
             pig.currentPlate = plate;
             plate.transform.SetParent(pig.transform);
-            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.047f);
+            plate.transform.localPosition = new Vector3(0.051f, 0.184f, -0.067f);
             plate.transform.localRotation = Quaternion.identity;
             plate.transform.localRotation = new Quaternion(90, 90, 0, 0);
-            plate.transform.localScale = new Vector3(80, 100, 120);
+            plate.transform.localScale = new Vector3(80, 100, 100);
 
             activePlateMap[pig] = plate;
         }
@@ -620,7 +620,7 @@ public class SpawnerManager : MonoBehaviour
         if (lanes == null || lanes.Count == 0) return;
 
         int laneCount = lanes.Count;
-        float laneOffsetX = (laneCount - 1) * 0.85f / 2f;
+        float laneOffsetX = (laneCount - 1) * 1f / 2f;
         for (int i = 0; i < laneCount; i++)
         {
             var currentLane = lanes[i];
@@ -638,7 +638,7 @@ public class SpawnerManager : MonoBehaviour
                 var color = ColorGameConfig.instance.GetColorByName(colorType);
                 if (colorType == "empty") continue;
                 Vector3 localPos = new Vector3(
-                    (i * 0.95f) - laneOffsetX,
+                    (i * 1f) - laneOffsetX,
                     0,
                     -(j * spacing)
                 );

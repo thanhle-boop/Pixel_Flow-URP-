@@ -30,6 +30,8 @@ public class PigComponent : MonoBehaviour
     private Vector3 _rayCastDirection = Vector3.forward;
     private WavyLineRenderer _wavyLine;
 
+    private Vector3 initScale;
+
     [Header("References")]
     public Animator animator;
     private List<Transform> allWaypoints = new List<Transform>();
@@ -60,6 +62,7 @@ public class PigComponent : MonoBehaviour
         {
             case PigState.InLane:
             case PigState.InQueue:
+                model.localScale = initScale;
                 animValue = 0; // Ứng với State 1 trong Animator
                 break;
             case PigState.Jumping:
@@ -102,6 +105,7 @@ public class PigComponent : MonoBehaviour
         this.initialRotation = model.rotation;
         this._bulletsFiredCount = 0;
         initCanvasLocalPos = canvasTransform.localPosition;
+        initScale = model.localScale;
 
         ChangeState(PigState.InLane);
         allWaypoints = paths;
@@ -395,6 +399,9 @@ public class PigComponent : MonoBehaviour
         ps.Play();
         onComplete?.Invoke();
         ChangeState(PigState.OnConveyor);
+
+        this.model.localScale = Vector3.one;
+
         yield return new WaitForFixedUpdate();
 
         _rayCastDirection = allWaypoints[0].forward;
