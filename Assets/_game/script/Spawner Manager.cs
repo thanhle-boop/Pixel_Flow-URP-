@@ -160,13 +160,12 @@ public class SpawnerManager : MonoBehaviour
     {
         if (plate == null || pig == null) yield break;
 
-        Vector3 startPos = plate.position;
         Quaternion startRot = plate.rotation;
 
-        Vector3 intermediatePos = traySlotOrigin.position + Vector3.right * 0.5f;
+        Vector3 intermediatePos = traySlotOrigin.position + Vector3.right * 0.5f - Vector3.up * 0.1f;
 
         float elapsed = 0;
-        float duration = 0.5f;
+        float duration = 0.55f;
 
 
         while (elapsed < duration)
@@ -289,6 +288,9 @@ public class SpawnerManager : MonoBehaviour
 
     private void ContinueGame()
     {
+        StopAllCoroutines();
+        isProcessingClick = false;
+
         List<PigComponent> beltPigs = new List<PigComponent>(pigsInConveyor);
         beltPigs.RemoveAll(p => pigsInQueue.Contains(p) || pigsInTempQueue.Contains(p));
         pigsInConveyor.Clear();
@@ -296,7 +298,7 @@ public class SpawnerManager : MonoBehaviour
         List<PigComponent> queuePigsToFree = new List<PigComponent>();
         if (pigsInQueue.Count >= queuePos.Count)
         {
-            int lastSlotIndex = queuePos.Count - 1; 
+            int lastSlotIndex = queuePos.Count - 1;
             if (lastSlotIndex < pigsInQueue.Count)
             {
                 PigComponent lastPig = pigsInQueue[lastSlotIndex];
@@ -652,19 +654,18 @@ public class SpawnerManager : MonoBehaviour
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
         Debug.Log("count non empty: " + nonEmptyCount);
-        if (nonEmptyCount > 600)
-        {
-            scale = new Vector3(0.8f, 1, 0.8f);
-            blockSpacing = 0.55f;
-        }
-        else if (nonEmptyCount > 1200)
+        if (nonEmptyCount > 1200) 
         {
             scale = new Vector3(0.6f, 1, 0.6f);
             blockSpacing = 0.25f;
         }
+        else if (nonEmptyCount > 600)
+        {
+            scale = new Vector3(0.8f, 1, 0.8f);
+            blockSpacing = 0.55f;
+        }
         else if (nonEmptyCount > 200)
         {
-
             scale = Vector3.one;
             blockSpacing = 0.75f;
         }
@@ -1066,7 +1067,7 @@ public class SpawnerManager : MonoBehaviour
 
             pigsInConveyor.Remove(pig);
             pigsInQueue.Add(pig);
-            pig.JumpToQueue(targetPos, targetRot, queueIndex);
+            pig.JumpToQueue(targetPos, targetRot, 1.5f);
 
             if (pigsInQueue.Count >= queuePos.Count)
             {
