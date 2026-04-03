@@ -1,10 +1,5 @@
 ﻿<Solution>
-  <Project Path="spine-unity-examples.csproj" />
-  <Project Path="spine-unity-editor.csproj" />
-  <Project Path="spine-csharp.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="spine-unity.csproj" />
   <Project Path="SimpleFileBrowser.Runtime.csproj" />
   <Project Path="DOTween.Modules.csproj" />
-  <Project Path="spine-unity-examples-editor.csproj" />
 </Solution>
