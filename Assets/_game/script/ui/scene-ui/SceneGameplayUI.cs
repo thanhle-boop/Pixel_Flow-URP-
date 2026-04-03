@@ -43,7 +43,7 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
         btnSetting.OnClickAsObservable()
             .Subscribe(_ =>
             {
-                PopupManager.instance.OpenPopup<PopupSettings>().Forget();
+                PopupManager.instance.OpenPopup<PopupGameplaySettings>().Forget();
             }).AddTo(this);
     }
 

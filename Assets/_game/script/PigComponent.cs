@@ -356,7 +356,7 @@ public class PigComponent : MonoBehaviour
         isOnBelt = false;
         StopAllCoroutines();
         StartCoroutine(DestroyAnimationInternal());
-        SoundManager.Instance.StopSound(SoundManager.Instance.yarn);
+        AudioController.instance.audioSource_sound.Stop();
 
         yield break;
     }
