@@ -225,7 +225,7 @@ public class WavyLineRenderer : MonoBehaviour
         _targetBlocks.Clear();
         _currentTarget = null;
         _lineRenderer.enabled = false;
-        AudioController.instance.audioSource_sound.Stop();
+        // AudioController.instance.audioSource_sound.Stop();
     }
 
 
