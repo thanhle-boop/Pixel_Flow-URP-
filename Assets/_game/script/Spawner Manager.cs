@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -564,6 +565,11 @@ public class SpawnerManager : MonoBehaviour
 
     private void SpawnMap()
     {
+        SpawnMapAsync().Forget();
+    }
+
+    private async UniTask SpawnMapAsync()
+    {
         CleanupSpawnedObjects();
         _maxstraightSlot = 5;
         ResetData();
@@ -583,7 +589,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         int levelToLoad = LevelController.GetMaxLevelUnlock();
-        LevelData data = LoadLevelData(levelToLoad);
+        LevelData data = await LoadLevelData(levelToLoad);
         if (data != null)
         {
             SpawnBlocks(data.width, data.height, data.gridData);
@@ -595,27 +601,11 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-    public LevelData LoadLevelData(int levelNumber)
+    public async UniTask<LevelData> LoadLevelData(int levelNumber)
     {
-        LevelData currentLevel = null;
-        string folderPath = Application.streamingAssetsPath;
-        string searchPattern = $"L{levelNumber:D4}_*.json";
-
-        if (Directory.Exists(folderPath))
-        {
-            string[] matchingFiles = Directory.GetFiles(folderPath, searchPattern);
-
-            if (matchingFiles.Length > 0)
-            {
-
-                string filePath = matchingFiles[matchingFiles.Length - 1];
-
-                Debug.Log($"Found and loading: {Path.GetFileName(filePath)}");
-
-                string jsonContent = File.ReadAllText(filePath);
-                currentLevel = JsonUtility.FromJson<LevelData>(jsonContent);
-            }
-        }
+        var filename = $"L{levelNumber:D4}.json";
+        var filetext = await StaticUtils.GetStreamingFileText(filename);
+        var currentLevel = JsonUtility.FromJson<LevelData>(filetext);
         return currentLevel;
     }
 
