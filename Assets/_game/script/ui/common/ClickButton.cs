@@ -17,6 +17,7 @@ public class ClickButton : MonoBehaviour
     {
         btn.OnClickAsObservable().Subscribe(_ =>
         {
+            AudioController.instance.PlaySound(AudioIndex.tap_button.ToString());
             RunAnimClick();
         }).AddTo(this);
     }

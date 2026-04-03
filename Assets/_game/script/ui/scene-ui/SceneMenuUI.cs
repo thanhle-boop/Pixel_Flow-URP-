@@ -5,6 +5,6 @@ public class SceneMenuUI : MonoBehaviour
     private void Start()
     {
         AudioGameManger.instance.InitAudioGameManager();
-        AudioController.instance.PlaySound(AudioIndex.bgm.ToString());
+        AudioController.instance.PlayMusic(AudioIndex.bgm.ToString());
     }
 }

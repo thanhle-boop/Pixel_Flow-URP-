@@ -136,7 +136,7 @@ public class WavyLineRenderer : MonoBehaviour
             }
 
             _lineRenderer.enabled = true;
-            AudioController.instance.PlaySound(AudioIndex.yarn.ToString());
+            AudioGameManger.instance.PlaySFX(AudioIndex.yarn);
 
 
             float elapsed = 0f;
