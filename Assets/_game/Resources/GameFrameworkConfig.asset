@@ -42,9 +42,9 @@ MonoBehaviour:
   - audioClipName: yarn
     audioClip: {fileID: 8300000, guid: cd452080f7f56f9468ea0723be44d143, type: 3}
   - audioClipName: win
-    audioClip: {fileID: 8300000, guid: 16d0788660e724f44ae05e641af1b222, type: 3}
+    audioClip: {fileID: 8300000, guid: 668620113e9d6dc4483ba3d8dbae9fcf, type: 3}
   - audioClipName: lose
-    audioClip: {fileID: 8300000, guid: a4c58d67b7d54904a9e4d537ffdc6b2e, type: 3}
+    audioClip: {fileID: 8300000, guid: 8f29a41eede8e5e4eb6577f230f56ac2, type: 3}
   - audioClipName: invalid_cat
     audioClip: {fileID: 8300000, guid: 5137ae01f18ba414a8b55bf9809135bc, type: 3}
   - audioClipName: tap_button
