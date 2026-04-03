@@ -40,6 +40,8 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
 
     private void Start()
     {
+        AudioController.instance.PlayMusic(AudioIndex.bgm_gameplay.ToString());
+
         btnSetting.OnClickAsObservable()
             .Subscribe(_ =>
             {

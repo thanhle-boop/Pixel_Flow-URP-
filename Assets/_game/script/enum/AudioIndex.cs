@@ -1,6 +1,7 @@
 public enum AudioIndex
 {
     bgm,
+    bgm_gameplay,
 
     valid_cat = 10,
     error,
@@ -9,5 +10,5 @@ public enum AudioIndex
     lose,
     invalid_cat,
     tap_button,
-    
+    destroy_cat,
 }

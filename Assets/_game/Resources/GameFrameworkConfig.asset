@@ -33,6 +33,8 @@ MonoBehaviour:
   audioClips:
   - audioClipName: bgm
     audioClip: {fileID: 8300000, guid: 2cebe5ef59f447d4d803665e3ecf1a2f, type: 3}
+  - audioClipName: bgm_gameplay
+    audioClip: {fileID: 8300000, guid: 2cebe5ef59f447d4d803665e3ecf1a2f, type: 3}
   - audioClipName: valid_cat
     audioClip: {fileID: 8300000, guid: 5ef4d0e295917784caaf374bcc8daf39, type: 3}
   - audioClipName: error
@@ -47,6 +49,8 @@ MonoBehaviour:
     audioClip: {fileID: 8300000, guid: 5137ae01f18ba414a8b55bf9809135bc, type: 3}
   - audioClipName: tap_button
     audioClip: {fileID: 8300000, guid: 7dad007526c845341917412f2ce63457, type: 3}
+  - audioClipName: destroy_cat
+    audioClip: {fileID: 8300000, guid: a1853db8e77dcd54180392b92b1ba35e, type: 3}
   awsS3BucketName: 
   awsS3GameContentRoot: 
   awsS3UserDataRoot: 

@@ -352,11 +352,11 @@ public class PigComponent : MonoBehaviour
 
     private IEnumerator DestroyAnimation()
     {
+        AudioController.instance.PlaySound(AudioIndex.destroy_cat.ToString());
         ChangeState(PigState.Destroying);
         isOnBelt = false;
         StopAllCoroutines();
         StartCoroutine(DestroyAnimationInternal());
-        AudioController.instance.audioSource_sound.Stop();
 
         yield break;
     }

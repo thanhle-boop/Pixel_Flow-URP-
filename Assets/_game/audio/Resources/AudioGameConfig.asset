@@ -18,7 +18,7 @@ MonoBehaviour:
   - audioIndex: 11
     cooldown: 0
   - audioIndex: 12
-    cooldown: 0
+    cooldown: 0.05
   - audioIndex: 13
     cooldown: 0
   - audioIndex: 14

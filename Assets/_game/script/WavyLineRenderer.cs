@@ -204,7 +204,6 @@ public class WavyLineRenderer : MonoBehaviour
             }
         }
 
-        AudioController.instance.audioSource_sound.Stop();
         _lineRenderer.enabled = false;
         _targetProcessCoroutine = null;
         _currentTarget = null;
@@ -225,7 +224,6 @@ public class WavyLineRenderer : MonoBehaviour
         _targetBlocks.Clear();
         _currentTarget = null;
         _lineRenderer.enabled = false;
-        // AudioController.instance.audioSource_sound.Stop();
     }
 
 
