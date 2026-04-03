@@ -22,6 +22,7 @@ public class SpawnerManager : MonoBehaviour
 
     private bool isProcessingClick = false;
     private bool onHandItemUsed = false;
+    private bool _isFinalRush = false;
     public GameObject supertCatPrefab;
     public GameObject blockPrefab;
     public Transform blockSpawnPoint;
@@ -161,13 +162,14 @@ public class SpawnerManager : MonoBehaviour
     {
         if (plate == null || pig == null) yield break;
 
-        Vector3 startPos = plate.position;
+        activePlateMap[pig] = plate;
+
         Quaternion startRot = plate.rotation;
 
-        Vector3 intermediatePos = traySlotOrigin.position + Vector3.right * 0.5f;
+        Vector3 intermediatePos = traySlotOrigin.position + Vector3.right * 0.5f - Vector3.up * 0.1f;
 
         float elapsed = 0;
-        float duration = 0.5f;
+        float duration = 0.35f;
 
 
         while (elapsed < duration)
@@ -181,6 +183,12 @@ public class SpawnerManager : MonoBehaviour
             yield return null;
         }
 
+        if (!activePlateMap.TryGetValue(pig, out Transform trackedPlate) || trackedPlate != plate)
+        {
+            StartCoroutine(ReturnPlateToOrigin(plate));
+            yield break;
+        }
+
         if (pig != null)
         {
             plate.SetParent(pig.transform);
@@ -189,10 +197,10 @@ public class SpawnerManager : MonoBehaviour
             plate.localScale = new Vector3(80, 100, 100);
 
             pig.currentPlate = plate;
-            activePlateMap[pig] = plate;
         }
         else
         {
+            activePlateMap.Remove(pig);
             StartCoroutine(ReturnPlateToOrigin(plate));
         }
     }
@@ -272,6 +280,35 @@ public class SpawnerManager : MonoBehaviour
             pig.ExecuteDestroy();
 
         }
+
+        StartCoroutine(CheckFinalRushNextFrame());
+    }
+
+    private IEnumerator CheckFinalRushNextFrame()
+    {
+        yield return null;
+        CheckAndEnableFinalRush();
+    }
+
+    private void CheckAndEnableFinalRush()
+    {
+        if (_isFinalRush) return;
+
+        PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
+
+        if (allPigs.Length <= 5 && allPigs.Length > 0)
+        {
+            _isFinalRush = true;
+
+            foreach (var p in allPigs)
+            {
+                p.SetConveyorSpeedMultiplier(2f);
+            }
+
+            ApplyConveyorSpeedMultiplier(2f);
+
+            Debug.Log("Final Rush Activated! Speed x2");
+        }
     }
     private void IncreaseStraightSlot()
     {
@@ -281,7 +318,10 @@ public class SpawnerManager : MonoBehaviour
 
     private void LoseGame()
     {
-        StopAllPigAnimations();
+        foreach (PigComponent pig in pigsInConveyor)
+        {
+            if (pig != null) pig.StopShooting();
+        }
     }
     private void WinGame()
     {
@@ -290,6 +330,9 @@ public class SpawnerManager : MonoBehaviour
 
     private void ContinueGame()
     {
+        StopAllCoroutines();
+        isProcessingClick = false;
+
         List<PigComponent> beltPigs = new List<PigComponent>(pigsInConveyor);
         beltPigs.RemoveAll(p => pigsInQueue.Contains(p) || pigsInTempQueue.Contains(p));
         pigsInConveyor.Clear();
@@ -297,7 +340,7 @@ public class SpawnerManager : MonoBehaviour
         List<PigComponent> queuePigsToFree = new List<PigComponent>();
         if (pigsInQueue.Count >= queuePos.Count)
         {
-            int lastSlotIndex = queuePos.Count - 1; 
+            int lastSlotIndex = queuePos.Count - 1;
             if (lastSlotIndex < pigsInQueue.Count)
             {
                 PigComponent lastPig = pigsInQueue[lastSlotIndex];
@@ -345,14 +388,15 @@ public class SpawnerManager : MonoBehaviour
     {
         if (pigsInTempQueue.Contains(pig)) return;
         pigsInTempQueue.Add(pig);
-
         if (pig.currentPlate != null)
         {
             StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
             pig.currentPlate = null;
+        }
+        if (activePlateMap.ContainsKey(pig))
+        {
             activePlateMap.Remove(pig);
         }
-
         pig.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
         int index = pigsInTempQueue.Count - 1;
@@ -376,6 +420,7 @@ public class SpawnerManager : MonoBehaviour
         pigsInQueue.Clear();
         pigsInTempQueue.Clear();
 
+        _isFinalRush = false;
         _straightSlot = 0;
         totalBlockCount = 0;
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
@@ -392,7 +437,7 @@ public class SpawnerManager : MonoBehaviour
 
         if (!pig.IsPigValid() && !onHandItemUsed)
         {
-            SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
+            AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
             return;
         }
 
@@ -400,13 +445,14 @@ public class SpawnerManager : MonoBehaviour
         {
             onHandItemUsed = false;
             EventManager.OnEndHand?.Invoke();
+            pig.SetIsOnTop(true);
         }
 
         if (pig.IsLinkedPig())
         {
             if (!pig.IsWholeLinkOnTop())
             {
-                SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
+                AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
                 return;
             }
 
@@ -416,7 +462,7 @@ public class SpawnerManager : MonoBehaviour
             if (_straightSlot + linkedPigs.Count > _maxstraightSlot)
             {
                 EventManager.OnFullConveyorSlot?.Invoke();
-                SoundManager.Instance.PlaySound(SoundManager.Instance.error);
+                AudioController.instance.PlaySound(AudioIndex.error.ToString());
                 return;
             }
 
@@ -427,19 +473,19 @@ public class SpawnerManager : MonoBehaviour
         if (_straightSlot >= _maxstraightSlot)
         {
             EventManager.OnFullConveyorSlot?.Invoke();
-            SoundManager.Instance.PlaySound(SoundManager.Instance.error);
+            AudioController.instance.PlaySound(AudioIndex.error.ToString());
             return;
         }
 
         isProcessingClick = true;
         ProcessPigData(pig);
-        StartCoroutine(ResetClickFlag());
+        StartCoroutine(ResetClickFlag(0.15f));
     }
 
 
-    private IEnumerator ResetClickFlag()
+    private IEnumerator ResetClickFlag(float time)
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(time);
         isProcessingClick = false;
     }
     private List<PigComponent> GetPigChain(PigComponent startPig)
@@ -467,9 +513,13 @@ public class SpawnerManager : MonoBehaviour
         if (isFromTemp) firstQueueIndex = pigsInTempQueue.IndexOf(linkedPigs[0]);
         else if (isFromQueue) firstQueueIndex = pigsInQueue.IndexOf(linkedPigs[0]);
 
+        StartCoroutine(ResetClickFlag(0.15f));
+
         foreach (PigComponent p in linkedPigs)
         {
             bool hasFinishedJump = false;
+
+            if (isFromTemp) p.transform.localScale = Vector3.one;
 
             if (!isFromLane && !pigsInConveyor.Contains(p)) pigsInConveyor.Add(p);
 
@@ -501,13 +551,13 @@ public class SpawnerManager : MonoBehaviour
                 RearrangeQueue(firstQueueIndex, isFromTemp);
         }
 
-        yield return StartCoroutine(ResetClickFlag());
+        // yield return StartCoroutine(ResetClickFlag());
     }
 
     private void ProcessPigData(PigComponent pig, Action onComplete = null)
     {
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
-        SoundManager.Instance.PlaySound(SoundManager.Instance.validCat);
+        AudioController.instance.PlaySound(AudioIndex.valid_cat.ToString());
 
         if (pigsInQueue.Contains(pig) || pigsInTempQueue.Contains(pig))
         {
@@ -542,6 +592,7 @@ public class SpawnerManager : MonoBehaviour
 
         pigsInLane.Remove(removedPig);
         pigsInConveyor.Add(removedPig);
+        if (_isFinalRush) removedPig.SetConveyorSpeedMultiplier(2f);
 
         pigsInLane.Sort((a, b) => b.transform.localPosition.z.CompareTo(a.transform.localPosition.z));
 
@@ -642,19 +693,18 @@ public class SpawnerManager : MonoBehaviour
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
         Debug.Log("count non empty: " + nonEmptyCount);
-        if (nonEmptyCount > 600)
-        {
-            scale = new Vector3(0.8f, 1, 0.8f);
-            blockSpacing = 0.55f;
-        }
-        else if (nonEmptyCount > 1200)
+        if (nonEmptyCount > 1200)
         {
             scale = new Vector3(0.6f, 1, 0.6f);
             blockSpacing = 0.25f;
         }
+        else if (nonEmptyCount > 600)
+        {
+            scale = new Vector3(0.8f, 1, 0.8f);
+            blockSpacing = 0.55f;
+        }
         else if (nonEmptyCount > 200)
         {
-
             scale = Vector3.one;
             blockSpacing = 0.75f;
         }
@@ -1029,15 +1079,9 @@ public class SpawnerManager : MonoBehaviour
             activePlateMap.Remove(pig);
         }
 
-        if (ShouldSkipQueueForFinalRush())
+        if (_isFinalRush)
         {
-            var pigRemaining = pigSpawnPos.GetComponentsInChildren<PigComponent>();
-            for (int i = 0; i < pigRemaining.Length; i++)
-            {
-                ApplyConveyorSpeedMultiplier(2f);
-                pigRemaining[i].SetConveyorSpeedMultiplier(2f);
-
-            }
+            pig.SetConveyorSpeedMultiplier(2f);
             return;
         }
         pig.SetConveyorSpeedMultiplier(1f);
@@ -1047,33 +1091,71 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
 
-        int queueIndex = FindNextAvailableQueueIndex();
+        int queueIndex;
 
-        if (queueIndex >= 0 && queueIndex < queuePos.Count)
+        if (pig.IsLinkedPig())
         {
-            Vector3 targetPos = queuePos[queueIndex].position;
-            Quaternion targetRot = queuePos[queueIndex].rotation;
+            // Tìm vị trí của thành viên nhóm đã vào queue gần nhất
+            PigComponent leftmost = pig.GetLeftmostPig();
+            List<PigComponent> chain = GetPigChain(leftmost);
 
-            pigsInConveyor.Remove(pig);
-            pigsInQueue.Add(pig);
-            pig.JumpToQueue(targetPos, targetRot, queueIndex);
-
-            if (pigsInQueue.Count >= queuePos.Count)
+            int insertAfterIndex = -1;
+            foreach (PigComponent member in chain)
             {
-                EventManager.OnQueueFull?.Invoke();
+                if (member == pig) continue;
+                int idx = pigsInQueue.IndexOf(member);
+                if (idx >= 0 && idx > insertAfterIndex)
+                    insertAfterIndex = idx;
             }
-            _straightSlot = _straightSlot - 1 < 0 ? 0 : _straightSlot - 1;
-            UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+
+            if (insertAfterIndex >= 0)
+            {
+                queueIndex = insertAfterIndex + 1;
+                if (pigsInQueue.Count >= queuePos.Count)
+                {
+                    GameManager.Instance?.GameOver();
+                    return;
+                }
+                pigsInQueue.Insert(queueIndex, pig);
+                for (int i = queueIndex + 1; i < pigsInQueue.Count; i++)
+                {
+                    pigsInQueue[i].MoveInQueue(queuePos[i].position, queuePos[i].rotation, i);
+                }
+            }
+            else
+            {
+                queueIndex = FindNextAvailableQueueIndex();
+                if (queueIndex < 0)
+                {
+                    GameManager.Instance?.GameOver();
+                    return;
+                }
+                pigsInQueue.Add(pig);
+            }
         }
         else
         {
-            if (GameManager.Instance == null)
+            queueIndex = FindNextAvailableQueueIndex();
+            if (queueIndex >= 0 && queueIndex < queuePos.Count)
             {
+                pigsInQueue.Add(pig);
+            }
+            else
+            {
+                GameManager.Instance?.GameOver();
                 return;
             }
-
-            GameManager.Instance.GameOver();
         }
+
+        pigsInConveyor.Remove(pig);
+        pig.JumpToQueue(queuePos[queueIndex].position, queuePos[queueIndex].rotation, 1.5f);
+
+        if (pigsInQueue.Count >= queuePos.Count)
+        {
+            EventManager.OnQueueFull?.Invoke();
+        }
+        _straightSlot = _straightSlot - 1 < 0 ? 0 : _straightSlot - 1;
+        UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
     }
 
     private IEnumerator ReturnPlateToOrigin(Transform plate)
@@ -1191,6 +1273,7 @@ public class SpawnerManager : MonoBehaviour
         AssignPlateToPig(pig);
         pig.JumpTo(() =>
         {
+            if (_isFinalRush) pig.SetConveyorSpeedMultiplier(2f);
             RearrangeQueue(removedIndex, isFromTempQueue);
             complete?.Invoke();
         });

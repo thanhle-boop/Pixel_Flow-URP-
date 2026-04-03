@@ -56,7 +56,7 @@ public class GameManager : Singleton<GameManager>
 
         _mGameState = GameState.Win;
         EventManager.OnWinGame?.Invoke();
-        SoundManager.Instance.PlaySound(SoundManager.Instance.win);
+        AudioController.instance.PlaySound(AudioIndex.win.ToString());
     }
 
     public void GameOver()
@@ -65,8 +65,7 @@ public class GameManager : Singleton<GameManager>
         _mGameState = GameState.GameOver;
         // Time.timeScale = 0;
         EventManager.OnLoseGame?.Invoke();
-        SoundManager.Instance.PlaySound(SoundManager.Instance.lose);
-        SoundManager.Instance.StopPlayMusic();
+        AudioController.instance.PlaySound(AudioIndex.lose.ToString());
     }
     
     public void ContinueGame()
@@ -74,7 +73,6 @@ public class GameManager : Singleton<GameManager>
         if(_mGameState != GameState.GameOver) return;
         _mGameState = GameState.Continue;
         EventManager.OnContinueGame?.Invoke();
-        SoundManager.Instance.PlayBackgroundMusic();
     }
 }
 

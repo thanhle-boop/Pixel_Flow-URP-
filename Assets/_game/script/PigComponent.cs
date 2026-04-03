@@ -71,6 +71,7 @@ public class PigComponent : MonoBehaviour
                 break;
             case PigState.Destroying:
             case PigState.OnConveyor:
+            case PigState.DoNothing:
                 animValue = 1;
                 break;
             case PigState.ReadyToJump:
@@ -104,7 +105,7 @@ public class PigComponent : MonoBehaviour
         initCanvasLocalPos = canvasTransform.localPosition;
         initScale = model.localScale;
 
-        ChangeState(PigState.InLane);
+        ChangeState(PigState.DoNothing);
         allWaypoints = paths;
 
         _bulletsPerCircle = Mathf.CeilToInt((float)bulletCount / 5f);
@@ -228,6 +229,8 @@ public class PigComponent : MonoBehaviour
         isOnTop = value;
         if (value)
         {
+            ChangeState(PigState.InLane);
+
             if (isHidden)
             {
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
@@ -353,7 +356,7 @@ public class PigComponent : MonoBehaviour
         isOnBelt = false;
         StopAllCoroutines();
         StartCoroutine(DestroyAnimationInternal());
-        SoundManager.Instance.StopSound(SoundManager.Instance.yarn);
+        AudioController.instance.audioSource_sound.Stop();
 
         yield break;
     }
@@ -402,6 +405,17 @@ public class PigComponent : MonoBehaviour
         EventManager.OnPigDestroyed?.Invoke(this);
         Destroy(gameObject);
     }
+
+    public void StopShooting()
+    {
+        isOnBelt = false;
+        if (_wavyLine != null)
+        {
+            _wavyLine.ClearAllTargets();
+            _wavyLine.HideLineImmediately();
+        }
+    }
+
     public void JumpTo(Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(1f);
@@ -418,7 +432,9 @@ public class PigComponent : MonoBehaviour
     {
         ChangeState(PigState.Jumping);
         Vector3 firstPoint = allWaypoints[0].position;
-        yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
+        float jumpDist = Vector3.Distance(rb.position, firstPoint);
+        float jumpDuration = Mathf.Max(0.1f, jumpDist / jumpToQueueSpeed);
+        yield return StartCoroutine(JumpCoroutine(firstPoint, jumpDuration, 1.5f));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position + new Vector3(-0.2f, 0.4f, 0);
@@ -643,7 +659,7 @@ public class PigComponent : MonoBehaviour
     }
 
 
-    public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, int targetQueueIndex)
+    public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, float height = 1.0f)
     {
 
         ChangeState(PigState.MovingToQueue);
@@ -655,10 +671,10 @@ public class PigComponent : MonoBehaviour
         }
 
         isOnBelt = false;
-        StartCoroutine(JumpToQueueCoroutine(targetPosition, targetRotation));
+        StartCoroutine(JumpToQueueCoroutine(targetPosition, targetRotation, height));
     }
 
-    private IEnumerator JumpToQueueCoroutine(Vector3 targetPos, Quaternion targetRot)
+    private IEnumerator JumpToQueueCoroutine(Vector3 targetPos, Quaternion targetRot,float height = 1.0f)
     {
         Vector3 startPos = rb.position;
         Quaternion startRot = rb.rotation;
@@ -666,7 +682,6 @@ public class PigComponent : MonoBehaviour
         float distance = Vector3.Distance(startPos, targetPos);
         float duration = distance / jumpToQueueSpeed;
 
-        float height = 1.0f;
         float elapsed = 0;
 
         while (elapsed < duration)
@@ -689,6 +704,34 @@ public class PigComponent : MonoBehaviour
 
         ChangeState(PigState.InQueue);
         StopAllCoroutines();
+        StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+    }
+
+    private IEnumerator ScaleUpAndDownWhenEnterQueue()
+    {
+        float duration = 0.2f;
+        float elapsed = 0;
+
+        Vector3 startScale = transform.localScale;
+        Vector3 maxScale = startScale * 1.2f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            if (t <= 0.5f)
+            {
+                transform.localScale = Vector3.Lerp(startScale, maxScale, t * 2f);
+            }
+            else
+            {
+                transform.localScale = Vector3.Lerp(maxScale, startScale, (t - 0.5f) * 2f);
+            }
+
+            yield return null;
+        }
+        transform.localScale = startScale;
     }
 
     public void MoveInQueue(Vector3 targetPos, Quaternion targetRot, int newQueueIndex)

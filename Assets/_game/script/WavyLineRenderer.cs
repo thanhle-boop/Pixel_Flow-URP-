@@ -136,7 +136,7 @@ public class WavyLineRenderer : MonoBehaviour
             }
 
             _lineRenderer.enabled = true;
-            SoundManager.Instance.PlaySoundWhenSourceAvailable(SoundManager.Instance.yarn);
+            AudioController.instance.PlaySound(AudioIndex.yarn.ToString());
 
 
             float elapsed = 0f;
@@ -204,7 +204,7 @@ public class WavyLineRenderer : MonoBehaviour
             }
         }
 
-        SoundManager.Instance.StopSound(SoundManager.Instance.yarn);
+        AudioController.instance.audioSource_sound.Stop();
         _lineRenderer.enabled = false;
         _targetProcessCoroutine = null;
         _currentTarget = null;
@@ -225,7 +225,7 @@ public class WavyLineRenderer : MonoBehaviour
         _targetBlocks.Clear();
         _currentTarget = null;
         _lineRenderer.enabled = false;
-        SoundManager.Instance.StopSound(SoundManager.Instance.yarn);
+        AudioController.instance.audioSource_sound.Stop();
     }
 
 

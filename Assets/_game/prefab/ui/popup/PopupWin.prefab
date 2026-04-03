@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8053358781519932490}
   - component: {fileID: 5281697227209468275}
   - component: {fileID: 825262568533467191}
+  - component: {fileID: 5122416659178185367}
   m_Layer: 5
   m_Name: btn-watch-ad
   m_TagString: Untagged
@@ -123,6 +124,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5122416659178185367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715798653123169077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 825262568533467191}
 --- !u!1 &740053910593186238
 GameObject:
   m_ObjectHideFlags: 0
@@ -967,6 +981,7 @@ GameObject:
   - component: {fileID: 5991359268388294537}
   - component: {fileID: 5331629692294678124}
   - component: {fileID: 5314788396939731949}
+  - component: {fileID: 6015166805841943407}
   m_Layer: 5
   m_Name: btn-continue
   m_TagString: Untagged
@@ -1076,6 +1091,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6015166805841943407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5322678974226039171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 5314788396939731949}
 --- !u!1 &8347002954844194974
 GameObject:
   m_ObjectHideFlags: 0

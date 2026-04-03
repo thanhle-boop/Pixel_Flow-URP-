@@ -30,7 +30,23 @@ MonoBehaviour:
     iosBanner: 
     iosInterstitial: 
     iosRewardedVideo: 
-  audioClips: []
+  audioClips:
+  - audioClipName: bgm
+    audioClip: {fileID: 8300000, guid: 2cebe5ef59f447d4d803665e3ecf1a2f, type: 3}
+  - audioClipName: valid_cat
+    audioClip: {fileID: 8300000, guid: 1801867de31dcd343a76e525a3a78880, type: 3}
+  - audioClipName: error
+    audioClip: {fileID: 8300000, guid: 140d2c669644e0649bcc1f4fad955e12, type: 3}
+  - audioClipName: yarn
+    audioClip: {fileID: 8300000, guid: cd452080f7f56f9468ea0723be44d143, type: 3}
+  - audioClipName: win
+    audioClip: {fileID: 8300000, guid: 16d0788660e724f44ae05e641af1b222, type: 3}
+  - audioClipName: lose
+    audioClip: {fileID: 8300000, guid: a4c58d67b7d54904a9e4d537ffdc6b2e, type: 3}
+  - audioClipName: invalid_cat
+    audioClip: {fileID: 8300000, guid: 1801867de31dcd343a76e525a3a78880, type: 3}
+  - audioClipName: tap_button
+    audioClip: {fileID: 0}
   awsS3BucketName: 
   awsS3GameContentRoot: 
   awsS3UserDataRoot: 

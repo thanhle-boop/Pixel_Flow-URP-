@@ -13,12 +13,12 @@ public class Block : MonoBehaviour
     private IEnumerator DestroyCoroutine()
     {
         float elapsed = 0;
-        float durationUp = 0.05f;
+        float durationUp = 0.2f;
         float durationDown = 0.2f;
         float totalDuration = durationUp + durationDown;
 
         Vector3 startScale = Vector3.one;
-        Vector3 maxScale = Vector3.one * 1.2f;
+        Vector3 maxScale = Vector3.one * 1.8f;
         Vector3 endScale = Vector3.zero;
 
         while (elapsed < totalDuration)
