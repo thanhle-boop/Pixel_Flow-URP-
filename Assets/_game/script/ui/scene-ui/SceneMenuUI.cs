@@ -1,9 +1,10 @@
-using Cysharp.Threading.Tasks;
-using R3;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class SceneMenuUI : MonoBehaviour
 {
-
+    private void Start()
+    {
+        AudioGameManger.instance.InitAudioGameManager();
+        AudioController.instance.PlaySound(AudioIndex.bgm.ToString());
+    }
 }

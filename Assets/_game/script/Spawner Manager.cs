@@ -393,7 +393,7 @@ public class SpawnerManager : MonoBehaviour
 
         if (!pig.IsPigValid() && !onHandItemUsed)
         {
-            SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
+            AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
             return;
         }
 
@@ -407,7 +407,7 @@ public class SpawnerManager : MonoBehaviour
         {
             if (!pig.IsWholeLinkOnTop())
             {
-                SoundManager.Instance.PlaySound(SoundManager.Instance.invalidCat);
+                AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
                 return;
             }
 
@@ -417,7 +417,7 @@ public class SpawnerManager : MonoBehaviour
             if (_straightSlot + linkedPigs.Count > _maxstraightSlot)
             {
                 EventManager.OnFullConveyorSlot?.Invoke();
-                SoundManager.Instance.PlaySound(SoundManager.Instance.error);
+                AudioController.instance.PlaySound(AudioIndex.error.ToString());
                 return;
             }
 
@@ -428,7 +428,7 @@ public class SpawnerManager : MonoBehaviour
         if (_straightSlot >= _maxstraightSlot)
         {
             EventManager.OnFullConveyorSlot?.Invoke();
-            SoundManager.Instance.PlaySound(SoundManager.Instance.error);
+            AudioController.instance.PlaySound(AudioIndex.error.ToString());
             return;
         }
 
@@ -508,7 +508,7 @@ public class SpawnerManager : MonoBehaviour
     private void ProcessPigData(PigComponent pig, Action onComplete = null)
     {
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
-        SoundManager.Instance.PlaySound(SoundManager.Instance.validCat);
+        AudioController.instance.PlaySound(AudioIndex.valid_cat.ToString());
 
         if (pigsInQueue.Contains(pig) || pigsInTempQueue.Contains(pig))
         {
