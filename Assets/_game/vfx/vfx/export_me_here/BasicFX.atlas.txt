@@ -1,0 +1,7 @@
+BasicFX.png
+size:180,172
+filter:Linear,Linear
+pma:true
+slot
+bounds:2,2,176,168
+offsets:4,2,184,172

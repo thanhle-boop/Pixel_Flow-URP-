@@ -405,6 +405,17 @@ public class PigComponent : MonoBehaviour
         EventManager.OnPigDestroyed?.Invoke(this);
         Destroy(gameObject);
     }
+
+    public void StopShooting()
+    {
+        isOnBelt = false;
+        if (_wavyLine != null)
+        {
+            _wavyLine.ClearAllTargets();
+            _wavyLine.HideLineImmediately();
+        }
+    }
+
     public void JumpTo(Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(1f);
@@ -421,7 +432,9 @@ public class PigComponent : MonoBehaviour
     {
         ChangeState(PigState.Jumping);
         Vector3 firstPoint = allWaypoints[0].position;
-        yield return StartCoroutine(JumpCoroutine(firstPoint, 0.4f, 1.5f));
+        float jumpDist = Vector3.Distance(rb.position, firstPoint);
+        float jumpDuration = Mathf.Max(0.1f, jumpDist / jumpToQueueSpeed);
+        yield return StartCoroutine(JumpCoroutine(firstPoint, jumpDuration, 1.5f));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position + new Vector3(-0.2f, 0.4f, 0);
