@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class OnOffSettingPresenter : MonoBehaviour
 {
     [SerializeField] Button btnChangeStatus;
+    [SerializeField] GameObject objBgOn;
     [SerializeField] Image imgStatus;
     [SerializeField] Image imgBg;
     [SerializeField] TextMeshProUGUI txtStatus;
@@ -20,8 +21,6 @@ public class OnOffSettingPresenter : MonoBehaviour
     [Header("Sprite")]
     [SerializeField] Sprite sprON;
     [SerializeField] Sprite sprOFF;
-    [SerializeField] Sprite sprBgON;
-    [SerializeField] Sprite sprBgOFF;
 
     public void Init(ReactiveProperty<bool> isStatusRx, UnityAction<bool> onChangeStatus)
     {
@@ -33,6 +32,7 @@ public class OnOffSettingPresenter : MonoBehaviour
             }).AddTo(this);
 
         ChangeStatus(isStatusRx.Value);
+        imgStatus.transform.localPosition = new Vector3(isStatusRx.Value ? xON : xOFF, imgStatus.transform.localPosition.y, imgStatus.transform.localPosition.z);
 
         btnChangeStatus.OnClickAsObservable()
             .Subscribe(_ =>
@@ -47,7 +47,7 @@ public class OnOffSettingPresenter : MonoBehaviour
     {
         var targetX = isOn ? xON : xOFF;
 
-        imgStatus.transform.DOLocalMoveX(targetX, 0.2f)
+        imgStatus.transform.DOLocalMoveX(targetX, animDuration)
             .OnComplete(() =>
             {
                 ChangeStatus(isOn);
@@ -57,7 +57,7 @@ public class OnOffSettingPresenter : MonoBehaviour
     void ChangeStatus(bool isOn)
     {
         imgStatus.sprite = isOn ? sprON : sprOFF;
-        imgBg.sprite = isOn ? sprBgON : sprBgOFF;
+        objBgOn.SetActive(isOn);
         txtStatus.text = isOn ? "ON" : "OFF";
     }
 }

@@ -15,5 +15,9 @@ public class PopupSettings : BasePopup
     protected override void Start()
     {
         base.Start();
+
+        sliderBGM.Init(SettingController.bgmVolumeRx.Value, SettingController.UpdateBGMVolume);
+        sliderSFX.Init(SettingController.sfxVolumeRx.Value, SettingController.UpdateSFXVolume);
+        onOffHaptic.Init(SettingController.hapticOnRx, SettingController.UpdateHapticOn);
     }
 }
