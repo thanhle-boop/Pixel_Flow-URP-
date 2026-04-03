@@ -300,6 +300,7 @@ GameObject:
   - component: {fileID: 7296138293916921616}
   - component: {fileID: 6611199120484368659}
   - component: {fileID: 5885685508633449465}
+  - component: {fileID: 4165750323546616943}
   m_Layer: 5
   m_Name: btn-booster-in-gameplay
   m_TagString: Untagged
@@ -435,6 +436,19 @@ MonoBehaviour:
   greenSprite: {fileID: 21300000, guid: a0b7d1a4372deba489659cd35f15c8c4, type: 3}
   blueSprite: {fileID: 21300000, guid: 0503278b8eb30b04686bce1b7f257f86, type: 3}
   itemType: 1
+--- !u!114 &4165750323546616943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4965869747366190165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 6611199120484368659}
 --- !u!1 &6990160974107423718
 GameObject:
   m_ObjectHideFlags: 0

@@ -362,6 +362,7 @@ GameObject:
   - component: {fileID: 4045166675588575228}
   - component: {fileID: 8777250626360574786}
   - component: {fileID: 4744482297896910708}
+  - component: {fileID: 2970222184547919224}
   m_Layer: 5
   m_Name: btn-retry
   m_TagString: Untagged
@@ -471,6 +472,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2970222184547919224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6676552402532292018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 4744482297896910708}
 --- !u!1 &8225835900420874939
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,6 +771,7 @@ GameObject:
   - component: {fileID: 8109368308152503682}
   - component: {fileID: 4501874110019069920}
   - component: {fileID: 8483994695828373558}
+  - component: {fileID: 5008418437973652270}
   m_Layer: 5
   m_Name: btn-close
   m_TagString: Untagged
@@ -865,6 +880,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5008418437973652270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8891871522291867617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 8483994695828373558}
 --- !u!1 &8944435858473669182
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2089490008064145008}
   - component: {fileID: 4483521926021704948}
   - component: {fileID: 4128407647760251406}
+  - component: {fileID: 2482100151571518128}
   m_Layer: 5
   m_Name: btn-setting
   m_TagString: Untagged
@@ -121,6 +122,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2482100151571518128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422515087916978938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 4128407647760251406}
 --- !u!1 &2295100964618951785
 GameObject:
   m_ObjectHideFlags: 0
@@ -714,6 +728,7 @@ GameObject:
   - component: {fileID: 1083758364236079678}
   - component: {fileID: 3896797130336390735}
   - component: {fileID: 1414413381751416793}
+  - component: {fileID: 9023225601412735386}
   m_Layer: 5
   m_Name: btn-play
   m_TagString: Untagged
@@ -823,6 +838,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &9023225601412735386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7883201027850231111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7de70a9a26834a4498a7221794ef3abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClickButton
+  btn: {fileID: 1414413381751416793}
 --- !u!1 &7998083044095603712
 GameObject:
   m_ObjectHideFlags: 0
