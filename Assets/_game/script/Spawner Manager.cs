@@ -20,7 +20,7 @@ public class SpawnerManager : MonoBehaviour
 
     public bool isTesting = false;
 
-    private bool isProcessingClick = false;
+    public bool isProcessingClick = false;
     private bool onHandItemUsed = false;
     private bool _isFinalRush = false;
     public GameObject supertCatPrefab;
@@ -62,9 +62,9 @@ public class SpawnerManager : MonoBehaviour
     public Transform traySlotOrigin;
     public float plateStackOffset = 0.1f;
 
-    private List<Transform> allPlates = new List<Transform>();
+    // private List<Transform> allPlates = new List<Transform>();
     private Queue<Transform> availablePlates = new Queue<Transform>();
-    private Dictionary<PigComponent, Transform> activePlateMap = new Dictionary<PigComponent, Transform>();
+    // private Dictionary<PigComponent, Transform> activePlateMap = new Dictionary<PigComponent, Transform>();
 
     public Transform tray;
     public GameObject clickVFXPrefab;
@@ -128,10 +128,11 @@ public class SpawnerManager : MonoBehaviour
 
     private void InitializePlates()
     {
-        foreach (var p in allPlates) if (p != null) Destroy(p.gameObject);
-        allPlates.Clear();
+        // foreach (var p in allPlates) if (p != null) Destroy(p.gameObject);
+        // allPlates.Clear();
         availablePlates.Clear();
-        activePlateMap.Clear();
+
+        // activePlateMap.Clear();
 
         for (int i = 0; i < 5; i++)
         {
@@ -144,25 +145,31 @@ public class SpawnerManager : MonoBehaviour
             plate.SetParent(tray);
             plate.transform.localScale = Vector3.one;
 
-            allPlates.Add(plate);
+            // allPlates.Add(plate);
             availablePlates.Enqueue(plate);
         }
     }
 
     private void AssignPlateToPig(PigComponent pig)
     {
+        if (pig.currentPlate != null)
+        {
+            StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
+            pig.currentPlate = null;
+        }
         if (availablePlates.Count > 0)
         {
             Transform plate = availablePlates.Dequeue();
+            pig.currentPlate = plate;  // Gán ngay
             StartCoroutine(AnimatePlateToPig(plate, pig));
         }
     }
 
     private IEnumerator AnimatePlateToPig(Transform plate, PigComponent pig)
     {
-        if (plate == null || pig == null) yield break;
+        // if (plate == null || pig == null) yield break;
 
-        activePlateMap[pig] = plate;
+        // activePlateMap[pig] = plate;
 
         Quaternion startRot = plate.rotation;
 
@@ -183,24 +190,25 @@ public class SpawnerManager : MonoBehaviour
             yield return null;
         }
 
-        if (!activePlateMap.TryGetValue(pig, out Transform trackedPlate) || trackedPlate != plate)
-        {
-            StartCoroutine(ReturnPlateToOrigin(plate));
-            yield break;
-        }
+        // if (!availablePlates.TryGetValue(pig, out Transform trackedPlate) || trackedPlate != plate)
+        // {
+        //     StartCoroutine(ReturnPlateToOrigin(plate));
+        //     yield break;
+        // }
 
-        if (pig != null)
+        if (pig != null && pig.currentPlate == plate)
         {
             plate.SetParent(pig.transform);
-            plate.localPosition = new Vector3(-0.02f, 0.184f, -0.101f);
+            // plate.localPosition = new Vector3(-0.02f, -0.25f, -0.101f);
+            plate.localPosition = new Vector3(-0.03f, -0.25f, 0f);
             plate.localRotation = Quaternion.Euler(0, 0, 90);
-            plate.localScale = new Vector3(80, 100, 100);
+            plate.localScale = new Vector3(90, 90, 90);
 
-            pig.currentPlate = plate;
+            // pig.currentPlate = plate;
         }
         else
         {
-            activePlateMap.Remove(pig);
+            // activePlateMap.Remove(pig);
             StartCoroutine(ReturnPlateToOrigin(plate));
         }
     }
@@ -307,7 +315,6 @@ public class SpawnerManager : MonoBehaviour
 
             ApplyConveyorSpeedMultiplier(2f);
 
-            Debug.Log("Final Rush Activated! Speed x2");
         }
     }
     private void IncreaseStraightSlot()
@@ -393,10 +400,10 @@ public class SpawnerManager : MonoBehaviour
             StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
             pig.currentPlate = null;
         }
-        if (activePlateMap.ContainsKey(pig))
-        {
-            activePlateMap.Remove(pig);
-        }
+        // if (activePlateMap.ContainsKey(pig))
+        // {
+        //     activePlateMap.Remove(pig);
+        // }
         pig.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
         int index = pigsInTempQueue.Count - 1;
@@ -428,7 +435,11 @@ public class SpawnerManager : MonoBehaviour
 
     public void SelectPig(PigComponent pig)
     {
-        if (pig == null || isProcessingClick) return;
+
+        if (pig == null || isProcessingClick)
+        {
+            return;
+        }
 
         ParticleSystem clickVFX = Instantiate(clickVFXPrefab).GetComponent<ParticleSystem>();
         clickVFX.transform.position = pig.transform.position + Vector3.up - Vector3.forward * 0.2f;
@@ -475,6 +486,7 @@ public class SpawnerManager : MonoBehaviour
             EventManager.OnFullConveyorSlot?.Invoke();
             AudioController.instance.PlaySound(AudioIndex.error.ToString());
             return;
+
         }
 
         isProcessingClick = true;
@@ -488,11 +500,13 @@ public class SpawnerManager : MonoBehaviour
         yield return new WaitForSeconds(time);
         isProcessingClick = false;
     }
+    // GetPigChain trong Spawner Manager:
     private List<PigComponent> GetPigChain(PigComponent startPig)
     {
         List<PigComponent> chain = new List<PigComponent>();
+        HashSet<PigComponent> visited = new HashSet<PigComponent>();
         PigComponent current = startPig;
-        while (current != null)
+        while (current != null && visited.Add(current))
         {
             chain.Add(current);
             current = current.rightPig;
@@ -692,7 +706,6 @@ public class SpawnerManager : MonoBehaviour
         Vector3 scale = Vector3.one;
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
-        Debug.Log("count non empty: " + nonEmptyCount);
         if (nonEmptyCount > 1200)
         {
             scale = new Vector3(0.6f, 1, 0.6f);
@@ -803,253 +816,293 @@ public class SpawnerManager : MonoBehaviour
 
         }
 
-        BuildPigLinks(lanes);
+        // BuildPigLinks(lanes);
+        SpawnLink(lanes);
     }
 
-    private void BuildPigLinks(List<LaneConfig> lanes)
+    private void SpawnLink(List<LaneConfig> lanes)
     {
-        Dictionary<PigComponent, HashSet<PigComponent>> linkGraph = new Dictionary<PigComponent, HashSet<PigComponent>>();
-        List<PendingLink> pendingLinks = new List<PendingLink>();
-        HashSet<string> uniqueLinkKeys = new HashSet<string>();
-
-        for (int laneIndex = 0; laneIndex < lanes.Count; laneIndex++)
+        for (int i = 0; i < lanes.Count; i++)
         {
-            var currentLane = lanes[laneIndex];
-            if (currentLane.pigs == null) continue;
-
-            for (int pigIndex = 0; pigIndex < currentLane.pigs.Count; pigIndex++)
+            var currentLane = lanes[i];
+            for (int j = 0; j < currentLane.pigs.Count; j++)
             {
-                if (pigIndex >= pigsByLane[laneIndex].Count) continue;
-
-                PigComponent sourcePig = pigsByLane[laneIndex][pigIndex];
-                var pigData = currentLane.pigs[pigIndex];
-
-                TryRegisterPendingLink(sourcePig, pigData.pigLeft, pendingLinks, uniqueLinkKeys);
-                TryRegisterPendingLink(sourcePig, pigData.pigRight, pendingLinks, uniqueLinkKeys);
-            }
-        }
-
-        foreach (var pendingLink in pendingLinks)
-        {
-            AddLinkToGraph(linkGraph, pendingLink.sourcePig, pendingLink.targetPig);
-
-            Link linkObject = Instantiate(linkPrefabs);
-            linkObject.transform.position = Vector3.up * -2f;
-            activeLinks.Add(linkObject);
-            linkObject.SetColor(
-                pendingLink.sourcePig.color,
-                pendingLink.targetPig.color,
-                pendingLink.sourcePig,
-                pendingLink.targetPig);
-        }
-
-        ApplyLinkedNeighbors(linkGraph);
-    }
-
-    private void TryRegisterPendingLink(
-        PigComponent sourcePig,
-        PigMarker marker,
-        List<PendingLink> pendingLinks,
-        HashSet<string> uniqueLinkKeys)
-    {
-        if (sourcePig == null || marker == null || !marker.IsValid())
-        {
-            return;
-        }
-
-        if (!TryGetPigByMarker(marker, out PigComponent targetPig) || targetPig == sourcePig)
-        {
-            return;
-        }
-
-        string linkKey = GetLinkKey(sourcePig, targetPig);
-        if (!uniqueLinkKeys.Add(linkKey))
-        {
-            return;
-        }
-
-        pendingLinks.Add(new PendingLink
-        {
-            sourcePig = sourcePig,
-            targetPig = targetPig
-        });
-    }
-
-    private bool TryGetPigByMarker(PigMarker marker, out PigComponent pig)
-    {
-        pig = null;
-
-        if (marker == null || !marker.IsValid())
-        {
-            return false;
-        }
-
-        if (!pigsByLane.TryGetValue(marker.LaneIndex, out List<PigComponent> lanePigs))
-        {
-            return false;
-        }
-
-        if (marker.index < 0 || marker.index >= lanePigs.Count)
-        {
-            return false;
-        }
-
-        pig = lanePigs[marker.index];
-        return pig != null;
-    }
-
-    private void AddLinkToGraph(Dictionary<PigComponent, HashSet<PigComponent>> linkGraph, PigComponent pigA, PigComponent pigB)
-    {
-        if (!linkGraph.TryGetValue(pigA, out HashSet<PigComponent> pigALinks))
-        {
-            pigALinks = new HashSet<PigComponent>();
-            linkGraph[pigA] = pigALinks;
-        }
-
-        if (!linkGraph.TryGetValue(pigB, out HashSet<PigComponent> pigBLinks))
-        {
-            pigBLinks = new HashSet<PigComponent>();
-            linkGraph[pigB] = pigBLinks;
-        }
-
-        pigALinks.Add(pigB);
-        pigBLinks.Add(pigA);
-    }
-
-    private void ApplyLinkedNeighbors(Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
-    {
-        HashSet<PigComponent> visited = new HashSet<PigComponent>();
-
-        foreach (var entry in linkGraph)
-        {
-            PigComponent startPig = entry.Key;
-            if (visited.Contains(startPig))
-            {
-                continue;
-            }
-
-            List<PigComponent> component = CollectLinkedComponent(startPig, linkGraph, visited);
-            if (component.Count == 0)
-            {
-                continue;
-            }
-
-            PigComponent orderedStart = GetOrderedComponentStart(component, linkGraph);
-            List<PigComponent> orderedPigs = OrderLinkedComponent(orderedStart, linkGraph);
-
-            for (int index = 0; index < orderedPigs.Count; index++)
-            {
-                PigComponent leftPig = index > 0 ? orderedPigs[index - 1] : null;
-                PigComponent rightPig = index < orderedPigs.Count - 1 ? orderedPigs[index + 1] : null;
-                orderedPigs[index].SetLinkedNeighbors(leftPig, rightPig);
-            }
-        }
-    }
-
-    private List<PigComponent> CollectLinkedComponent(
-        PigComponent startPig,
-        Dictionary<PigComponent, HashSet<PigComponent>> linkGraph,
-        HashSet<PigComponent> visited)
-    {
-        List<PigComponent> component = new List<PigComponent>();
-        Queue<PigComponent> queue = new Queue<PigComponent>();
-        queue.Enqueue(startPig);
-        visited.Add(startPig);
-
-        while (queue.Count > 0)
-        {
-            PigComponent currentPig = queue.Dequeue();
-            component.Add(currentPig);
-
-            foreach (PigComponent neighbor in linkGraph[currentPig])
-            {
-                if (visited.Add(neighbor))
+                PigComponent pigLeft = currentLane.pigs[j].pigLeft.LaneIndex != -1
+                ? pigsByLane[currentLane.pigs[j].pigLeft.LaneIndex][currentLane.pigs[j].pigLeft.index] : null;
+                PigComponent pigRight = currentLane.pigs[j].pigRight.LaneIndex != -1
+                ? pigsByLane[currentLane.pigs[j].pigRight.LaneIndex][currentLane.pigs[j].pigRight.index] : null;
+                var sourcePig = pigsByLane[i][j];
+                if (pigLeft != null)
                 {
-                    queue.Enqueue(neighbor);
+                    Link linkObject = Instantiate(linkPrefabs);
+                    linkObject.transform.position = Vector3.up * -2f;
+                    activeLinks.Add(linkObject);
+                    linkObject.SetColor(
+                        sourcePig.color,
+                        pigLeft.color,
+                        sourcePig,
+                        pigLeft);
                 }
-            }
-        }
-
-        return component;
-    }
-    private PigComponent GetOrderedComponentStart(List<PigComponent> component, Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
-    {
-        PigComponent startPig = null;
-
-        foreach (PigComponent pig in component)
-        {
-            if (linkGraph[pig].Count <= 1)
-            {
-                if (startPig == null || IsPigBefore(pig, startPig))
+                if (pigRight != null)
                 {
-                    startPig = pig;
+                    Link linkObject = Instantiate(linkPrefabs);
+                    linkObject.transform.position = Vector3.up * -2f;
+                    activeLinks.Add(linkObject);
+                    linkObject.SetColor(
+                        sourcePig.color,
+                        pigRight.color,
+                        sourcePig,
+                        pigRight);
                 }
+                sourcePig.SetLinkPig(pigLeft, pigRight);
+
             }
         }
-
-        if (startPig != null)
-        {
-            return startPig;
-        }
-
-        startPig = component[0];
-        for (int index = 1; index < component.Count; index++)
-        {
-            if (IsPigBefore(component[index], startPig))
-            {
-                startPig = component[index];
-            }
-        }
-
-        return startPig;
     }
+    // private void BuildPigLinks(List<LaneConfig> lanes)
+    // {
+    // Dictionary<PigComponent, HashSet<PigComponent>> linkGraph = new Dictionary<PigComponent, HashSet<PigComponent>>();
+    // List<PendingLink> pendingLinks = new List<PendingLink>();
+    // HashSet<string> uniqueLinkKeys = new HashSet<string>();
 
-    private List<PigComponent> OrderLinkedComponent(PigComponent startPig, Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
-    {
-        List<PigComponent> orderedPigs = new List<PigComponent>();
-        HashSet<PigComponent> orderedSet = new HashSet<PigComponent>();
-        PigComponent previousPig = null;
-        PigComponent currentPig = startPig;
+    // for (int laneIndex = 0; laneIndex < lanes.Count; laneIndex++)
+    // {
+    //     var currentLane = lanes[laneIndex];
+    //     if (currentLane.pigs == null) continue;
 
-        while (currentPig != null && orderedSet.Add(currentPig))
-        {
-            orderedPigs.Add(currentPig);
+    //     for (int pigIndex = 0; pigIndex < currentLane.pigs.Count; pigIndex++)
+    //     {
+    //         if (pigIndex >= pigsByLane[laneIndex].Count) continue;
 
-            PigComponent nextPig = null;
-            foreach (PigComponent neighbor in linkGraph[currentPig])
-            {
-                if (neighbor != previousPig)
-                {
-                    if (nextPig == null || IsPigBefore(neighbor, nextPig))
-                    {
-                        nextPig = neighbor;
-                    }
-                }
-            }
+    //         PigComponent sourcePig = pigsByLane[laneIndex][pigIndex];
+    //         var pigData = currentLane.pigs[pigIndex];
 
-            previousPig = currentPig;
-            currentPig = nextPig;
-        }
+    //         TryRegisterPendingLink(sourcePig, pigData.pigLeft, pendingLinks, uniqueLinkKeys);
+    //         TryRegisterPendingLink(sourcePig, pigData.pigRight, pendingLinks, uniqueLinkKeys);
+    //     }
+    // }
 
-        return orderedPigs;
-    }
+    // foreach (var pendingLink in pendingLinks)
+    // {
+    //     AddLinkToGraph(linkGraph, pendingLink.sourcePig, pendingLink.targetPig);
 
-    private bool IsPigBefore(PigComponent pigA, PigComponent pigB)
-    {
-        if (pigA.laneIndex != pigB.laneIndex)
-        {
-            return pigA.laneIndex < pigB.laneIndex;
-        }
+    //     Link linkObject = Instantiate(linkPrefabs);
+    //     linkObject.transform.position = Vector3.up * -2f;
+    //     activeLinks.Add(linkObject);
+    //     linkObject.SetColor(
+    //         pendingLink.sourcePig.color,
+    //         pendingLink.targetPig.color,
+    //         pendingLink.sourcePig,
+    //         pendingLink.targetPig);
+    // }
 
-        return pigA.transform.localPosition.z > pigB.transform.localPosition.z;
-    }
+    // ApplyLinkedNeighbors(linkGraph);
+    // }
 
-    private string GetLinkKey(PigComponent pigA, PigComponent pigB)
-    {
-        int pigAId = pigA.GetInstanceID();
-        int pigBId = pigB.GetInstanceID();
-        return pigAId < pigBId ? pigAId + "_" + pigBId : pigBId + "_" + pigAId;
-    }
+    // private void TryRegisterPendingLink(
+    //     PigComponent sourcePig,
+    //     PigMarker marker,
+    //     List<PendingLink> pendingLinks,
+    //     HashSet<string> uniqueLinkKeys)
+    // {
+    //     if (sourcePig == null || marker == null || !marker.IsValid())
+    //     {
+    //         return;
+    //     }
+
+    //     if (!TryGetPigByMarker(marker, out PigComponent targetPig) || targetPig == sourcePig)
+    //     {
+    //         return;
+    //     }
+
+    //     string linkKey = GetLinkKey(sourcePig, targetPig);
+    //     if (!uniqueLinkKeys.Add(linkKey))
+    //     {
+    //         return;
+    //     }
+
+    //     pendingLinks.Add(new PendingLink
+    //     {
+    //         sourcePig = sourcePig,
+    //         targetPig = targetPig
+    //     });
+    // }
+
+    // private bool TryGetPigByMarker(PigMarker marker, out PigComponent pig)
+    // {
+    //     pig = null;
+
+    //     if (marker == null || !marker.IsValid())
+    //     {
+    //         return false;
+    //     }
+
+    //     if (!pigsByLane.TryGetValue(marker.LaneIndex, out List<PigComponent> lanePigs))
+    //     {
+    //         return false;
+    //     }
+
+    //     if (marker.index < 0 || marker.index >= lanePigs.Count)
+    //     {
+    //         return false;
+    //     }
+
+    //     pig = lanePigs[marker.index];
+    //     return pig != null;
+    // }
+
+    // private void AddLinkToGraph(Dictionary<PigComponent, HashSet<PigComponent>> linkGraph, PigComponent pigA, PigComponent pigB)
+    // {
+    //     if (!linkGraph.TryGetValue(pigA, out HashSet<PigComponent> pigALinks))
+    //     {
+    //         pigALinks = new HashSet<PigComponent>();
+    //         linkGraph[pigA] = pigALinks;
+    //     }
+
+    //     if (!linkGraph.TryGetValue(pigB, out HashSet<PigComponent> pigBLinks))
+    //     {
+    //         pigBLinks = new HashSet<PigComponent>();
+    //         linkGraph[pigB] = pigBLinks;
+    //     }
+
+    //     pigALinks.Add(pigB);
+    //     pigBLinks.Add(pigA);
+    // }
+
+    // private void ApplyLinkedNeighbors(Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
+    // {
+    //     HashSet<PigComponent> visited = new HashSet<PigComponent>();
+
+    //     foreach (var entry in linkGraph)
+    //     {
+    //         PigComponent startPig = entry.Key;
+    //         if (visited.Contains(startPig))
+    //         {
+    //             continue;
+    //         }
+
+    //         List<PigComponent> component = CollectLinkedComponent(startPig, linkGraph, visited);
+    //         if (component.Count == 0)
+    //         {
+    //             continue;
+    //         }
+
+    //         PigComponent orderedStart = GetOrderedComponentStart(component, linkGraph);
+    //         List<PigComponent> orderedPigs = OrderLinkedComponent(orderedStart, linkGraph);
+
+    //         for (int index = 0; index < orderedPigs.Count; index++)
+    //         {
+    //             PigComponent leftPig = index > 0 ? orderedPigs[index - 1] : null;
+    //             PigComponent rightPig = index < orderedPigs.Count - 1 ? orderedPigs[index + 1] : null;
+    //             orderedPigs[index].SetLinkedNeighbors(leftPig, rightPig);
+    //         }
+    //     }
+    // }
+
+    // private List<PigComponent> CollectLinkedComponent(
+    //     PigComponent startPig,
+    //     Dictionary<PigComponent, HashSet<PigComponent>> linkGraph,
+    //     HashSet<PigComponent> visited)
+    // {
+    //     List<PigComponent> component = new List<PigComponent>();
+    //     Queue<PigComponent> queue = new Queue<PigComponent>();
+    //     queue.Enqueue(startPig);
+    //     visited.Add(startPig);
+
+    //     while (queue.Count > 0)
+    //     {
+    //         PigComponent currentPig = queue.Dequeue();
+    //         component.Add(currentPig);
+
+    //         foreach (PigComponent neighbor in linkGraph[currentPig])
+    //         {
+    //             if (visited.Add(neighbor))
+    //             {
+    //                 queue.Enqueue(neighbor);
+    //             }
+    //         }
+    //     }
+
+    //     return component;
+    // }
+    // private PigComponent GetOrderedComponentStart(List<PigComponent> component, Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
+    // {
+    //     PigComponent startPig = null;
+
+    //     foreach (PigComponent pig in component)
+    //     {
+    //         if (linkGraph[pig].Count <= 1)
+    //         {
+    //             if (startPig == null || IsPigBefore(pig, startPig))
+    //             {
+    //                 startPig = pig;
+    //             }
+    //         }
+    //     }
+
+    //     if (startPig != null)
+    //     {
+    //         return startPig;
+    //     }
+
+    //     startPig = component[0];
+    //     for (int index = 1; index < component.Count; index++)
+    //     {
+    //         if (IsPigBefore(component[index], startPig))
+    //         {
+    //             startPig = component[index];
+    //         }
+    //     }
+
+    //     return startPig;
+    // }
+
+    // private List<PigComponent> OrderLinkedComponent(PigComponent startPig, Dictionary<PigComponent, HashSet<PigComponent>> linkGraph)
+    // {
+    //     List<PigComponent> orderedPigs = new List<PigComponent>();
+    //     HashSet<PigComponent> orderedSet = new HashSet<PigComponent>();
+    //     PigComponent previousPig = null;
+    //     PigComponent currentPig = startPig;
+
+    //     while (currentPig != null && orderedSet.Add(currentPig))
+    //     {
+    //         orderedPigs.Add(currentPig);
+
+    //         PigComponent nextPig = null;
+    //         foreach (PigComponent neighbor in linkGraph[currentPig])
+    //         {
+    //             if (neighbor != previousPig)
+    //             {
+    //                 if (nextPig == null || IsPigBefore(neighbor, nextPig))
+    //                 {
+    //                     nextPig = neighbor;
+    //                 }
+    //             }
+    //         }
+
+    //         previousPig = currentPig;
+    //         currentPig = nextPig;
+    //     }
+
+    //     return orderedPigs;
+    // }
+
+    // private bool IsPigBefore(PigComponent pigA, PigComponent pigB)
+    // {
+    //     if (pigA.laneIndex != pigB.laneIndex)
+    //     {
+    //         return pigA.laneIndex < pigB.laneIndex;
+    //     }
+
+    //     return pigA.transform.localPosition.z > pigB.transform.localPosition.z;
+    // }
+
+    // private string GetLinkKey(PigComponent pigA, PigComponent pigB)
+    // {
+    //     int pigAId = pigA.GetInstanceID();
+    //     int pigBId = pigB.GetInstanceID();
+    //     return pigAId < pigBId ? pigAId + "_" + pigBId : pigBId + "_" + pigAId;
+    // }
 
     private void ApplyMaterial(GameObject obj, string colorName)
     {
@@ -1069,22 +1122,11 @@ public class SpawnerManager : MonoBehaviour
     {
         if (pig == null) return;
 
-        if (activePlateMap.TryGetValue(pig, out Transform plate))
+        if (pig.currentPlate != null)
         {
-            if (pig.currentPlate != null)
-            {
-                StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
-                pig.currentPlate = null;
-            }
-            activePlateMap.Remove(pig);
+            StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
+            pig.currentPlate = null;
         }
-
-        if (_isFinalRush)
-        {
-            pig.SetConveyorSpeedMultiplier(2f);
-            return;
-        }
-        pig.SetConveyorSpeedMultiplier(1f);
 
         if (queuePos == null || queuePos.Count == 0)
         {
@@ -1095,7 +1137,6 @@ public class SpawnerManager : MonoBehaviour
 
         if (pig.IsLinkedPig())
         {
-            // Tìm vị trí của thành viên nhóm đã vào queue gần nhất
             PigComponent leftmost = pig.GetLeftmostPig();
             List<PigComponent> chain = GetPigChain(leftmost);
 
@@ -1119,7 +1160,7 @@ public class SpawnerManager : MonoBehaviour
                 pigsInQueue.Insert(queueIndex, pig);
                 for (int i = queueIndex + 1; i < pigsInQueue.Count; i++)
                 {
-                    pigsInQueue[i].MoveInQueue(queuePos[i].position, queuePos[i].rotation, i);
+                    pigsInQueue[i].MoveInQueue(queuePos[i].position, queuePos[i].rotation);
                 }
             }
             else
@@ -1145,6 +1186,7 @@ public class SpawnerManager : MonoBehaviour
                 GameManager.Instance?.GameOver();
                 return;
             }
+            RearrangeQueue(queueIndex, false);
         }
 
         pigsInConveyor.Remove(pig);
@@ -1196,11 +1238,11 @@ public class SpawnerManager : MonoBehaviour
             index++;
         }
     }
-    private bool ShouldSkipQueueForFinalRush()
-    {
-        PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
-        return allPigs.Length <= 5;
-    }
+    // private bool ShouldSkipQueueForFinalRush()
+    // {
+    //     PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
+    //     return allPigs.Length <= 5;
+    // }
 
     private void ApplyConveyorSpeedMultiplier(float multiplier)
     {
@@ -1250,8 +1292,10 @@ public class SpawnerManager : MonoBehaviour
         }
         int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
 
-        if (removedIndex < 0) return;
-
+        if (removedIndex < 0)
+        {
+            return;
+        }
 
         if (isFromTempQueue)
         {
@@ -1273,7 +1317,7 @@ public class SpawnerManager : MonoBehaviour
         AssignPlateToPig(pig);
         pig.JumpTo(() =>
         {
-            if (_isFinalRush) pig.SetConveyorSpeedMultiplier(2f);
+            // if (_isFinalRush) pig.SetConveyorSpeedMultiplier(2f);
             RearrangeQueue(removedIndex, isFromTempQueue);
             complete?.Invoke();
         });
@@ -1291,7 +1335,7 @@ public class SpawnerManager : MonoBehaviour
                     Vector3 targetPos = queuePos[i].position;
                     Quaternion targetRot = queuePos[i].rotation;
                     PigComponent pig = pigsInQueue[i];
-                    pig.MoveInQueue(targetPos, targetRot, i);
+                    pig.MoveInQueue(targetPos, targetRot);
                 }
             }
         }
@@ -1304,22 +1348,11 @@ public class SpawnerManager : MonoBehaviour
                     Vector3 targetPos = startTempQueuePos.position + 0.9f * i * Vector3.right;
                     Quaternion targetRot = startTempQueuePos.rotation;
                     PigComponent pig = pigsInTempQueue[i];
-                    pig.MoveInQueue(targetPos, targetRot, i);
+                    pig.MoveInQueue(targetPos, targetRot);
                 }
             }
         }
 
-    }
-    private void StopAllPigAnimations()
-    {
-        foreach (Transform kvp in pigSpawnPos)
-        {
-            PigComponent pigComp = kvp.GetComponent<PigComponent>();
-            if (pigComp != null)
-            {
-                pigComp.StopAllCoroutines();
-            }
-        }
     }
 
     public void UseItemShufflePig()

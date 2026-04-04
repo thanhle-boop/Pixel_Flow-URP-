@@ -12,8 +12,8 @@ public class PigComponent : MonoBehaviour
     public int laneIndex;
     private float jumpToQueueSpeed;
     public bool isHidden = false;
-    private bool isOnTop = false;
-    public bool isOnBelt = false;
+    public bool isOnTop = false;
+    // public bool isOnBelt = false;
     private float speed = 0f;
     private float baseConveyorSpeed = 0f;
     private int _lockedTargets = 0;
@@ -156,35 +156,30 @@ public class PigComponent : MonoBehaviour
 
     public bool IsLinkedPig()
     {
-        return (leftPig != null || rightPig != null);
+        return leftPig != null || rightPig != null;
     }
     public bool IsWholeLinkOnTop()
     {
         PigComponent leftmost = GetLeftmostPig();
         PigComponent current = leftmost;
-        while (current != null)
+        HashSet<PigComponent> visited = new HashSet<PigComponent>();
+        while (current != null && visited.Add(current))
         {
-            if (!current.IsOnFirstRow())
-            {
-                return false;
-            }
+            if (!current.IsOnFirstRow()) return false;
             current = current.rightPig;
         }
-
         return true;
     }
-
 
     public bool IsPigValid()
     {
         return (currentState == PigState.InLane || currentState == PigState.InQueue) && isOnTop;
     }
-
     public PigComponent GetLeftmostPig()
     {
         PigComponent current = this;
-
-        while (current.leftPig != null)
+        HashSet<PigComponent> visited = new HashSet<PigComponent> { current };
+        while (current.leftPig != null && visited.Add(current.leftPig))
         {
             current = current.leftPig;
         }
@@ -295,7 +290,7 @@ public class PigComponent : MonoBehaviour
             ammoCircles[_currentCircleIndex].transform.localScale = new Vector3(1f, 1f, 1f);
         }
 
-        if (Bullet <= 0 && isOnBelt)
+        if (Bullet <= 0)
         {
 
             if (_currentCircleIndex >= 0)
@@ -341,7 +336,7 @@ public class PigComponent : MonoBehaviour
     {
         // if (!isOnBelt) return;
 
-        isOnBelt = false;
+        // isOnBelt = false;
         if (_wavyLine != null)
         {
             _wavyLine.ClearAllTargets();
@@ -354,7 +349,7 @@ public class PigComponent : MonoBehaviour
     {
         AudioController.instance.PlaySound(AudioIndex.destroy_cat.ToString());
         ChangeState(PigState.Destroying);
-        isOnBelt = false;
+        // isOnBelt = false;
         StopAllCoroutines();
         StartCoroutine(DestroyAnimationInternal());
 
@@ -408,7 +403,7 @@ public class PigComponent : MonoBehaviour
 
     public void StopShooting()
     {
-        isOnBelt = false;
+        // isOnBelt = false;
         if (_wavyLine != null)
         {
             _wavyLine.ClearAllTargets();
@@ -426,7 +421,7 @@ public class PigComponent : MonoBehaviour
     public void JumpToTarget(Vector3 localTargetPos)
     {
         Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
-        StartCoroutine(JumpCoroutine(worldTargetPos, 0.4f, 1.5f));
+        StartCoroutine(JumpCoroutine(worldTargetPos, transform.rotation, 1.5f));
     }
     private IEnumerator ConveyorJourney(Action onComplete)
     {
@@ -434,7 +429,8 @@ public class PigComponent : MonoBehaviour
         Vector3 firstPoint = allWaypoints[0].position;
         float jumpDist = Vector3.Distance(rb.position, firstPoint);
         float jumpDuration = Mathf.Max(0.1f, jumpDist / jumpToQueueSpeed);
-        yield return StartCoroutine(JumpCoroutine(firstPoint, jumpDuration, 1.5f));
+        // isOnBelt = true;
+        yield return StartCoroutine(JumpCoroutine(firstPoint, transform.rotation, 1.5f));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position + new Vector3(-0.2f, 0.4f, 0);
@@ -468,30 +464,7 @@ public class PigComponent : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
         StartCoroutine(ConveyorJourney(onComplete));
-        canvasTransform.localPosition = new Vector3(0.04f, 1.36f, 0.02f);
-    }
-
-    private IEnumerator JumpCoroutine(Vector3 target, float duration, float height)
-    {
-        isOnTop = true;
-        Vector3 startPos = rb.position;
-        float elapsed = 0;
-        isOnBelt = true;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-
-            Vector3 currentPos = Vector3.Lerp(startPos, target, t);
-
-            currentPos.y += Mathf.Sin(t * Mathf.PI) * height;
-
-            rb.MovePosition(currentPos);
-            yield return new WaitForFixedUpdate();
-        }
-
-        rb.MovePosition(target);
+        canvasTransform.localPosition = new Vector3(0.04f, 0.77f, 0.15f);
     }
 
     public void MoveTo(Vector3 newLocalPos)
@@ -521,12 +494,9 @@ public class PigComponent : MonoBehaviour
 
     private IEnumerator ShootingRoutine()
     {
-        while (isOnBelt && Bullet > 0)
+        while (Bullet > 0)
         {
-            if (_wavyLine != null)
-            {
-                _wavyLine.UpdateStartPoint(rayCastPoint.position);
-            }
+            _wavyLine.UpdateStartPoint(rayCastPoint.position);
 
             CheckAndAddTargetBlocks();
 
@@ -547,8 +517,6 @@ public class PigComponent : MonoBehaviour
     {
 
         if (Bullet - _lockedTargets <= 0) return;
-
-        if (rayCastPoint == null || _wavyLine == null) return;
 
         float checkDistance = 10f;
         Vector3 currentPos = rayCastPoint.position;
@@ -662,7 +630,8 @@ public class PigComponent : MonoBehaviour
     public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, float height = 1.0f)
     {
 
-        ChangeState(PigState.MovingToQueue);
+        // Debug.Log("Start Jump to queue");
+        // ChangeState(PigState.MovingToQueue);
         canvasTransform.localPosition = initCanvasLocalPos;
         if (_wavyLine != null)
         {
@@ -670,11 +639,18 @@ public class PigComponent : MonoBehaviour
             _wavyLine.HideLineImmediately();
         }
 
-        isOnBelt = false;
-        StartCoroutine(JumpToQueueCoroutine(targetPosition, targetRotation, height));
+        // isOnBelt = false;
+        StartCoroutine(JumpCoroutine(targetPosition, targetRotation, height, () =>
+        {
+            ChangeState(PigState.InQueue);
+            StopAllCoroutines();
+            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+            isOnTop = true;
+            // Debug.Log("Jump to queue complete");
+        }));
     }
 
-    private IEnumerator JumpToQueueCoroutine(Vector3 targetPos, Quaternion targetRot,float height = 1.0f)
+    private IEnumerator JumpCoroutine(Vector3 targetPos, Quaternion targetRot = default, float height = 1.0f, Action onComplete = null)
     {
         Vector3 startPos = rb.position;
         Quaternion startRot = rb.rotation;
@@ -700,11 +676,7 @@ public class PigComponent : MonoBehaviour
         model.rotation = targetRot;
         model.rotation = Quaternion.identity;
         model.localRotation = initialRotation;
-        isOnTop = true;
-
-        ChangeState(PigState.InQueue);
-        StopAllCoroutines();
-        StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+        onComplete?.Invoke();
     }
 
     private IEnumerator ScaleUpAndDownWhenEnterQueue()
@@ -734,26 +706,12 @@ public class PigComponent : MonoBehaviour
         transform.localScale = startScale;
     }
 
-    public void MoveInQueue(Vector3 targetPos, Quaternion targetRot, int newQueueIndex)
+    public void MoveInQueue(Vector3 targetPos, Quaternion targetRot)
     {
-        if (currentState == PigState.MovingToQueue)
-        {
-            StopAllCoroutines();
-            isOnBelt = false;
-            ChangeState(PigState.MovingInQueue);
-            StartCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
-        }
-        else if (currentState == PigState.InQueue)
-        {
-            ChangeState(PigState.MovingInQueue);
-            StartCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
-        }
-        else if (currentState == PigState.MovingInQueue)
-        {
-            StopAllCoroutines();
-            ChangeState(PigState.MovingInQueue);
-            StartCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
-        }
+        StopAllCoroutines();
+        ChangeState(PigState.InQueue);
+        transform.localScale = Vector3.one;
+        StartCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
     }
 
     private IEnumerator MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot)
@@ -762,11 +720,7 @@ public class PigComponent : MonoBehaviour
         Quaternion startRot = rb.rotation;
 
         float distance = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(targetPos.x, 0, targetPos.z));
-        float moveSpeed = Mathf.Max(1f, 5);
-        float duration = distance / moveSpeed;
-
-        if (duration < 0.08f) duration = 0.08f;
-
+        float duration = distance / jumpToQueueSpeed;
         float jumpHeight = 0.5f;
         float elapsed = 0;
 
@@ -786,14 +740,9 @@ public class PigComponent : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
 
-        if (this != null)
-        {
-            rb.MovePosition(targetPos);
-            model.rotation = targetRot;
-            isOnTop = true;
+        rb.MovePosition(targetPos);
+        model.rotation = targetRot;
 
-            ChangeState(PigState.InQueue);
-        }
     }
 
     public void SetConveyorSpeedMultiplier(float multiplier)
@@ -804,7 +753,7 @@ public class PigComponent : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("EndConveyor") && isOnBelt)
+        if (other.CompareTag("EndConveyor") && currentState == PigState.OnConveyor)
         {
             EventManager.OnPigEnterQueue?.Invoke(this);
         }

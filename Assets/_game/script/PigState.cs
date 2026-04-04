@@ -5,7 +5,6 @@ public enum PigState
     OnConveyor,        
     MovingToQueue,     
     InQueue,         
-    MovingInQueue,  
     Jumping,
     ReadyToJump,    
     Destroying,
