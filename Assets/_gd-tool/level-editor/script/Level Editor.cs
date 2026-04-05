@@ -1754,8 +1754,8 @@ public class LevelEditor : MonoBehaviour
         if (_linkingPigs.Count > 0)
         {
             var last = _linkingPigs[_linkingPigs.Count - 1];
-            AddLink(_multiColumnPigs[last.col][last.row], col, row);
-            AddLink(pig, last.col, last.row);
+            _multiColumnPigs[last.col][last.row].pigRight = new PigMarker { LaneIndex = col, index = row };
+            pig.pigLeft = new PigMarker { LaneIndex = last.col, index = last.row };
         }
 
         _linkingPigs.Add((col, row));
@@ -1923,7 +1923,7 @@ public class LevelEditor : MonoBehaviour
                                 bullets = p.bullets,
                                 isHidden = p.isHidden,
                                 linkId = p.linkId,
-      
+
                                 pigLeft = (p.linkId >= 0) ? p.pigLeft : null,
                                 pigRight = (p.linkId >= 0) ? p.pigRight : null
                             };

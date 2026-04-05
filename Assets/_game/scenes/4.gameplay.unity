@@ -2705,7 +2705,7 @@ MonoBehaviour:
   - {fileID: 743297714}
   - {fileID: 271582465}
   startTempQueuePos: {fileID: 77724187}
-  speed: 4.5
+  speed: 3.5
   jumpToQueueSpeed: 10
   linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
   blockPrefabsByColor: []

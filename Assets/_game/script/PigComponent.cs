@@ -13,7 +13,8 @@ public class PigComponent : MonoBehaviour
     private float jumpToQueueSpeed;
     public bool isHidden = false;
     public bool isOnTop = false;
-    // public bool isOnBelt = false;
+
+    public bool isRush = false;
     private float speed = 0f;
     private float baseConveyorSpeed = 0f;
     private int _lockedTargets = 0;
@@ -219,6 +220,10 @@ public class PigComponent : MonoBehaviour
         rightPig = right;
     }
 
+    public void GameOver()
+    {
+        StopAllCoroutines();
+    }
     public void SetIsOnTop(bool value)
     {
         isOnTop = value;
@@ -413,7 +418,7 @@ public class PigComponent : MonoBehaviour
 
     public void JumpTo(Action onComplete = null)
     {
-        SetConveyorSpeedMultiplier(1f);
+        SetConveyorSpeedMultiplier(isRush ? 2f : 1f);
         EventManager.OnJumpToConveyor?.Invoke();
         StartCoroutine(ReadyToJump(0.1f, onComplete));
     }
@@ -433,10 +438,15 @@ public class PigComponent : MonoBehaviour
         yield return StartCoroutine(JumpCoroutine(firstPoint, transform.rotation, 1.5f));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
-        ps.transform.position = transform.position + new Vector3(-0.2f, 0.4f, 0);
+        ps.transform.position = transform.position + new Vector3(-0.2f, 0f, 0);
         ps.Play();
         onComplete?.Invoke();
         ChangeState(PigState.OnConveyor);
+
+        currentPlate.SetParent(transform);
+        currentPlate.localPosition = new Vector3(-0.03f, -0.25f, 0f);
+        currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
+        currentPlate.localScale = new Vector3(90, 90, 90);
 
         this.model.localScale = Vector3.one;
 
@@ -753,7 +763,7 @@ public class PigComponent : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("EndConveyor") && currentState == PigState.OnConveyor)
+        if (other.CompareTag("EndConveyor") && currentState == PigState.OnConveyor && !isRush)
         {
             EventManager.OnPigEnterQueue?.Invoke(this);
         }
