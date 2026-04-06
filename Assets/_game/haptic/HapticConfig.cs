@@ -14,7 +14,7 @@ public class HapticConfig : ScriptableObject
     }
 
     [SerializeField] List<HapticConfigItem> hapticConfigItems;
-    s
+    
     public HapticConfigItem GetHapticConfigItem(HapticType hapticType)
     {
         var configItem = hapticConfigItems.Find(cfg => cfg.hapticType == hapticType);
