@@ -137,7 +137,7 @@ public class WavyLineRenderer : MonoBehaviour
 
             _lineRenderer.enabled = true;
             AudioGameManger.instance.PlaySFX(AudioIndex.yarn);
-            HapticController.PlayHeavy();
+            HapticController.PlayHaptic(HapticType.collect_yarn);    
 
 
             float elapsed = 0f;
