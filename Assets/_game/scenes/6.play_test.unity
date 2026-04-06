@@ -1116,7 +1116,7 @@ Transform:
   m_GameObject: {fileID: 559098097}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.12, z: -1.46}
+  m_LocalPosition: {x: 0, y: 0.08, z: -1.46}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2222,18 +2222,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2081519546ffd214f9d8a88cc4571b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  musicVolume: 0.3
-  sfxVolume: 1
-  musicAus: {fileID: 1194017327}
-  sfxAus: {fileID: 1497017873}
-  validCat: {fileID: 8300000, guid: 19bf4607fa77be24293c77f17b8d7835, type: 3}
-  error: {fileID: 8300000, guid: 140d2c669644e0649bcc1f4fad955e12, type: 3}
-  yarn: {fileID: 8300000, guid: cd452080f7f56f9468ea0723be44d143, type: 3}
-  win: {fileID: 8300000, guid: 16d0788660e724f44ae05e641af1b222, type: 3}
-  lose: {fileID: 8300000, guid: a4c58d67b7d54904a9e4d537ffdc6b2e, type: 3}
-  invalidCat: {fileID: 8300000, guid: 1801867de31dcd343a76e525a3a78880, type: 3}
-  backgroundMusics:
-  - {fileID: 8300000, guid: 2cebe5ef59f447d4d803665e3ecf1a2f, type: 3}
 --- !u!4 &1178303176
 Transform:
   m_ObjectHideFlags: 0
@@ -3459,7 +3447,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: -4.635195}
-  m_LocalScale: {x: 2.183111, y: 1, z: 1.628}
+  m_LocalScale: {x: 0.69075, y: 1, z: 1.628}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1975314017}
@@ -3582,6 +3570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isTesting: 1
+  isProcessingClick: 0
   supertCatPrefab: {fileID: 454243561976167103}
   blockPrefab: {fileID: 4886328685167030700, guid: a4e13b989d360c248906fc7864625213, type: 3}
   blockSpawnPoint: {fileID: 559098098}
