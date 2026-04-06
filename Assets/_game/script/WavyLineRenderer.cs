@@ -90,6 +90,12 @@ public class WavyLineRenderer : MonoBehaviour
         }
     }
 
+    // Trong WavyLineRenderer
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        targetDuration = 0.03f / multiplier;
+        waveSpeed = 30f * multiplier;
+    }
     private IEnumerator ProcessTargets()
     {
         while (_targetBlocks.Count > 0)
@@ -137,7 +143,7 @@ public class WavyLineRenderer : MonoBehaviour
 
             _lineRenderer.enabled = true;
             AudioGameManger.instance.PlaySFX(AudioIndex.yarn);
-            HapticController.PlayHaptic(HapticType.collect_yarn);    
+            HapticController.PlayHaptic(HapticType.collect_yarn);
 
 
             float elapsed = 0f;
@@ -196,7 +202,7 @@ public class WavyLineRenderer : MonoBehaviour
                     {
                         _pigComponent.bulletText.text = _pigComponent.Bullet.ToString();
                     }
-                    _onBulletChanged?.Invoke();
+                _onBulletChanged?.Invoke();
                 }
             }
             if (_targetBlocks.Count > 0)

@@ -304,6 +304,7 @@ public class PigComponent : MonoBehaviour
             }
 
             ChangeState(PigState.OnConveyor);
+            bulletText.text = "";
             EventManager.OnPigOutOfAmmo?.Invoke(this);
         }
     }
@@ -344,9 +345,10 @@ public class PigComponent : MonoBehaviour
         // isOnBelt = false;
         if (_wavyLine != null)
         {
-            _wavyLine.ClearAllTargets();
+            // _wavyLine.ClearAllTargets();
             _wavyLine.HideLineImmediately();
         }
+        _lockedTargets = 0;
         StartCoroutine(DestroyAnimation());
     }
 
@@ -414,6 +416,7 @@ public class PigComponent : MonoBehaviour
             _wavyLine.ClearAllTargets();
             _wavyLine.HideLineImmediately();
         }
+        _lockedTargets = 0;
     }
 
     public void JumpTo(Action onComplete = null)
@@ -459,7 +462,7 @@ public class PigComponent : MonoBehaviour
         }
         CheckAndAddTargetBlocks();
 
-        StartCoroutine(ShootingRoutine());
+        // StartCoroutine(ShootingRoutine());
         StartCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
     }
 
@@ -502,30 +505,9 @@ public class PigComponent : MonoBehaviour
         rb.MovePosition(finalWorldPos);
     }
 
-    private IEnumerator ShootingRoutine()
-    {
-        while (Bullet > 0)
-        {
-            _wavyLine.UpdateStartPoint(rayCastPoint.position);
-
-            CheckAndAddTargetBlocks();
-
-            if (_lockedTargets > 0)
-            {
-                ChangeState(PigState.Shooting);
-            }
-            else
-            {
-                ChangeState(PigState.OnConveyor);
-            }
-
-            yield return new WaitForFixedUpdate();
-        }
-    }
 
     private void CheckAndAddTargetBlocks()
     {
-
         if (Bullet - _lockedTargets <= 0) return;
 
         float checkDistance = 10f;
@@ -534,13 +516,16 @@ public class PigComponent : MonoBehaviour
         if (Physics.Raycast(currentPos, _rayCastDirection, out RaycastHit hit, checkDistance, blockLayer))
         {
             var blockComp = hit.collider.gameObject.GetComponent<Block>();
-            GameObject hitObject = hit.collider.gameObject;
 
-            if (hit.collider.CompareTag("Block") && blockComp != null && blockComp.color == color && !blockComp.isAlreadyDestroyed)
+            if (blockComp != null && blockComp.color == color)
             {
-                _wavyLine.AddTarget(hitObject);
-                blockComp.isAlreadyDestroyed = true;
-                _lockedTargets++;
+                if (!blockComp.isAlreadyDestroyed)
+                {
+                    blockComp.isAlreadyDestroyed = true;
+
+                    _wavyLine.AddTarget(hit.collider.gameObject);
+                    _lockedTargets++;
+                }
             }
         }
     }
@@ -639,9 +624,6 @@ public class PigComponent : MonoBehaviour
 
     public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, float height = 1.0f)
     {
-
-        // Debug.Log("Start Jump to queue");
-        // ChangeState(PigState.MovingToQueue);
         canvasTransform.localPosition = initCanvasLocalPos;
         if (_wavyLine != null)
         {
@@ -649,14 +631,13 @@ public class PigComponent : MonoBehaviour
             _wavyLine.HideLineImmediately();
         }
 
-        // isOnBelt = false;
+        _lockedTargets = 0;
         StartCoroutine(JumpCoroutine(targetPosition, targetRotation, height, () =>
         {
             ChangeState(PigState.InQueue);
             StopAllCoroutines();
             StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             isOnTop = true;
-            // Debug.Log("Jump to queue complete");
         }));
     }
 
@@ -759,6 +740,7 @@ public class PigComponent : MonoBehaviour
     {
         float clamped = Mathf.Max(0.1f, multiplier);
         speed = baseConveyorSpeed * clamped;
+        _wavyLine.SetSpeedMultiplier(clamped);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -766,6 +748,26 @@ public class PigComponent : MonoBehaviour
         if (other.CompareTag("EndConveyor") && currentState == PigState.OnConveyor && !isRush)
         {
             EventManager.OnPigEnterQueue?.Invoke(this);
+        }
+    }
+
+
+    private void FixedUpdate() 
+    {
+        if (Bullet > 0 && (currentState == PigState.OnConveyor || currentState == PigState.Shooting))
+        {
+            _wavyLine.UpdateStartPoint(rayCastPoint.position);
+
+            CheckAndAddTargetBlocks();
+
+            if (_lockedTargets > 0)
+            {
+                ChangeState(PigState.Shooting);
+            }
+            else
+            {
+                ChangeState(PigState.OnConveyor);
+            }
         }
     }
 }

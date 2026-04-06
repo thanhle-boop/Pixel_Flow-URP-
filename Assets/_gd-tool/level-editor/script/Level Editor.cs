@@ -87,6 +87,7 @@ public class LevelEditor : MonoBehaviour
     public GameObject btnConfigPrefab;
     public List<ConfigBtn> configButtons;
     public int configIndex = -1;
+    public string nameFile = "CustomConfig";
     public GameObject replacePanel;
     public Transform configContent;
     private List<string> _availableConfigFiles = new List<string>();
@@ -394,12 +395,6 @@ public class LevelEditor : MonoBehaviour
                 return;
             }
 
-            // if (configIndex != -1)
-            // {
-            //     replacePanel.SetActive(true);
-            //     return;
-            // }
-
             string savePath = paths[0];
             if (!string.Equals(Path.GetExtension(savePath), ".json", System.StringComparison.OrdinalIgnoreCase))
             {
@@ -408,19 +403,18 @@ public class LevelEditor : MonoBehaviour
 
             File.WriteAllText(savePath, JsonUtility.ToJson(data, true));
             UpdateReport("Saved Success!");
-        }, null, SimpleFileBrowser.FileBrowser.PickMode.Files, false, null, $"Save Level {levelIndex}", "Save");
+        }, null, SimpleFileBrowser.FileBrowser.PickMode.Files, false, null, $"{nameFile}", "Save");
     }
 
     private DataConfig BuildCurrentDataConfig()
     {
+
+        ComputeFinalGrid();
         if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
         {
-            ComputeFinalGrid();
-            if (_finalGridMap == null || _finalWidth <= 0 || _finalHeight <= 0)
-            {
-                return null;
-            }
+            return null;
         }
+
 
         DataConfig data = new DataConfig
         {
@@ -1874,6 +1868,7 @@ public class LevelEditor : MonoBehaviour
         GameManagerForTesting.Instance.configIndex = index;
 
         string fileName = configButtons[index].text.text;
+        nameFile = fileName;
         LoadLevelDataFromFile(fileName);
     }
 

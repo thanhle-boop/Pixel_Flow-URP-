@@ -88,8 +88,6 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnUseShuffle += UseItemShufflePig;
 
         EventManager.OnClickBlock += ClickBlock;
-
-        InitializePlates();
     }
 
     private void OnDisable()
@@ -305,7 +303,8 @@ public class SpawnerManager : MonoBehaviour
     }
     private void WinGame()
     {
-        LevelController.ClearLevel(LevelController.GetMaxLevelUnlock() + 1);
+        if (!isTesting)
+            LevelController.ClearLevel(LevelController.GetMaxLevelUnlock() + 1);
     }
 
     private void ContinueGame()
@@ -541,6 +540,7 @@ public class SpawnerManager : MonoBehaviour
     private void ProcessPigData(PigComponent pig, Action onComplete = null)
     {
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+
         AudioController.instance.PlaySound(AudioIndex.valid_cat.ToString());
 
         if (pigsInQueue.Contains(pig) || pigsInTempQueue.Contains(pig))
@@ -600,6 +600,7 @@ public class SpawnerManager : MonoBehaviour
     private void SpawnMap()
     {
         SpawnMapAsync().Forget();
+        InitializePlates();
     }
 
     private async UniTask SpawnMapAsync()
@@ -796,10 +797,13 @@ public class SpawnerManager : MonoBehaviour
             var currentLane = lanes[i];
             for (int j = 0; j < currentLane.pigs.Count; j++)
             {
-                PigComponent pigLeft = currentLane.pigs[j].pigLeft.LaneIndex != -1
-                ? pigsByLane[currentLane.pigs[j].pigLeft.LaneIndex][currentLane.pigs[j].pigLeft.index] : null;
-                PigComponent pigRight = currentLane.pigs[j].pigRight.LaneIndex != -1
-                ? pigsByLane[currentLane.pigs[j].pigRight.LaneIndex][currentLane.pigs[j].pigRight.index] : null;
+                PigComponent pigLeft = (currentLane.pigs[j].pigLeft != null && currentLane.pigs[j].pigLeft.LaneIndex >= 0)
+                    ? pigsByLane[currentLane.pigs[j].pigLeft.LaneIndex][currentLane.pigs[j].pigLeft.index]
+                    : null;
+
+                PigComponent pigRight = (currentLane.pigs[j].pigRight != null && currentLane.pigs[j].pigRight.LaneIndex >= 0)
+                    ? pigsByLane[currentLane.pigs[j].pigRight.LaneIndex][currentLane.pigs[j].pigRight.index]
+                    : null;
                 var sourcePig = pigsByLane[i][j];
                 if (pigLeft != null)
                 {
