@@ -48,7 +48,7 @@ public class WavyLineRenderer : MonoBehaviour
         _onBulletChanged = callback;
     }
 
-    public void InitializeLineRenderer(float startWidth = 0.08f, float endWidth = 0.08f, float amplitude = 0.03f)
+    public void InitializeLineRenderer(float startWidth = 0.06f, float endWidth = 0.06f, float amplitude = 0.03f)
     {
         _lineRenderer = GetComponent<LineRenderer>();
         if (_lineRenderer == null)
@@ -236,7 +236,7 @@ public class WavyLineRenderer : MonoBehaviour
 
     public void UpdateStartPoint(Vector3 startPoint)
     {
-        _startPoint = new Vector3(startPoint.x, startPoint.y + 0.5f, startPoint.z);
+        _startPoint = new Vector3(startPoint.x, startPoint.y, startPoint.z);
     }
 
     public void HideLineImmediately()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using TMPro;
 using UnityEngine;
@@ -11,7 +12,8 @@ public class PigComponent : MonoBehaviour
     public string color;
     public int Bullet;
     public int laneIndex;
-    private float jumpToQueueSpeed;
+    // private float jumpToQueueSpeed;
+    public float moveSpeed = 6f;
     public bool isHidden = false;
     public bool isOnTop = false;
 
@@ -35,9 +37,10 @@ public class PigComponent : MonoBehaviour
     private Vector3 initScale;
 
     [Header("References")]
-    public Animator animator;
+    // public Animator animator;
     private List<Transform> allWaypoints = new List<Transform>();
     public Transform rayCastPoint;
+    public Transform wavyPoint;
     public Rigidbody rb;
     public LayerMask blockLayer;
 
@@ -49,6 +52,7 @@ public class PigComponent : MonoBehaviour
     public TextMeshProUGUI bulletText;
     public Material hiddenMaterial;
     public Material normalMaterial;
+    public Material normalFaceMaterial;
     public List<GameObject> ammoCircles;
     public Transform model;
 
@@ -61,7 +65,11 @@ public class PigComponent : MonoBehaviour
     public bool isPlayeVFX = false;
 
     public AnimationCurve ArcCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.5f, 1), new Keyframe(1, 0));
-    public MMTween.MMTweenCurve moveCurve;
+    public MMTween.MMTweenCurve jumpCurve;
+    public MMTween.MMTweenCurve slideCurve;
+    public MMF_Player jumpFromLaneFB;
+    public MMF_Player jumpFromQueueFB;
+
     private void ChangeState(PigState newState)
     {
 
@@ -74,7 +82,7 @@ public class PigComponent : MonoBehaviour
                 animValue = 0;
                 break;
             case PigState.Jumping:
-                animValue = 2;
+                // animValue = 2;
                 break;
             case PigState.Destroying:
             case PigState.OnConveyor:
@@ -90,14 +98,13 @@ public class PigComponent : MonoBehaviour
                 break;
         }
 
-        if (animator.GetInteger("state") != animValue)
-        {
-            animator.SetInteger("state", animValue);
-        }
+        // if (animator.GetInteger("state") != animValue)
+        // {
+        //     animator.SetInteger("state", animValue);
+        // }
         currentState = newState;
     }
-    public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed,
-    float jumpSpeed, List<Transform> paths, bool isHidden)
+    public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed, List<Transform> paths, bool isHidden)
     {
         this.isHidden = isHidden;
         this.color = color;
@@ -106,7 +113,7 @@ public class PigComponent : MonoBehaviour
 
         this.speed = _speed;
         this.baseConveyorSpeed = _speed;
-        this.jumpToQueueSpeed = jumpSpeed;
+        // this.jumpToQueueSpeed = jumpSpeed;
         this.initialRotation = model.rotation;
         this._bulletsFiredCount = 0;
         initCanvasLocalPos = canvasTransform.localPosition;
@@ -134,7 +141,7 @@ public class PigComponent : MonoBehaviour
 
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
-        // var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+        var faceMeshRenderer = faceModel.GetComponent<MeshRenderer>();
         var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
         var tailMeshRenderer = tailModel.GetComponent<MeshRenderer>();
 
@@ -146,7 +153,7 @@ public class PigComponent : MonoBehaviour
         }
         if (isHidden)
         {
-            // meshRenderer.material = hiddenMaterial;
+            faceMeshRenderer.material = hiddenMaterial;
             bodyMeshRenderer.material = hiddenMaterial;
             tailMeshRenderer.material = hiddenMaterial;
 
@@ -156,7 +163,7 @@ public class PigComponent : MonoBehaviour
         }
         bulletText.text = bulletCount.ToString();
         tailMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-        // meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        faceMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
     }
 
@@ -197,22 +204,22 @@ public class PigComponent : MonoBehaviour
         return current;
     }
 
-    public void StartJumpSequence()
-    {
-        StartCoroutine(JumpRoutine());
-    }
+    // public void StartJumpSequence()
+    // {
+    //     StartCoroutine(JumpRoutine());
+    // }
 
-    private IEnumerator JumpRoutine()
-    {
-        JumpTo();
+    // private IEnumerator JumpRoutine()
+    // {
+    //     JumpTo(jumpToQueueSpeed);
 
-        yield return new WaitForSeconds(0.25f);
+    //     yield return new WaitForSeconds(0.25f);
 
-        if (rightPig != null)
-        {
-            rightPig.StartJumpSequence();
-        }
-    }
+    //     if (rightPig != null)
+    //     {
+    //         rightPig.StartJumpSequence();
+    //     }
+    // }
 
     public void SetLinkPig(PigComponent left, PigComponent right)
     {
@@ -246,20 +253,22 @@ public class PigComponent : MonoBehaviour
                 ParticleSystem unlockEffect = Instantiate(unlockVFX).GetComponent<ParticleSystem>();
                 unlockEffect.transform.SetParent(transform);
                 // unlockEffect.transform.rotation = Quaternion.Euler(0, 0, 0);
-                unlockEffect.transform.localPosition = Vector3.up * 1f;
+                unlockEffect.transform.localPosition = Vector3.up * 0.5f;
                 unlockEffect.Play();
 
                 StartCoroutine(ChangeColorCorountine(0.1f, () =>
                 {
                     isHidden = false;
-                    // var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+                    var faceRenderer = faceModel.GetComponent<MeshRenderer>();
                     var tailRenderer = tailModel.GetComponent<MeshRenderer>();
                     var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
                     tailRenderer.material = normalMaterial;
                     bodyMeshRenderer.material = normalMaterial;
+                    faceRenderer.material = normalFaceMaterial;
 
                     tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                    faceRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
                     bulletText.text = Bullet.ToString();
                     bulletText.fontSize = 40f;
@@ -430,26 +439,29 @@ public class PigComponent : MonoBehaviour
         _lockedTargets = 0;
     }
 
-    public void JumpTo(Action onComplete = null)
+    public void JumpTo(float speed, Action onComplete = null)
     {
         SetConveyorSpeedMultiplier(isRush ? 2f : 1f);
         EventManager.OnJumpToConveyor?.Invoke();
-        StartCoroutine(ReadyToJump(0.1f, onComplete));
+        StartCoroutine(ReadyToJump(0.1f, onComplete, speed));
     }
 
     public void JumpToTarget(Vector3 localTargetPos)
     {
         Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
-        StartCoroutine(JumpCoroutine(worldTargetPos, transform.rotation, 1.5f));
+        var distance = Vector3.Distance(this.transform.position, worldTargetPos);
+        var intervalDuration = distance / 2;
+        StartCoroutine(JumpArcCoroutine(this.transform.position, worldTargetPos, intervalDuration));
     }
-    private IEnumerator ConveyorJourney(Action onComplete)
+    private IEnumerator ConveyorJourney(Action onComplete,float speed)
     {
         ChangeState(PigState.Jumping);
+
         Vector3 firstPoint = allWaypoints[0].position;
         float jumpDist = Vector3.Distance(rb.position, firstPoint);
-        float jumpDuration = Mathf.Max(0.1f, jumpDist / jumpToQueueSpeed);
+        float jumpDuration = Mathf.Max(0.1f, jumpDist / speed);
         // isOnBelt = true;
-        yield return StartCoroutine(JumpCoroutine(firstPoint, transform.rotation, 1.5f));
+        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null, jumpFromLaneFB));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position + new Vector3(-0.2f, 0f, 0);
@@ -464,20 +476,19 @@ public class PigComponent : MonoBehaviour
 
         this.model.localScale = Vector3.one;
 
+
         yield return new WaitForFixedUpdate();
 
         _rayCastDirection = allWaypoints[0].forward;
         if (_wavyLine != null)
         {
-            _wavyLine.UpdateStartPoint(rayCastPoint.position);
+            _wavyLine.UpdateStartPoint(wavyPoint.position);
         }
-        CheckAndAddTargetBlocks();
-
-        // StartCoroutine(ShootingRoutine());
+        // CheckAndAddTargetBlocks();
         StartCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
     }
 
-    private IEnumerator ReadyToJump(float duration, Action onComplete)
+    private IEnumerator ReadyToJump(float duration, Action onComplete, float speed)
     {
         float elapsed = 0;
         ChangeState(PigState.ReadyToJump);
@@ -487,7 +498,7 @@ public class PigComponent : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return new WaitForFixedUpdate();
         }
-        StartCoroutine(ConveyorJourney(onComplete));
+        StartCoroutine(ConveyorJourney(onComplete, speed));
         canvasTransform.localPosition = new Vector3(0.04f, 0.77f, 0.15f);
     }
 
@@ -587,7 +598,11 @@ public class PigComponent : MonoBehaviour
             {
                 model.rotation = targetRot;
                 Vector3 end = path[i + 1].position;
-                yield return StartCoroutine(SlideTo(end, speed));
+                var distance = Vector3.Distance(rb.position, end);
+                var intervalDuration = distance / speed;
+                        MMTween.MoveTransform(this, this.transform, this.transform.position, end, null, 0f, intervalDuration, slideCurve);
+        yield return MMCoroutine.WaitFor(intervalDuration);
+                // yield return StartCoroutine(SlideTo(end, speed));
                 i++;
             }
 
@@ -633,7 +648,7 @@ public class PigComponent : MonoBehaviour
     }
 
 
-    public void JumpToQueue(Vector3 targetPosition, Quaternion targetRotation, float height = 1.0f)
+    public void JumpToQueue(Vector3 targetPosition, float speed)
     {
         canvasTransform.localPosition = initCanvasLocalPos;
         if (_wavyLine != null)
@@ -643,41 +658,40 @@ public class PigComponent : MonoBehaviour
         }
 
         _lockedTargets = 0;
-        StartCoroutine(JumpCoroutine(targetPosition, targetRotation, height, () =>
+        var distance = Vector3.Distance(this.transform.position, targetPosition);
+        var intervalDuration = distance / speed;
+        StartCoroutine(JumpArcCoroutine(rb.position, targetPosition, intervalDuration, () =>
         {
             ChangeState(PigState.InQueue);
             StopAllCoroutines();
             StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             isOnTop = true;
-        }));
+        }, jumpFromQueueFB));
+
     }
 
-    private IEnumerator JumpCoroutine(Vector3 targetPos, Quaternion targetRot = default, float height = 1.0f, Action onComplete = null)
+    private IEnumerator JumpArcCoroutine(Vector3 startPos, Vector3 endPos, float duration, Action onComplete = null, MMF_Player jumpFeedback = null)
     {
-        Vector3 startPos = rb.position;
-        Quaternion startRot = rb.rotation;
-
-        float distance = Vector3.Distance(startPos, targetPos);
-        float duration = distance / jumpToQueueSpeed;
-
-        float elapsed = 0;
-
-        while (elapsed < duration)
+        float timeSpent = 0f;
+        jumpFeedback?.PlayFeedbacks();
+        while (timeSpent < duration)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            Vector3 currentPos = Vector3.Lerp(startPos, targetPos, t);
-            currentPos.y += Mathf.Sin(t * Mathf.PI) * height;
-            rb.MovePosition(currentPos);
-            model.rotation = Quaternion.Lerp(startRot, targetRot, t);
+            if (currentState == PigState.OnConveyor) yield break;
 
+            timeSpent += Time.fixedDeltaTime;
+            float percent = timeSpent / duration;
+
+            Vector3 currentPos = MMTween.Tween(timeSpent, 0f, duration, startPos, endPos, jumpCurve);
+
+            float arcOffset = Mathf.Sin(percent * Mathf.PI) * 2f;
+
+
+            currentPos.y += arcOffset;
+            rb.MovePosition(currentPos);
             yield return new WaitForFixedUpdate();
         }
 
-        rb.MovePosition(targetPos);
-        model.rotation = targetRot;
-        model.rotation = Quaternion.identity;
-        model.localRotation = initialRotation;
+        rb.MovePosition(endPos);
         onComplete?.Invoke();
     }
 
@@ -722,7 +736,7 @@ public class PigComponent : MonoBehaviour
         Quaternion startRot = rb.rotation;
 
         float distance = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(targetPos.x, 0, targetPos.z));
-        float duration = distance / jumpToQueueSpeed;
+        float duration = distance / moveSpeed;
         float jumpHeight = 0.5f;
         float elapsed = 0;
 
@@ -763,11 +777,11 @@ public class PigComponent : MonoBehaviour
     }
 
 
-    private void FixedUpdate() 
+    private void FixedUpdate()
     {
         if (Bullet > 0 && (currentState == PigState.OnConveyor || currentState == PigState.Shooting))
         {
-            _wavyLine.UpdateStartPoint(rayCastPoint.position);
+            _wavyLine.UpdateStartPoint(wavyPoint.position);
 
             CheckAndAddTargetBlocks();
 

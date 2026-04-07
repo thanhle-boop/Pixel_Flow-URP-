@@ -48,7 +48,8 @@ public class SpawnerManager : MonoBehaviour
     private float speed = 1f;
 
     [SerializeField]
-    private float jumpToQueueSpeed = 5f;
+    private float jumpFromLaneSpeed = 6f;
+    private float jumpFromQueueSpeed = 3.5f;
 
     public Link linkPrefabs;
 
@@ -382,7 +383,7 @@ public class SpawnerManager : MonoBehaviour
 
         Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.9f));
 
-        pig.JumpToQueue(targetPos, startTempQueuePos.rotation, index);
+        pig.JumpToQueue(targetPos, 5f);
     }
 
     private void RefundStraightSlot(PigComponent pig)
@@ -510,7 +511,7 @@ public class SpawnerManager : MonoBehaviour
 
             AssignPlateToPig(p);
 
-            p.JumpTo(() =>
+            p.JumpTo(jumpFromQueueSpeed, () =>
             {
                 if (isFromLane)
                 {
@@ -558,7 +559,7 @@ public class SpawnerManager : MonoBehaviour
             {
 
                 AssignPlateToPig(pig);
-                pig.JumpTo(onComplete: () =>
+                pig.JumpTo(jumpFromLaneSpeed,onComplete: () =>
                 {
                     RemovePigFromLane(pig);
                     onComplete?.Invoke();
@@ -771,7 +772,7 @@ public class SpawnerManager : MonoBehaviour
 
                 if (pigComp != null)
                 {
-                    pigComp.Initialize(colorType, bulletCount, i, color, speed, jumpToQueueSpeed, allWaypoints, currentLane.pigs[j].isHidden);
+                    pigComp.Initialize(colorType, bulletCount, i, color, speed, allWaypoints, currentLane.pigs[j].isHidden);
                     pigsByLane[i].Add(pigComp);
                     pigComp.SetIsOnTop(j == 0);
                 }
@@ -932,7 +933,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         pigsInConveyor.Remove(pig);
-        pig.JumpToQueue(queuePos[queueIndex].position, queuePos[queueIndex].rotation, 1.5f);
+        pig.JumpToQueue(queuePos[queueIndex].position,5f);
 
         if (pigsInQueue.Count >= queuePos.Count)
         {
@@ -1042,7 +1043,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         AssignPlateToPig(pig);
-        pig.JumpTo(() =>
+        pig.JumpTo(jumpFromQueueSpeed, () =>
         {
             RearrangeQueue(removedIndex, isFromTempQueue);
             complete?.Invoke();
