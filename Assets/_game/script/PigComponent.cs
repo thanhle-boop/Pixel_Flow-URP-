@@ -45,6 +45,7 @@ public class PigComponent : MonoBehaviour
     public LayerMask blockLayer;
 
     public GameObject faceModel;
+    public GameObject face2Model;
     public GameObject bodyModel;
     public GameObject tailModel;
     public GameObject Model;
@@ -66,7 +67,8 @@ public class PigComponent : MonoBehaviour
 
     public AnimationCurve ArcCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.5f, 1), new Keyframe(1, 0));
     public MMTween.MMTweenCurve jumpCurve;
-    public MMTween.MMTweenCurve slideCurve;
+    public MMTween.MMTweenCurve moveCurve;
+
     public MMF_Player jumpFromLaneFB;
     public MMF_Player jumpFromQueueFB;
 
@@ -142,6 +144,7 @@ public class PigComponent : MonoBehaviour
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
         var faceMeshRenderer = faceModel.GetComponent<MeshRenderer>();
+        var face2MeshRenderer = face2Model.GetComponent<MeshRenderer>();
         var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
         var tailMeshRenderer = tailModel.GetComponent<MeshRenderer>();
 
@@ -154,6 +157,7 @@ public class PigComponent : MonoBehaviour
         if (isHidden)
         {
             faceMeshRenderer.material = hiddenMaterial;
+            face2MeshRenderer.material = hiddenMaterial;
             bodyMeshRenderer.material = hiddenMaterial;
             tailMeshRenderer.material = hiddenMaterial;
 
@@ -164,6 +168,7 @@ public class PigComponent : MonoBehaviour
         bulletText.text = bulletCount.ToString();
         tailMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         faceMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        face2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
     }
 
@@ -260,15 +265,17 @@ public class PigComponent : MonoBehaviour
                 {
                     isHidden = false;
                     var faceRenderer = faceModel.GetComponent<MeshRenderer>();
+                    var face2Renderer = face2Model.GetComponent<MeshRenderer>();
                     var tailRenderer = tailModel.GetComponent<MeshRenderer>();
                     var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
                     tailRenderer.material = normalMaterial;
                     bodyMeshRenderer.material = normalMaterial;
                     faceRenderer.material = normalFaceMaterial;
-
+                    face2Renderer.material = normalFaceMaterial;
                     tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     faceRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                    face2Renderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
                     bulletText.text = Bullet.ToString();
                     bulletText.fontSize = 40f;
@@ -504,28 +511,33 @@ public class PigComponent : MonoBehaviour
 
     public void MoveTo(Vector3 newLocalPos)
     {
-        StartCoroutine(MoveCoroutine(newLocalPos));
+        // StartCoroutine(MoveCoroutine(newLocalPos));
+        var worldTargetPos = transform.parent.TransformPoint(newLocalPos);
+        var distance = Vector3.Distance(this.transform.position, worldTargetPos);
+        var intervalDuration = distance / moveSpeed;
+        MMTween.MoveTransform(this, this.transform, this.transform.position, worldTargetPos, null, 0f, intervalDuration, moveCurve);
+        // yield return MMCoroutine.WaitFor(intervalDuration);
     }
 
-    private IEnumerator MoveCoroutine(Vector3 targetLocalPos)
-    {
-        Vector3 startLocalPos = transform.localPosition;
-        float duration = 0.2f;
-        float elapsed = 0f;
+    // private IEnumerator MoveCoroutine(Vector3 targetLocalPos)
+    // {
+    //     Vector3 startLocalPos = transform.localPosition;
+    //     float duration = 0.2f;
+    //     float elapsed = 0f;
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            Vector3 newLocalPos = Vector3.Lerp(startLocalPos, targetLocalPos, t);
-            Vector3 newWorldPos = transform.parent.TransformPoint(newLocalPos);
-            rb.MovePosition(newWorldPos);
-            yield return new WaitForFixedUpdate();
-        }
+    //     while (elapsed < duration)
+    //     {
+    //         elapsed += Time.deltaTime;
+    //         float t = elapsed / duration;
+    //         Vector3 newLocalPos = Vector3.Lerp(startLocalPos, targetLocalPos, t);
+    //         Vector3 newWorldPos = transform.parent.TransformPoint(newLocalPos);
+    //         rb.MovePosition(newWorldPos);
+    //         yield return new WaitForFixedUpdate();
+    //     }
 
-        Vector3 finalWorldPos = transform.parent.TransformPoint(targetLocalPos);
-        rb.MovePosition(finalWorldPos);
-    }
+    //     Vector3 finalWorldPos = transform.parent.TransformPoint(targetLocalPos);
+    //     rb.MovePosition(finalWorldPos);
+    // }
 
 
     private void CheckAndAddTargetBlocks()
@@ -598,11 +610,7 @@ public class PigComponent : MonoBehaviour
             {
                 model.rotation = targetRot;
                 Vector3 end = path[i + 1].position;
-                var distance = Vector3.Distance(rb.position, end);
-                var intervalDuration = distance / speed;
-                        MMTween.MoveTransform(this, this.transform, this.transform.position, end, null, 0f, intervalDuration, slideCurve);
-        yield return MMCoroutine.WaitFor(intervalDuration);
-                // yield return StartCoroutine(SlideTo(end, speed));
+                yield return StartCoroutine(SlideTo(end, speed));
                 i++;
             }
 
