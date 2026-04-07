@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Tools;
 using TMPro;
 using UnityEngine;
 
@@ -42,6 +43,8 @@ public class PigComponent : MonoBehaviour
 
     public GameObject faceModel;
     public GameObject bodyModel;
+    public GameObject tailModel;
+    public GameObject Model;
 
     public TextMeshProUGUI bulletText;
     public Material hiddenMaterial;
@@ -56,6 +59,9 @@ public class PigComponent : MonoBehaviour
     public GameObject landOnDiskVFX;
     public GameObject unlockVFX;
     public bool isPlayeVFX = false;
+
+    public AnimationCurve ArcCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.5f, 1), new Keyframe(1, 0));
+    public MMTween.MMTweenCurve moveCurve;
     private void ChangeState(PigState newState)
     {
 
@@ -128,8 +134,9 @@ public class PigComponent : MonoBehaviour
 
         _wavyLine.SetColor(lineColor);
         _wavyLine.SetBulletChangedCallback(OnBulletChanged);
-        var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+        // var meshRenderer = faceModel.GetComponent<MeshRenderer>();
         var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+        var tailMeshRenderer = tailModel.GetComponent<MeshRenderer>();
 
         for (int i = 0; i < ammoCircles.Count; i++)
         {
@@ -139,14 +146,17 @@ public class PigComponent : MonoBehaviour
         }
         if (isHidden)
         {
-            meshRenderer.material = hiddenMaterial;
+            // meshRenderer.material = hiddenMaterial;
             bodyMeshRenderer.material = hiddenMaterial;
+            tailMeshRenderer.material = hiddenMaterial;
+
             bulletText.text = "?";
             bulletText.fontSize = 50f;
             return;
         }
         bulletText.text = bulletCount.ToString();
-        meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        tailMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        // meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
     }
 
@@ -242,12 +252,13 @@ public class PigComponent : MonoBehaviour
                 StartCoroutine(ChangeColorCorountine(0.1f, () =>
                 {
                     isHidden = false;
-                    var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+                    // var meshRenderer = faceModel.GetComponent<MeshRenderer>();
+                    var tailRenderer = tailModel.GetComponent<MeshRenderer>();
                     var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
-                    meshRenderer.material = normalMaterial;
+                    tailRenderer.material = normalMaterial;
                     bodyMeshRenderer.material = normalMaterial;
 
-                    meshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                    tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
                     bulletText.text = Bullet.ToString();
