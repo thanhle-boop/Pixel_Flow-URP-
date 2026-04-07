@@ -275,7 +275,6 @@ public class SpawnerManager : MonoBehaviour
     {
 
         PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
-        Debug.Log("Checking Final Rush: " + allPigs.Length + " pigs remaining.");
         if (allPigs.Length <= 6 && allPigs.Length > 0)
         {
 

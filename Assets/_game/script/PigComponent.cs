@@ -71,6 +71,7 @@ public class PigComponent : MonoBehaviour
 
     public MMF_Player jumpFromLaneFB;
     public MMF_Player jumpFromQueueFB;
+    public MMF_Player landToQueueFB;
 
     private void ChangeState(PigState newState)
     {
@@ -460,7 +461,7 @@ public class PigComponent : MonoBehaviour
         var intervalDuration = distance / 2;
         StartCoroutine(JumpArcCoroutine(this.transform.position, worldTargetPos, intervalDuration));
     }
-    private IEnumerator ConveyorJourney(Action onComplete,float speed)
+    private IEnumerator ConveyorJourney(Action onComplete, float speed)
     {
         ChangeState(PigState.Jumping);
 
@@ -511,33 +512,33 @@ public class PigComponent : MonoBehaviour
 
     public void MoveTo(Vector3 newLocalPos)
     {
-        // StartCoroutine(MoveCoroutine(newLocalPos));
-        var worldTargetPos = transform.parent.TransformPoint(newLocalPos);
-        var distance = Vector3.Distance(this.transform.position, worldTargetPos);
-        var intervalDuration = distance / moveSpeed;
-        MMTween.MoveTransform(this, this.transform, this.transform.position, worldTargetPos, null, 0f, intervalDuration, moveCurve);
+        StartCoroutine(MoveCoroutine(newLocalPos));
+        // var worldTargetPos = transform.parent.TransformPoint(newLocalPos);
+        // var distance = Vector3.Distance(this.transform.position, worldTargetPos);
+        // var intervalDuration = distance / moveSpeed;
+        // MMTween.MoveTransform(this, this.transform, this.transform.position, worldTargetPos, null, 0f, intervalDuration, moveCurve);
         // yield return MMCoroutine.WaitFor(intervalDuration);
     }
 
-    // private IEnumerator MoveCoroutine(Vector3 targetLocalPos)
-    // {
-    //     Vector3 startLocalPos = transform.localPosition;
-    //     float duration = 0.2f;
-    //     float elapsed = 0f;
+    private IEnumerator MoveCoroutine(Vector3 targetLocalPos)
+    {
+        Vector3 startLocalPos = transform.localPosition;
+        float duration = 0.2f;
+        float elapsed = 0f;
 
-    //     while (elapsed < duration)
-    //     {
-    //         elapsed += Time.deltaTime;
-    //         float t = elapsed / duration;
-    //         Vector3 newLocalPos = Vector3.Lerp(startLocalPos, targetLocalPos, t);
-    //         Vector3 newWorldPos = transform.parent.TransformPoint(newLocalPos);
-    //         rb.MovePosition(newWorldPos);
-    //         yield return new WaitForFixedUpdate();
-    //     }
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            Vector3 newLocalPos = Vector3.Lerp(startLocalPos, targetLocalPos, t);
+            Vector3 newWorldPos = transform.parent.TransformPoint(newLocalPos);
+            rb.MovePosition(newWorldPos);
+            yield return new WaitForFixedUpdate();
+        }
 
-    //     Vector3 finalWorldPos = transform.parent.TransformPoint(targetLocalPos);
-    //     rb.MovePosition(finalWorldPos);
-    // }
+        Vector3 finalWorldPos = transform.parent.TransformPoint(targetLocalPos);
+        rb.MovePosition(finalWorldPos);
+    }
 
 
     private void CheckAndAddTargetBlocks()
@@ -672,7 +673,8 @@ public class PigComponent : MonoBehaviour
         {
             ChangeState(PigState.InQueue);
             StopAllCoroutines();
-            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+            // StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+            // landToQueueFB?.PlayFeedbacks();
             isOnTop = true;
         }, jumpFromQueueFB));
 
