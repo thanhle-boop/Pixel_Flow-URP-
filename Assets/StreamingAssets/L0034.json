@@ -928,14 +928,14 @@
                     "colorName": "c08",
                     "bullets": 10,
                     "isHidden": false,
-                    "linkId": 2,
+                    "linkId": 3,
                     "pigLeft": {
-                        "LaneIndex": 1,
-                        "index": 2
-                    },
-                    "pigRight": {
                         "LaneIndex": -1,
                         "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": 1,
+                        "index": 2
                     }
                 },
                 {
@@ -1044,7 +1044,7 @@
                     "colorName": "c12",
                     "bullets": 40,
                     "isHidden": false,
-                    "linkId": 2,
+                    "linkId": 3,
                     "pigLeft": {
                         "LaneIndex": 0,
                         "index": 1
@@ -1058,7 +1058,7 @@
                     "colorName": "c12",
                     "bullets": 40,
                     "isHidden": false,
-                    "linkId": 1,
+                    "linkId": 4,
                     "pigLeft": {
                         "LaneIndex": 2,
                         "index": 4
@@ -1132,7 +1132,7 @@
                     "colorName": "c06",
                     "bullets": 40,
                     "isHidden": false,
-                    "linkId": 0,
+                    "linkId": 5,
                     "pigLeft": {
                         "LaneIndex": 3,
                         "index": 2
@@ -1174,14 +1174,14 @@
                     "colorName": "c06",
                     "bullets": 40,
                     "isHidden": false,
-                    "linkId": 1,
+                    "linkId": 4,
                     "pigLeft": {
-                        "LaneIndex": 1,
-                        "index": 3
-                    },
-                    "pigRight": {
                         "LaneIndex": -1,
                         "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": 1,
+                        "index": 3
                     }
                 },
                 {
@@ -1248,14 +1248,14 @@
                     "colorName": "c12",
                     "bullets": 40,
                     "isHidden": false,
-                    "linkId": 0,
+                    "linkId": 5,
                     "pigLeft": {
-                        "LaneIndex": 2,
-                        "index": 1
-                    },
-                    "pigRight": {
                         "LaneIndex": -1,
                         "index": -1
+                    },
+                    "pigRight": {
+                        "LaneIndex": 2,
+                        "index": 1
                     }
                 },
                 {

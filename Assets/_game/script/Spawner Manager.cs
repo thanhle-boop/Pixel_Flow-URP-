@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -17,7 +16,6 @@ public class SpawnerManager : MonoBehaviour
     private int _straightSlot = 0;
     private int _maxstraightSlot = 5;
     private int totalBlockCount = 0;
-
     public bool isTesting = false;
 
     public bool isProcessingClick = false;
@@ -26,46 +24,29 @@ public class SpawnerManager : MonoBehaviour
     public GameObject blockPrefab;
     public Transform blockSpawnPoint;
     public Transform blockGroup;
-
     public Transform pigSpawnPoint;
-
     private float blockSpacing = 1.2f;
-
     public Transform pigSpawnPos;
     public GameObject pigPrefab;
-
     public List<Transform> allWaypoints;
     private Dictionary<int, List<PigComponent>> pigsByLane = new Dictionary<int, List<PigComponent>>();
     private List<Link> activeLinks = new List<Link>();
-
     public List<Transform> queuePos;
     private List<PigComponent> pigsInQueue = new List<PigComponent>();
     private List<PigComponent> pigsInTempQueue = new List<PigComponent>();
     public Transform startTempQueuePos;
     private List<PigComponent> pigsInConveyor = new List<PigComponent>();
-
-    [SerializeField]
-    private float speed = 1f;
-
-    [SerializeField]
-    private float jumpFromLaneSpeed = 6f;
+    [SerializeField] private float speed = 1f;
+    [SerializeField] private float jumpFromLaneSpeed = 6f;
     private float jumpFromQueueSpeed = 3.5f;
-
     public Link linkPrefabs;
-
     public List<GameObject> blockPrefabsByColor;
-
     public float spacing = 1.2f;
-
     [Header("Plate Settings")]
     public GameObject platePrefab;
     public Transform traySlotOrigin;
     public float plateStackOffset = 0.1f;
-
-    // private List<Transform> allPlates = new List<Transform>();
     private Queue<Transform> availablePlates = new Queue<Transform>();
-    // private Dictionary<PigComponent, Transform> activePlateMap = new Dictionary<PigComponent, Transform>();
-
     public Transform tray;
     public GameObject clickVFXPrefab;
 
@@ -112,7 +93,6 @@ public class SpawnerManager : MonoBehaviour
 
         EventManager.OnClickBlock -= ClickBlock;
     }
-
     public void UseItemHand()
     {
         onHandItemUsed = true;
@@ -123,7 +103,6 @@ public class SpawnerManager : MonoBehaviour
         _maxstraightSlot++;
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
     }
-
     private void InitializePlates()
     {
         availablePlates.Clear();
@@ -893,7 +872,7 @@ public class SpawnerManager : MonoBehaviour
                     return;
                 }
                 pigsInQueue.Insert(queueIndex, pig);
-                for (int i = queueIndex + 1; i < pigsInQueue.Count; i++)
+                for (int i = queueIndex; i < pigsInQueue.Count; i++)
                 {
                     pigsInQueue[i].MoveInQueue(queuePos[i].position, queuePos[i].rotation);
                 }
@@ -907,6 +886,7 @@ public class SpawnerManager : MonoBehaviour
                     return;
                 }
                 pigsInQueue.Add(pig);
+                pig.MoveInQueue(queuePos[queueIndex].position, queuePos[queueIndex].rotation);
             }
         }
         else
