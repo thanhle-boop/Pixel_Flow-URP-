@@ -26,7 +26,7 @@ public class PigComponent : MonoBehaviour
     private int _currentCircleIndex = -1;
 
     private int _bulletsFiredCount = 0;
-    private Quaternion initialRotation;
+    // private Quaternion initialRotation;
 
     public PigComponent leftPig { get; private set; } = null;
     public PigComponent rightPig { get; private set; } = null;
@@ -47,6 +47,7 @@ public class PigComponent : MonoBehaviour
     public GameObject faceModel;
     public GameObject face2Model;
     public GameObject bodyModel;
+    public GameObject body2Model;
     public GameObject tailModel;
     public GameObject Model;
 
@@ -69,8 +70,9 @@ public class PigComponent : MonoBehaviour
     public MMTween.MMTweenCurve jumpCurve;
     public MMTween.MMTweenCurve moveCurve;
 
-    public MMF_Player jumpFromLaneFB;
-    public MMF_Player jumpFromQueueFB;
+    public MMF_Player jumpToConveyorFB;
+    public MMF_Player jumpToQueueFB;
+    // public MMF_Player scaleDownFB;
     public MMF_Player landToQueueFB;
 
     private void ChangeState(PigState newState)
@@ -117,7 +119,7 @@ public class PigComponent : MonoBehaviour
         this.speed = _speed;
         this.baseConveyorSpeed = _speed;
         // this.jumpToQueueSpeed = jumpSpeed;
-        this.initialRotation = model.rotation;
+        // this.initialRotation = model.rotation;
         this._bulletsFiredCount = 0;
         initCanvasLocalPos = canvasTransform.localPosition;
         initScale = model.localScale;
@@ -147,6 +149,7 @@ public class PigComponent : MonoBehaviour
         var faceMeshRenderer = faceModel.GetComponent<MeshRenderer>();
         var face2MeshRenderer = face2Model.GetComponent<MeshRenderer>();
         var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+        var body2MeshRenderer = body2Model.GetComponent<MeshRenderer>();
         var tailMeshRenderer = tailModel.GetComponent<MeshRenderer>();
 
         for (int i = 0; i < ammoCircles.Count; i++)
@@ -160,6 +163,7 @@ public class PigComponent : MonoBehaviour
             faceMeshRenderer.material = hiddenMaterial;
             face2MeshRenderer.material = hiddenMaterial;
             bodyMeshRenderer.material = hiddenMaterial;
+            body2MeshRenderer.material = hiddenMaterial;
             tailMeshRenderer.material = hiddenMaterial;
 
             bulletText.text = "?";
@@ -171,6 +175,8 @@ public class PigComponent : MonoBehaviour
         faceMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         face2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+        body2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+
     }
 
     public bool IsOnFirstRow()
@@ -269,12 +275,15 @@ public class PigComponent : MonoBehaviour
                     var face2Renderer = face2Model.GetComponent<MeshRenderer>();
                     var tailRenderer = tailModel.GetComponent<MeshRenderer>();
                     var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+                    var body2MeshRenderer = body2Model.GetComponent<MeshRenderer>();
                     tailRenderer.material = normalMaterial;
                     bodyMeshRenderer.material = normalMaterial;
+                    body2MeshRenderer.material = normalMaterial;
                     faceRenderer.material = normalFaceMaterial;
                     face2Renderer.material = normalFaceMaterial;
                     tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                    body2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     faceRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
                     face2Renderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
@@ -463,26 +472,25 @@ public class PigComponent : MonoBehaviour
     }
     private IEnumerator ConveyorJourney(Action onComplete, float speed)
     {
-        ChangeState(PigState.Jumping);
-
         Vector3 firstPoint = allWaypoints[0].position;
         float jumpDist = Vector3.Distance(rb.position, firstPoint);
         float jumpDuration = Mathf.Max(0.1f, jumpDist / speed);
         // isOnBelt = true;
-        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null, jumpFromLaneFB));
+        Debug.Log("currentState: " + currentState);
+        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null,jumpToConveyorFB));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
-        ps.transform.position = transform.position + new Vector3(-0.2f, 0f, 0);
+        ps.transform.position = transform.position;
         ps.Play();
         onComplete?.Invoke();
         ChangeState(PigState.OnConveyor);
 
         currentPlate.SetParent(transform);
-        currentPlate.localPosition = new Vector3(-0.03f, -0.25f, 0f);
+        currentPlate.localPosition = new Vector3(-0.035f, -0.25f, 0f);
         currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
         currentPlate.localScale = new Vector3(90, 90, 90);
 
-        this.model.localScale = Vector3.one;
+        this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
 
 
         yield return new WaitForFixedUpdate();
@@ -572,6 +580,7 @@ public class PigComponent : MonoBehaviour
         float elapsed = 0;
         while (elapsed < duration)
         {
+            if (currentState == PigState.Destroying || currentState == PigState.InQueue) yield break;
             elapsed += Time.deltaTime;
             Vector3 newPos = Vector3.Lerp(start, target, elapsed / duration);
             rb.MovePosition(newPos);
@@ -585,6 +594,7 @@ public class PigComponent : MonoBehaviour
         int i = startIndex;
         while (true)
         {
+
             var current = path[i];
             var next = path[(i + 1) % path.Count];
 
@@ -609,6 +619,7 @@ public class PigComponent : MonoBehaviour
             }
             else
             {
+                // if (currentState == PigState.Destroying || currentState == PigState.InQueue) yield break;
                 model.rotation = targetRot;
                 Vector3 end = path[i + 1].position;
                 yield return StartCoroutine(SlideTo(end, speed));
@@ -639,6 +650,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (currentState == PigState.Destroying || currentState == PigState.InQueue) yield break;
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -659,13 +671,13 @@ public class PigComponent : MonoBehaviour
 
     public void JumpToQueue(Vector3 targetPosition, float speed)
     {
-        canvasTransform.localPosition = initCanvasLocalPos;
         if (_wavyLine != null)
         {
             _wavyLine.ClearAllTargets();
             _wavyLine.HideLineImmediately();
         }
 
+        jumpToQueueFB?.PlayFeedbacks();
         _lockedTargets = 0;
         var distance = Vector3.Distance(this.transform.position, targetPosition);
         var intervalDuration = distance / speed;
@@ -675,8 +687,10 @@ public class PigComponent : MonoBehaviour
             StopAllCoroutines();
             // StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             // landToQueueFB?.PlayFeedbacks();
+            canvasTransform.localPosition = initCanvasLocalPos;
+
             isOnTop = true;
-        }, jumpFromQueueFB));
+        }));
 
     }
 
@@ -694,7 +708,6 @@ public class PigComponent : MonoBehaviour
             Vector3 currentPos = MMTween.Tween(timeSpent, 0f, duration, startPos, endPos, jumpCurve);
 
             float arcOffset = Mathf.Sin(percent * Mathf.PI) * 2f;
-
 
             currentPos.y += arcOffset;
             rb.MovePosition(currentPos);

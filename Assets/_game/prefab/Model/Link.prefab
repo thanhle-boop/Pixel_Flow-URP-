@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5580037133964074515
 Transform:
   m_ObjectHideFlags: 0
@@ -130,7 +130,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &419230152734745781
 Transform:
   m_ObjectHideFlags: 0
@@ -273,8 +273,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12899b98bb8894c4cb0faad3dc578dbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Link
-  link1: {fileID: 3959863185828553681}
-  link2: {fileID: 2450891990470548482}
+  link1: {fileID: 5440670258858141315}
+  link2: {fileID: 7880247454677744965}
   mesh1: {fileID: 2100000, guid: b571e8cd3d89b644e9568c49ab7bfda7, type: 2}
   mesh2: {fileID: 2100000, guid: 8764c15e078437d4ba564ec68aa7b70a, type: 2}
   hiddenMesh: {fileID: 2100000, guid: 627464e3f54529c4a8c19a175385d3c3, type: 2}
@@ -313,7 +313,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3290934414849708829
 Transform:
   m_ObjectHideFlags: 0
@@ -403,7 +403,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7438661872913309227
 Transform:
   m_ObjectHideFlags: 0
