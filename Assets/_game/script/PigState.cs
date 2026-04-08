@@ -9,6 +9,7 @@ public enum PigState
     ReadyToJump,    
     Destroying,
     Shooting,
-    DoNothing
+    DoNothing,
+    CanMove
 }
 

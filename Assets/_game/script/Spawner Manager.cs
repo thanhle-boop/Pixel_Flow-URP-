@@ -443,105 +443,111 @@ public class SpawnerManager : MonoBehaviour
         {
             onHandItemUsed = false;
             EventManager.OnEndHand?.Invoke();
-            pig.SetIsOnTop(true);
         }
 
         if (pigStack.Contains(pig)) return;
 
-        int requiredSlots = 1;
-        if (pig.IsLinkedPig())
-        {
-            PigComponent leftmost = pig.GetLeftmostPig();
-            requiredSlots = GetPigChain(leftmost).Count;
-        }
-
-        int expectedSlotsUsed = _straightSlot;
-        foreach (PigComponent queuedPig in pigStack)
-        {
-            if (queuedPig.IsLinkedPig())
-            {
-                expectedSlotsUsed += GetPigChain(queuedPig.GetLeftmostPig()).Count;
-            }
-            else
-            {
-                expectedSlotsUsed += 1;
-            }
-        }
-
-        if (expectedSlotsUsed + requiredSlots > _maxstraightSlot)
+        if (_straightSlot >= _maxstraightSlot)
         {
             EventManager.OnFullConveyorSlot?.Invoke();
             AudioController.instance.PlaySound(AudioIndex.error.ToString());
             return;
         }
 
-        Vector3 targetStackPos = allWaypoints[0].position;
-        targetStackPos.y += pigStack.Count * pigHeightOffset;
-
-        pigStack.Add(pig);
-        pig.JumpToQueue(targetStackPos, 5f);
-
-        if (!isProcessingStack)
+        if (pig.IsLinkedPig())
         {
-            StartCoroutine(ProcessPigStackRoutine());
-        }
-    }
-
-    private IEnumerator ProcessPigStackRoutine()
-    {
-        isProcessingStack = true;
-
-        while (pigStack.Count > 0)
-        {
-            PigComponent bottomPig = pigStack[0];
-
-            if (bottomPig == null || (!bottomPig.IsPigValid() && !onHandItemUsed))
+            PigComponent leftmost = pig.GetLeftmostPig();
+            // requiredSlots = GetPigChain(leftmost).Count;
+            List<PigComponent> linkedPigs = GetPigChain(leftmost);
+            foreach (PigComponent p in linkedPigs)
             {
-                pigStack.RemoveAt(0);
-                ShiftPigsDown();
-                continue;
-            }
-            bool isFinished = false;
-            if (bottomPig.IsLinkedPig())
-            {
-                if (!bottomPig.IsWholeLinkOnTop())
+                if (!pigStack.Contains(p))
                 {
-                    pigStack.RemoveAt(0);
-                    ShiftPigsDown();
-                    continue;
+                    ProcessPigData(p, pigStack.Count);
+                    pigStack.Add(p);
+                    // _straightSlot++;
+                    p.SetIsOnTop(true);
+
                 }
-
-                PigComponent leftmost = bottomPig.GetLeftmostPig();
-                List<PigComponent> linkedPigs = GetPigChain(leftmost);
-                StartCoroutine(ProcessLinkedPigsRoutine(linkedPigs));
-                isFinished = true;
             }
-            else
-            {
-                ProcessPigData(bottomPig, () =>
-                {
-                    isFinished = true;
-                });
-            }
-
-            pigStack.RemoveAt(0);
-            ShiftPigsDown();
-
-            yield return new WaitUntil(() => isFinished);
         }
-
-        isProcessingStack = false;
-    }
-
-    private void ShiftPigsDown()
-    {
-        for (int i = 0; i < pigStack.Count; i++)
+        else
         {
-            Vector3 newPos = allWaypoints[0].position;
-            newPos.y += i * pigHeightOffset;
-            pigStack[i].MoveInQueue(newPos, allWaypoints[0].rotation);
+            ProcessPigData(pig, pigStack.Count);
+            pigStack.Add(pig);
+            // _straightSlot++;
+            pig.SetIsOnTop(true);
         }
+
+
+
+
+        // Vector3 targetStackPos = allWaypoints[0].position;
+        // targetStackPos.y += pigStack.Count * pigHeightOffset;
+
+        // pig.JumpToQueue(targetStackPos, 5f);
+
+        // if (!isProcessingStack)
+        // {
+        //     StartCoroutine(ProcessPigStackRoutine());
+        // }
     }
+
+    // private IEnumerator ProcessPigStackRoutine()
+    // {
+    //     isProcessingStack = true;
+
+    //     while (pigStack.Count > 0)
+    //     {
+    //         PigComponent bottomPig = pigStack[0];
+
+    //         if (bottomPig == null || (!bottomPig.IsPigValid() && !onHandItemUsed))
+    //         {
+    //             pigStack.RemoveAt(0);
+    //             ShiftPigsDown();
+    //             continue;
+    //         }
+    //         bool isFinished = false;
+    //         if (bottomPig.IsLinkedPig())
+    //         {
+    //             if (!bottomPig.IsWholeLinkOnTop())
+    //             {
+    //                 pigStack.RemoveAt(0);
+    //                 ShiftPigsDown();
+    //                 continue;
+    //             }
+
+    //             PigComponent leftmost = bottomPig.GetLeftmostPig();
+    //             List<PigComponent> linkedPigs = GetPigChain(leftmost);
+    //             ProcessLinkedPigsRoutine(linkedPigs);
+    //             isFinished = true;
+    //         }
+    //         else
+    //         {
+    //             // ProcessPigData(bottomPig, () =>
+    //             // {
+    //             //     isFinished = true;
+    //             // });
+    //         }
+
+    //         pigStack.RemoveAt(0);
+    //         ShiftPigsDown();
+
+    //         yield return new WaitUntil(() => isFinished);
+    //     }
+
+    //     isProcessingStack = false;
+    // }
+
+    // private void ShiftPigsDown()
+    // {
+    //     for (int i = 0; i < pigStack.Count; i++)
+    //     {
+    //         Vector3 newPos = allWaypoints[0].position;
+    //         newPos.y += i * pigHeightOffset;
+    //         pigStack[i].MoveInQueue(newPos, allWaypoints[0].rotation);
+    //     }
+    // }
     private IEnumerator ResetClickFlag(float time)
     {
         yield return new WaitForSeconds(time);
@@ -561,7 +567,7 @@ public class SpawnerManager : MonoBehaviour
         return chain;
     }
 
-    private IEnumerator ProcessLinkedPigsRoutine(List<PigComponent> linkedPigs)
+    private void ProcessLinkedPigsRoutine(List<PigComponent> linkedPigs)
     {
         isProcessingClick = true;
 
@@ -578,24 +584,20 @@ public class SpawnerManager : MonoBehaviour
 
         foreach (PigComponent p in linkedPigs)
         {
-            bool hasFinishedJump = false;
+            // bool hasFinishedJump = false;
 
             if (isFromTemp) p.transform.localScale = Vector3.one;
 
             if (!isFromLane && !pigsInConveyor.Contains(p)) pigsInConveyor.Add(p);
 
-            AssignPlateToPig(p);
+            // AssignPlateToPig(p);
 
-            p.JumpTo(jumpFromQueueSpeed, () =>
+            p.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
             {
-                if (isFromLane)
-                {
-                    RemovePigFromLane(p);
-                }
-                hasFinishedJump = true;
+                pigStack.Add(p);
             });
 
-            yield return new WaitUntil(() => hasFinishedJump);
+            // yield return new WaitUntil(() => hasFinishedJump);
         }
 
         if (!isFromLane)
@@ -605,15 +607,13 @@ public class SpawnerManager : MonoBehaviour
             {
                 if (targetQueue.Contains(p)) targetQueue.Remove(p);
             }
-            // _straightSlot = Mathf.Max(0, _straightSlot - linkedPigs.Count);
-            // UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
 
             if (firstQueueIndex != -1)
                 RearrangeQueue(firstQueueIndex, isFromTemp);
         }
     }
 
-    private void ProcessPigData(PigComponent pig, Action onComplete = null)
+    private void ProcessPigData(PigComponent pig, int count, Action onComplete = null)
     {
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
 
@@ -626,21 +626,27 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
 
-        int laneIndex = pig.laneIndex;
-        if (pigsByLane.ContainsKey(laneIndex))
+        pig.JumpTo(jumpFromLaneSpeed, count, onComplete: () =>
         {
-            List<PigComponent> pigsInLane = pigsByLane[laneIndex];
-            if (pigsInLane.Count > 0)
-            {
+            RemovePigFromLane(pig);
+            onComplete?.Invoke();
+        });
 
-                AssignPlateToPig(pig);
-                pig.JumpTo(jumpFromLaneSpeed, onComplete: () =>
-                {
-                    RemovePigFromLane(pig);
-                    onComplete?.Invoke();
-                });
-            }
-        }
+        // int laneIndex = pig.laneIndex;
+        // if (pigsByLane.ContainsKey(laneIndex))
+        // {
+        //     List<PigComponent> pigsInLane = pigsByLane[laneIndex];
+        //     if (pigsInLane.Count > 0)
+        //     {
+
+        //         AssignPlateToPig(pig);
+        //         pig.JumpTo(jumpFromLaneSpeed, count, onComplete: () =>
+        //         {
+        //             RemovePigFromLane(pig);
+        //             onComplete?.Invoke();
+        //         });
+        //     }
+        // }
     }
 
     private void RemovePigFromLane(PigComponent removedPig)
@@ -1092,7 +1098,7 @@ public class SpawnerManager : MonoBehaviour
             PigComponent leftmost = pig.GetLeftmostPig();
             List<PigComponent> linkedPigs = GetPigChain(leftmost);
 
-            StartCoroutine(ProcessLinkedPigsRoutine(linkedPigs));
+            ProcessLinkedPigsRoutine(linkedPigs);
             complete?.Invoke();
             return;
         }
@@ -1120,8 +1126,8 @@ public class SpawnerManager : MonoBehaviour
             EventManager.OnQueueNotFull?.Invoke();
         }
 
-        AssignPlateToPig(pig);
-        pig.JumpTo(jumpFromQueueSpeed, () =>
+        // AssignPlateToPig(pig);
+        pig.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
         {
             RearrangeQueue(removedIndex, isFromTempQueue);
             complete?.Invoke();
@@ -1184,6 +1190,31 @@ public class SpawnerManager : MonoBehaviour
 
                 pig.MoveTo(newLocalPos);
                 pig.SetIsOnTop(pigIndex == 0);
+            }
+        }
+    }
+
+    private float timer = 0f;
+
+    void Update()
+    {
+        if (pigStack.Count == 0) return;
+
+        timer += Time.deltaTime;
+
+        if (timer >= 0.2f)
+        {
+            PigComponent pigBottom = pigStack[0];
+            AssignPlateToPig(pigBottom);
+            if (pigBottom.currentState != PigState.CanMove) return;
+            timer = 0f;
+            pigBottom.StartMove();
+            pigStack.RemoveAt(0);
+            for (int i = 0; i < pigStack.Count; i++)
+            {
+                Vector3 newPos = allWaypoints[0].position;
+                newPos.y += i * pigHeightOffset;
+                pigStack[i].MoveInQueue(newPos, allWaypoints[0].rotation, true);
             }
         }
     }
