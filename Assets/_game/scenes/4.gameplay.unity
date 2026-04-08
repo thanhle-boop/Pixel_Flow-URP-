@@ -3829,9 +3829,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: Conveyor
       objectReference: {fileID: 0}
+    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3475341904336172539, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
       propertyPath: m_CastShadows
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647738657145349585, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8524388108716313962, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
       propertyPath: m_LocalPosition.x

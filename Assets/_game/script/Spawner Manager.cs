@@ -126,12 +126,7 @@ public class SpawnerManager : MonoBehaviour
 
     private void InitializePlates()
     {
-        // foreach (var p in allPlates) if (p != null) Destroy(p.gameObject);
-        // allPlates.Clear();
         availablePlates.Clear();
-
-        // activePlateMap.Clear();
-
         for (int i = 0; i < 5; i++)
         {
             Vector3 spawnPos = traySlotOrigin.position - Vector3.right * (i * plateStackOffset);
@@ -141,9 +136,7 @@ public class SpawnerManager : MonoBehaviour
             plate.position = spawnPos;
             plate.localRotation = Quaternion.Euler(0, 0, -45);
             plate.SetParent(tray);
-            plate.transform.localScale = Vector3.one;
-
-            // allPlates.Add(plate);
+            plate.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
             availablePlates.Enqueue(plate);
         }
     }
@@ -158,7 +151,7 @@ public class SpawnerManager : MonoBehaviour
         if (availablePlates.Count > 0)
         {
             Transform plate = availablePlates.Dequeue();
-            pig.currentPlate = plate;  // Gán ngay
+            pig.currentPlate = plate;
             StartCoroutine(AnimatePlateToPig(plate, pig));
         }
     }
@@ -180,9 +173,7 @@ public class SpawnerManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             plate.position = Vector3.Lerp(plate.position, intermediatePos, t);
-
             plate.rotation = Quaternion.Lerp(startRot, Quaternion.Euler(0, 0, 90), t);
-
             yield return null;
         }
     }
@@ -558,7 +549,7 @@ public class SpawnerManager : MonoBehaviour
             {
 
                 AssignPlateToPig(pig);
-                pig.JumpTo(jumpFromLaneSpeed,onComplete: () =>
+                pig.JumpTo(jumpFromLaneSpeed, onComplete: () =>
                 {
                     RemovePigFromLane(pig);
                     onComplete?.Invoke();
@@ -676,17 +667,18 @@ public class SpawnerManager : MonoBehaviour
         Vector3 scale = Vector3.one;
 
         int nonEmptyCount = gridData.Count(s => s != "empty");
-        if (nonEmptyCount > 1200)
-        {
-            scale = new Vector3(0.6f, 1, 0.6f);
-            blockSpacing = 0.25f;
-        }
-        else if (nonEmptyCount > 600)
+        Debug.Log("Non-empty block count: " + nonEmptyCount);
+        if (nonEmptyCount > 1000)
         {
             scale = new Vector3(0.8f, 1, 0.8f);
+            blockSpacing = 0.4f;
+        }
+        else if (nonEmptyCount > 800)
+        {
+            scale = new Vector3(0.9f, 1, 0.9f);
             blockSpacing = 0.55f;
         }
-        else if (nonEmptyCount > 200)
+        else if (nonEmptyCount > 300)
         {
             scale = Vector3.one;
             blockSpacing = 0.75f;
@@ -699,6 +691,7 @@ public class SpawnerManager : MonoBehaviour
 
         int W = width;
         int H = height;
+        Debug.Log($"Spawning blocks with  {W} and spacing {H}");
         float offsetX = (W - 1) * blockSpacing / 2f;
         float offsetY = (H - 1) * blockSpacing / 2f;
 
@@ -932,7 +925,7 @@ public class SpawnerManager : MonoBehaviour
         }
 
         pigsInConveyor.Remove(pig);
-        pig.JumpToQueue(queuePos[queueIndex].position,5f);
+        pig.JumpToQueue(queuePos[queueIndex].position, 5f);
 
         if (pigsInQueue.Count >= queuePos.Count)
         {

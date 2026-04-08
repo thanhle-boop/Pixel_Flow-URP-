@@ -73,7 +73,7 @@ public class PigComponent : MonoBehaviour
     public MMF_Player jumpToConveyorFB;
     public MMF_Player jumpToQueueFB;
     // public MMF_Player scaleDownFB;
-    public MMF_Player landToQueueFB;
+    public MMF_Player changeColorFeedBack;
 
     private void ChangeState(PigState newState)
     {
@@ -177,6 +177,7 @@ public class PigComponent : MonoBehaviour
         bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
         body2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
+
     }
 
     public bool IsOnFirstRow()
@@ -270,32 +271,72 @@ public class PigComponent : MonoBehaviour
 
                 StartCoroutine(ChangeColorCorountine(0.1f, () =>
                 {
-                    isHidden = false;
-                    var faceRenderer = faceModel.GetComponent<MeshRenderer>();
-                    var face2Renderer = face2Model.GetComponent<MeshRenderer>();
-                    var tailRenderer = tailModel.GetComponent<MeshRenderer>();
-                    var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
-                    var body2MeshRenderer = body2Model.GetComponent<MeshRenderer>();
-                    tailRenderer.material = normalMaterial;
-                    bodyMeshRenderer.material = normalMaterial;
-                    body2MeshRenderer.material = normalMaterial;
-                    faceRenderer.material = normalFaceMaterial;
-                    face2Renderer.material = normalFaceMaterial;
-                    tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-                    bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-                    body2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-                    faceRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
-                    face2Renderer.material.color = ColorGameConfig.instance.GetColorByName(color);
 
-                    bulletText.text = Bullet.ToString();
-                    bulletText.fontSize = 40f;
+
                 }));
+
+                isHidden = false;
+                var faceRenderer = faceModel.GetComponent<MeshRenderer>();
+                var face2Renderer = face2Model.GetComponent<MeshRenderer>();
+                var tailRenderer = tailModel.GetComponent<MeshRenderer>();
+                var bodyMeshRenderer = bodyModel.GetComponent<MeshRenderer>();
+                var body2MeshRenderer = body2Model.GetComponent<MeshRenderer>();
+                tailRenderer.material = normalMaterial;
+                bodyMeshRenderer.material = normalMaterial;
+                body2MeshRenderer.material = normalMaterial;
+                faceRenderer.material = normalFaceMaterial;
+                face2Renderer.material = normalFaceMaterial;
+
+
+                // tailRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                // // bodyMeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                // body2MeshRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                // faceRenderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+                // face2Renderer.material.color = ColorGameConfig.instance.GetColorByName(color);
+
+                bulletText.text = Bullet.ToString();
+                bulletText.fontSize = 40f;
+                var gradient = new Gradient()
+                {
+                    colorKeys = new GradientColorKey[]
+                    {
+                        new GradientColorKey(Color.white, 0f),
+                        new GradientColorKey(ColorGameConfig.instance.GetColorByName(color), 1f)
+                    },
+                    alphaKeys = new GradientAlphaKey[]
+                    {
+                        new GradientAlphaKey(1f, 0f),
+                        new GradientAlphaKey(1f, 1f)
+                    }
+                };
+                var shaderControllerBody = bodyModel.GetComponent<ShaderController>();
+                SetTranslateColor(shaderControllerBody, gradient, bodyMeshRenderer);
+                var shaderControllerBody2 = body2Model.GetComponent<ShaderController>();
+                SetTranslateColor(shaderControllerBody2, gradient, body2MeshRenderer);
+                var shaderControllerTail = tailModel.GetComponent<ShaderController>();
+                SetTranslateColor(shaderControllerTail, gradient, tailRenderer);
+                var shaderControllerFace = faceModel.GetComponent<ShaderController>();
+                SetTranslateColor(shaderControllerFace, gradient, faceRenderer);
+                var shaderControllerFace2 = face2Model.GetComponent<ShaderController>();
+                SetTranslateColor(shaderControllerFace2, gradient, face2Renderer);
+
+
+                changeColorFeedBack.PlayFeedbacks();
             }
             if (IsLinkedPig())
             {
                 EventManager.OnPigIsOnTopNoMoreHidden?.Invoke(this);
             }
         }
+    }
+
+    private void SetTranslateColor(ShaderController controller, Gradient gradient, MeshRenderer renderer)
+    {
+        controller.TargetMaterial = renderer.material;
+        controller.FromColor = Color.white;
+        controller.ColorRamp = gradient;
+        controller.ToColor = ColorGameConfig.instance.GetColorByName(color);
+
     }
 
     private IEnumerator ChangeColorCorountine(float duration, Action onComplete)
@@ -475,9 +516,8 @@ public class PigComponent : MonoBehaviour
         Vector3 firstPoint = allWaypoints[0].position;
         float jumpDist = Vector3.Distance(rb.position, firstPoint);
         float jumpDuration = Mathf.Max(0.1f, jumpDist / speed);
-        // isOnBelt = true;
         Debug.Log("currentState: " + currentState);
-        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null,jumpToConveyorFB));
+        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null, jumpToConveyorFB));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position;
@@ -486,9 +526,8 @@ public class PigComponent : MonoBehaviour
         ChangeState(PigState.OnConveyor);
 
         currentPlate.SetParent(transform);
-        currentPlate.localPosition = new Vector3(-0.035f, -0.25f, 0f);
+        currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
         currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
-        currentPlate.localScale = new Vector3(90, 90, 90);
 
         this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
 
@@ -685,10 +724,8 @@ public class PigComponent : MonoBehaviour
         {
             ChangeState(PigState.InQueue);
             StopAllCoroutines();
-            // StartCoroutine(ScaleUpAndDownWhenEnterQueue());
-            // landToQueueFB?.PlayFeedbacks();
+            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             canvasTransform.localPosition = initCanvasLocalPos;
-
             isOnTop = true;
         }));
 
