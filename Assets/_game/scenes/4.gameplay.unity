@@ -2635,6 +2635,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1948135044}
   - component: {fileID: 1948135045}
+  - component: {fileID: 1948135046}
   m_Layer: 0
   m_Name: Spawner Manager
   m_TagString: Untagged
@@ -2715,6 +2716,24 @@ MonoBehaviour:
   plateStackOffset: 0.08
   tray: {fileID: 6234724727673448685}
   clickVFXPrefab: {fileID: 2559863911155596046, guid: 920cb0fcbb16f494a93f225b4f56b492, type: 3}
+  pigHeightOffset: 1.2
+--- !u!114 &1948135046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948135043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6645828a74ad13940a5b9ded9c4ac12b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnBlock
+  blockGroup: {fileID: 2022943474}
+  blockPrefab: {fileID: 4886328685167030700, guid: a4e13b989d360c248906fc7864625213, type: 3}
+  blockSpawnPoint: {fileID: 559098098}
+  blockPrefabsByColor: []
+  supertCatPrefab: {fileID: 454243561976167103}
 --- !u!1 &1975314016
 GameObject:
   m_ObjectHideFlags: 0
@@ -3287,7 +3306,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3262664444901835904, guid: f923e8cbdc81bfd47a8e1bc56bdce248, type: 3}
       propertyPath: m_fontSize
-      value: 45.15
+      value: 43.6
       objectReference: {fileID: 0}
     - target: {fileID: 3262664444901835904, guid: f923e8cbdc81bfd47a8e1bc56bdce248, type: 3}
       propertyPath: m_margin.w

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class PigComponent : MonoBehaviour
@@ -453,10 +454,11 @@ public class PigComponent : MonoBehaviour
         onComplete?.Invoke();
         ChangeState(PigState.CanMove);
 
-        currentPlate.SetParent(transform);
-        currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
-        currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
+        // currentPlate.SetParent(transform);
+        // currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
+        // currentPlate.localRotation = Quaternion.Euler(0, 0, 90);s
         this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
+        model.rotation = Quaternion.LookRotation(allWaypoints[0].up, allWaypoints[0].forward);
         yield return new WaitForFixedUpdate();
 
         _rayCastDirection = allWaypoints[0].forward;
@@ -649,7 +651,7 @@ public class PigComponent : MonoBehaviour
             canvasTransform.localPosition = initCanvasLocalPos;
             isOnTop = true;
         }));
-
+        model.rotation = Quaternion.identity;
     }
 
     private IEnumerator JumpArcCoroutine(Vector3 startPos, Vector3 endPos, float duration, Action onComplete = null, MMF_Player jumpFeedback = null)
@@ -736,13 +738,13 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
             rb.MovePosition(currentPos);
-            model.rotation = Quaternion.Lerp(startRot, targetRot, t);
+            // model.rotation = Quaternion.Lerp(startRot, targetRot, t);
 
             yield return new WaitForFixedUpdate();
         }
 
         rb.MovePosition(targetPos);
-        model.rotation = targetRot;
+        // model.rotation = targetRot;
         onComplete?.Invoke();
     }
 

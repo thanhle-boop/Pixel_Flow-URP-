@@ -15,17 +15,12 @@ public class SpawnerManager : MonoBehaviour
     }
     private int _straightSlot = 0;
     private int _maxstraightSlot = 5;
-    private int totalBlockCount = 0;
     public bool isTesting = false;
 
     public bool isProcessingClick = false;
     private bool onHandItemUsed = false;
     public GameObject supertCatPrefab;
-    public GameObject blockPrefab;
-    public Transform blockSpawnPoint;
-    public Transform blockGroup;
     public Transform pigSpawnPoint;
-    private float blockSpacing = 1.2f;
     public Transform pigSpawnPos;
     public GameObject pigPrefab;
     public List<Transform> allWaypoints;
@@ -40,7 +35,6 @@ public class SpawnerManager : MonoBehaviour
     [SerializeField] private float jumpFromLaneSpeed = 6f;
     private float jumpFromQueueSpeed = 3.5f;
     public Link linkPrefabs;
-    public List<GameObject> blockPrefabsByColor;
     public float spacing = 1.2f;
     [Header("Plate Settings")]
     public GameObject platePrefab;
@@ -53,14 +47,12 @@ public class SpawnerManager : MonoBehaviour
 
     [Header("Stack Settings")]
     public float pigHeightOffset = 1.2f;
-    private bool isProcessingStack = false;
 
     void OnEnable()
     {
         EventManager.OnStartGame += SpawnMap;
         EventManager.OnClickPig += SelectPig;
         EventManager.OnPigEnterQueue += HandlePigEnterQueue;
-        EventManager.OnBlockDestroyed += OnBlockDestroyed;
         EventManager.OnPigDestroyed += RefundStraightSlot;
         EventManager.OnJumpToConveyor += IncreaseStraightSlot;
         EventManager.OnWinGame += WinGame;
@@ -82,7 +74,6 @@ public class SpawnerManager : MonoBehaviour
         EventManager.OnStartGame -= SpawnMap;
         EventManager.OnClickPig -= SelectPig;
         EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
-        EventManager.OnBlockDestroyed -= OnBlockDestroyed;
         EventManager.OnPigDestroyed -= RefundStraightSlot;
         EventManager.OnJumpToConveyor -= IncreaseStraightSlot;
         EventManager.OnWinGame -= WinGame;
@@ -163,15 +154,6 @@ public class SpawnerManager : MonoBehaviour
     }
     public void ClickBlock(string color)
     {
-        foreach (Transform block in blockGroup)
-        {
-            Block blockComp = block.GetComponent<Block>();
-            if (blockComp != null && blockComp.color == color)
-            {
-                blockPrefabsByColor.Add(block.gameObject);
-            }
-        }
-
         foreach (PigComponent pig in pigSpawnPos.GetComponentsInChildren<PigComponent>())
         {
             if (pig.color == color)
@@ -184,12 +166,6 @@ public class SpawnerManager : MonoBehaviour
                 }, pigsInTempQueue.Contains(pig));
             }
         }
-
-        supertCatPrefab.SetActive(true);
-        var cat = supertCatPrefab.GetComponent<SuperCat>();
-        cat.AddAllTarget(blockPrefabsByColor, ColorGameConfig.instance.GetColorByName(color));
-
-        blockPrefabsByColor.Clear();
     }
 
     private void HandlePigOutOfAmmo(PigComponent pig)
@@ -359,7 +335,6 @@ public class SpawnerManager : MonoBehaviour
         pigsInTempQueue.Clear();
 
         _straightSlot = 0;
-        totalBlockCount = 0;
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
     }
 
@@ -466,8 +441,6 @@ public class SpawnerManager : MonoBehaviour
                     ProcessPigData(p, pigStack.Count);
                     pigStack.Add(p);
                     // _straightSlot++;
-                    p.SetIsOnTop(true);
-
                 }
             }
         }
@@ -476,7 +449,6 @@ public class SpawnerManager : MonoBehaviour
             ProcessPigData(pig, pigStack.Count);
             pigStack.Add(pig);
             // _straightSlot++;
-            pig.SetIsOnTop(true);
         }
 
 
@@ -626,11 +598,8 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
 
-        pig.JumpTo(jumpFromLaneSpeed, count, onComplete: () =>
-        {
-            RemovePigFromLane(pig);
-            onComplete?.Invoke();
-        });
+        RemovePigFromLane(pig);
+        pig.JumpTo(jumpFromLaneSpeed, count, onComplete);
 
         // int laneIndex = pig.laneIndex;
         // if (pigsByLane.ContainsKey(laneIndex))
@@ -695,7 +664,6 @@ public class SpawnerManager : MonoBehaviour
             if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
             {
                 Debug.Log("<color=green>PlayTest Mode: Loading from Temp Data only.</color>");
-                SpawnBlocks(playTestData.width, playTestData.height, playTestData.gridData);
                 SpawnPigs(playTestData.lanes);
                 return;
             }
@@ -706,10 +674,9 @@ public class SpawnerManager : MonoBehaviour
         }
 
         int levelToLoad = LevelController.GetMaxLevelUnlock();
-        LevelData data = await LoadLevelData(levelToLoad);
+        LevelData data = await GameUtility.LoadLevelData(levelToLoad);
         if (data != null)
         {
-            SpawnBlocks(data.width, data.height, data.gridData);
             SpawnPigs(data.lanes);
         }
         else
@@ -718,20 +685,9 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-    public async UniTask<LevelData> LoadLevelData(int levelNumber)
-    {
-        var filename = $"L{levelNumber:D4}.json";
-        var filetext = await StaticUtils.GetStreamingFileText(filename);
-        var currentLevel = JsonUtility.FromJson<LevelData>(filetext);
-        return currentLevel;
-    }
 
     private void CleanupSpawnedObjects()
     {
-        foreach (Transform child in blockGroup)
-        {
-            Destroy(child.gameObject);
-        }
 
         foreach (Transform child in pigSpawnPos)
         {
@@ -748,69 +704,6 @@ public class SpawnerManager : MonoBehaviour
         activeLinks.Clear();
     }
 
-    private void SpawnBlocks(int width, int height, List<string> gridData)
-    {
-        if (gridData == null || width <= 0 || height <= 0)
-        {
-            return;
-        }
-
-        Vector3 scale = Vector3.one;
-
-        int nonEmptyCount = gridData.Count(s => s != "empty");
-        Debug.Log("Non-empty block count: " + nonEmptyCount);
-        if (nonEmptyCount > 1000)
-        {
-            scale = new Vector3(0.8f, 1, 0.8f);
-            blockSpacing = 0.4f;
-        }
-        else if (nonEmptyCount > 800)
-        {
-            scale = new Vector3(0.9f, 1, 0.9f);
-            blockSpacing = 0.55f;
-        }
-        else if (nonEmptyCount > 300)
-        {
-            scale = Vector3.one;
-            blockSpacing = 0.75f;
-        }
-        else
-        {
-            scale = new Vector3(1.2f, 1, 1.2f);
-            blockSpacing = 0.85f;
-        }
-
-        int W = width;
-        int H = height;
-        Debug.Log($"Spawning blocks with  {W} and spacing {H}");
-        float offsetX = (W - 1) * blockSpacing / 2f;
-        float offsetY = (H - 1) * blockSpacing / 2f;
-
-        for (int y = 0; y < H; y++)
-        {
-            for (int x = 0; x < W; x++)
-            {
-                int index = y * W + x;
-                if (index < 0 || index >= gridData.Count) continue;
-
-                string colorType = gridData[index];
-
-                if (colorType == "empty") continue;
-                Vector3 localPos = new Vector3(
-                    (x * blockSpacing) - offsetX,
-                    0,
-                    ((H - 1 - y) * blockSpacing) - offsetY
-                );
-                Vector3 worldPos = blockSpawnPoint.TransformPoint(localPos);
-                GameObject newBlock = Instantiate(blockPrefab, worldPos, Quaternion.identity, blockGroup);
-                newBlock.transform.localScale = scale;
-
-                ApplyMaterial(newBlock, colorType);
-
-                totalBlockCount++;
-            }
-        }
-    }
 
     private void SpawnPigs(List<LaneConfig> lanes)
     {
@@ -915,20 +808,6 @@ public class SpawnerManager : MonoBehaviour
 
             }
         }
-    }
-
-    private void ApplyMaterial(GameObject obj, string colorName)
-    {
-        var renderer = obj.GetComponent<Renderer>();
-        if (renderer == null)
-        {
-            renderer = obj.GetComponentInChildren<MeshRenderer>();
-        }
-        var blockComponent = obj.GetComponent<Block>();
-        if (renderer == null || blockComponent == null) return;
-
-        blockComponent.color = colorName;
-        renderer.material.color = ColorGameConfig.instance.GetColorByName(colorName);
     }
 
     private void HandlePigEnterQueue(PigComponent pig)
@@ -1079,18 +958,6 @@ public class SpawnerManager : MonoBehaviour
         return -1;
     }
 
-    private void OnBlockDestroyed()
-    {
-        totalBlockCount--;
-        if (totalBlockCount <= 0)
-        {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.WinStage();
-            }
-        }
-    }
-
     private void HandlePigClickedFromQueue(PigComponent pig, Action complete, bool isFromTempQueue = false)
     {
         if (pig.IsLinkedPig())
@@ -1202,7 +1069,7 @@ public class SpawnerManager : MonoBehaviour
 
         timer += Time.deltaTime;
 
-        if (timer >= 0.2f)
+        if (timer >= 1f)
         {
             PigComponent pigBottom = pigStack[0];
             AssignPlateToPig(pigBottom);
