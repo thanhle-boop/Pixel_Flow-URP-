@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SpawnBlock : MonoBehaviour
+public class SpawnManager : MonoBehaviour
 {
     [Header("Block Settings")]
     public Transform blockGroup;

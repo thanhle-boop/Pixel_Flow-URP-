@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class PigComponent : MonoBehaviour
@@ -13,7 +12,6 @@ public class PigComponent : MonoBehaviour
     public string color;
     public int Bullet;
     public int laneIndex;
-    // private float jumpToQueueSpeed;
     public float moveSpeed = 6f;
     public bool isHidden = false;
     public bool isOnTop = false;
@@ -27,7 +25,6 @@ public class PigComponent : MonoBehaviour
     private int _currentCircleIndex = -1;
 
     private int _bulletsFiredCount = 0;
-    // private Quaternion initialRotation;
 
     public PigComponent leftPig { get; private set; } = null;
     public PigComponent rightPig { get; private set; } = null;
@@ -44,7 +41,6 @@ public class PigComponent : MonoBehaviour
     public Transform wavyPoint;
     public Rigidbody rb;
     public LayerMask blockLayer;
-
     public GameObject faceModel;
     public GameObject face2Model;
     public GameObject bodyModel;
@@ -70,7 +66,7 @@ public class PigComponent : MonoBehaviour
     public MMTween.MMTweenCurve jumpCurve;
     public MMTween.MMTweenCurve moveCurve;
     public MMF_Player jumpToConveyorFB;
-    public MMF_Player jumpToQueueFB;
+    // public MMF_Player jumpToQueueFB;
     // public MMF_Player scaleDownFB;
     public MMF_Player changeColorFeedBack;
     private Coroutine _mainCoroutine;
@@ -225,7 +221,7 @@ public class PigComponent : MonoBehaviour
     }
     public void GameOver()
     {
-        StopAllCoroutines();
+        currentState = PigState.LoseGame;
     }
     public void SetIsOnTop(bool value)
     {
@@ -327,7 +323,7 @@ public class PigComponent : MonoBehaviour
             }
 
             ChangeState(PigState.OnConveyor);
-            bulletText.text = "";
+            bulletText.text = "0";
             EventManager.OnPigOutOfAmmo?.Invoke(this);
         }
     }
@@ -368,6 +364,7 @@ public class PigComponent : MonoBehaviour
         _lockedTargets = 0;
         AudioController.instance.PlaySound(AudioIndex.destroy_cat.ToString());
         ChangeState(PigState.Destroying);
+        bulletText.text = "";
         StartMainCoroutine(DestroyAnimationInternal());
     }
     private IEnumerator DestroyAnimationInternal()
@@ -445,7 +442,6 @@ public class PigComponent : MonoBehaviour
         float jumpDist = Vector3.Distance(rb.position, firstPoint);
         float jumpDuration = Mathf.Max(0.1f, jumpDist / speed);
         ChangeState(PigState.Jumping);
-
         yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null, jumpToConveyorFB));
 
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
@@ -453,10 +449,6 @@ public class PigComponent : MonoBehaviour
         ps.Play();
         onComplete?.Invoke();
         ChangeState(PigState.CanMove);
-
-        // currentPlate.SetParent(transform);
-        // currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
-        // currentPlate.localRotation = Quaternion.Euler(0, 0, 90);s
         this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
         model.rotation = Quaternion.LookRotation(allWaypoints[0].up, allWaypoints[0].forward);
         yield return new WaitForFixedUpdate();
@@ -466,17 +458,25 @@ public class PigComponent : MonoBehaviour
         {
             _wavyLine.UpdateStartPoint(wavyPoint.position);
         }
-        // StartMainCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints)); // thay StartCoroutine
+    }
+
+    public bool isFirstPgInStack()
+    {
+        return Vector3.Distance(transform.position, allWaypoints[0].position) < 0.05f;
     }
 
     public void StartMove()
     {
         ChangeState(PigState.OnConveyor);
+        currentPlate.SetParent(transform);
+        currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
+        currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
         StartMainCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
     }
 
     private IEnumerator ReadyToJump(float duration, Action onComplete, float speed, int count)
     {
+        isOnTop = false;
         float elapsed = 0;
         ChangeState(PigState.ReadyToJump);
 
@@ -486,7 +486,6 @@ public class PigComponent : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
         StartMainCoroutine(ConveyorJourney(onComplete, speed, count)); // thay StartCoroutine
-        canvasTransform.localPosition = new Vector3(0.04f, 0.77f, 0.15f);
     }
     public void MoveTo(Vector3 newLocalPos)
     {
@@ -557,7 +556,10 @@ public class PigComponent : MonoBehaviour
         int i = startIndex;
         while (true)
         {
-
+            // if (currentState == PigState.LoseGame)
+            // {
+            //     yield break;
+            // }
             var current = path[i];
             var next = path[(i + 1) % path.Count];
 
@@ -631,7 +633,7 @@ public class PigComponent : MonoBehaviour
         model.rotation = endRotation;
     }
 
-    public void JumpToQueue(Vector3 targetPosition, float speed)
+    public void JumpToQueue(Vector3 targetPosition, float speed, Action onComplete = null)
     {
         if (_wavyLine != null)
         {
@@ -639,19 +641,20 @@ public class PigComponent : MonoBehaviour
             _wavyLine.HideLineImmediately();
         }
 
-        jumpToQueueFB?.PlayFeedbacks();
+        // jumpToQueueFB?.PlayFeedbacks();
         _lockedTargets = 0;
+        model.rotation = Quaternion.identity;
+        ChangeState(PigState.Jumping); // Stop FixedUpdate interference and prevent OnTriggerEnter re-firing
         var distance = Vector3.Distance(this.transform.position, targetPosition);
         var intervalDuration = distance / speed;
-        StartCoroutine(JumpArcCoroutine(rb.position, targetPosition, intervalDuration, () =>
+
+        StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, intervalDuration, () =>
         {
             ChangeState(PigState.InQueue);
-            // StopAllCoroutines();
-            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             canvasTransform.localPosition = initCanvasLocalPos;
-            isOnTop = true;
+            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+            onComplete?.Invoke();
         }));
-        model.rotation = Quaternion.identity;
     }
 
     private IEnumerator JumpArcCoroutine(Vector3 startPos, Vector3 endPos, float duration, Action onComplete = null, MMF_Player jumpFeedback = null)
@@ -660,7 +663,7 @@ public class PigComponent : MonoBehaviour
         jumpFeedback?.PlayFeedbacks();
         while (timeSpent < duration)
         {
-            if (currentState == PigState.OnConveyor) yield break;
+            // if (currentState == PigState.OnConveyor) yield break;
 
             timeSpent += Time.fixedDeltaTime;
             float percent = timeSpent / duration;
@@ -682,8 +685,8 @@ public class PigComponent : MonoBehaviour
     {
         float duration = 0.2f;
         float elapsed = 0;
-
-        Vector3 startScale = transform.localScale;
+        model.localScale = initScale;
+        Vector3 startScale = initScale;
         Vector3 maxScale = startScale * 1.2f;
 
         while (elapsed < duration)
@@ -693,34 +696,50 @@ public class PigComponent : MonoBehaviour
 
             if (t <= 0.5f)
             {
-                transform.localScale = Vector3.Lerp(startScale, maxScale, t * 2f);
+                model.localScale = Vector3.Lerp(startScale, maxScale, t * 2f);
             }
             else
             {
-                transform.localScale = Vector3.Lerp(maxScale, startScale, (t - 0.5f) * 2f);
+                model.localScale = Vector3.Lerp(maxScale, startScale, (t - 0.5f) * 2f);
             }
 
             yield return null;
         }
-        transform.localScale = startScale;
+        // model.localScale = startScale;
+        model.localScale = initScale;
     }
-    public void MoveInQueue(Vector3 targetPos, Quaternion targetRot, bool isStack = false)
+    public void MoveInQueue(Vector3 targetPos, Quaternion targetRot)
+    {
+
+        ChangeState(PigState.InQueue);
+        StartMainCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
+    }
+
+    public void MoveToStack(Vector3 targetPos)
+    {
+        StartCoroutine(MoveToStackCoroutine(targetPos));
+    }
+
+    private IEnumerator MoveToStackCoroutine(Vector3 targetPos)
     {
         ChangeState(PigState.InQueue);
-        StartMainCoroutine(MoveInQueueCoroutine(targetPos, targetRot, () =>
+        Vector3 start = rb.position;
+        float distance = Vector3.Distance(start, targetPos);
+        float duration = Mathf.Max(0.1f, distance / moveSpeed);
+        float elapsed = 0;
+        while (elapsed < duration)
         {
-            if (isStack)
-            {
-                ChangeState(PigState.CanMove);
-            }
-        }));
+            elapsed += Time.deltaTime;
+            rb.MovePosition(Vector3.Lerp(start, targetPos, elapsed / duration));
+            yield return new WaitForFixedUpdate();
+        }
+        rb.MovePosition(targetPos);
+        ChangeState(PigState.CanMove);
     }
 
-    private IEnumerator MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot, Action onComplete = null)
-    { // Slightly above to avoid ground collision
+    private IEnumerator MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot)
+    {
         Vector3 startPos = rb.position;
-        Quaternion startRot = rb.rotation;
-
         float distance = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(targetPos.x, 0, targetPos.z));
         float duration = distance / moveSpeed;
         float jumpHeight = 0.5f;
@@ -737,15 +756,12 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
             rb.MovePosition(currentPos);
-            // model.rotation = Quaternion.Lerp(startRot, targetRot, t);
-
             yield return new WaitForFixedUpdate();
         }
 
         rb.MovePosition(targetPos);
-        // model.rotation = targetRot;
-        yield return new WaitForFixedUpdate(); // wait for physics to apply before signaling completion
-        onComplete?.Invoke();
+        yield return new WaitForFixedUpdate();
+
     }
 
     public void SetConveyorSpeedMultiplier(float multiplier)
@@ -763,7 +779,6 @@ public class PigComponent : MonoBehaviour
             EventManager.OnPigEnterQueue?.Invoke(this);
         }
     }
-
 
     private void FixedUpdate()
     {
@@ -785,6 +800,7 @@ public class PigComponent : MonoBehaviour
     }
     private void StartMainCoroutine(IEnumerator routine)
     {
+        Debug.Log("Starting new main coroutine: " + routine);
         if (_mainCoroutine != null)
             StopCoroutine(_mainCoroutine);
         _mainCoroutine = StartCoroutine(routine);

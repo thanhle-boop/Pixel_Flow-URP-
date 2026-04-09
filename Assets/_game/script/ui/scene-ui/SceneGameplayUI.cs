@@ -67,7 +67,8 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
     private void StartGame()
     {
         levelText.text = "Level " + LevelController.GetMaxLevelUnlock();
-        coinText.text = "" + CurrencyController.GetGold();
+        var gold = CurrencyController.GetGold();
+        coinText.text = gold < 0 ? "0" : gold.ToString();
     }
 
     public void HandleBoosterHand()

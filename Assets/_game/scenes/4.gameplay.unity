@@ -2713,7 +2713,7 @@ MonoBehaviour:
   pigSpawnPoint: {fileID: 1331223360}
   pigGroup: {fileID: 1522354508}
   pigPrefab: {fileID: 1949181171605106699, guid: 14002b78b0c85aa4cb82579153db7809, type: 3}
-  pigSpeed: 5
+  pigSpeed: 4.5
   allWaypoints:
   - {fileID: 29516007}
   - {fileID: 1979549302}

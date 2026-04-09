@@ -22,6 +22,10 @@ public class PopupGameOver : BasePopup
         btnContinue.OnClickAsObservable()
             .Subscribe(_ =>
             {
+                if(CurrencyController.GetGold() < 900)
+                {
+                    return;
+                }
                 GameManager.Instance.ContinueGame();
                 CurrencyController.SubtractGold(HardCodeInGame.COST_GOLD_CONTINUE);
 

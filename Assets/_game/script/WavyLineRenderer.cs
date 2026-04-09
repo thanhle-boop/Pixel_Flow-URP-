@@ -11,8 +11,8 @@ public class WavyLineRenderer : MonoBehaviour
     public float waveAmplitudeMin = 0.05f;
     public float waveAmplitudeMax = 0.1f;
     public float amplitudeChangeSpeed = 2f;
-    public float waveFrequency = 1.5f;
-    public float waveSpeed = 30f;
+    public float waveFrequency = 1f;
+    public float waveSpeed = 10f;
 
     private float _waveTime;
     private float _amplitudeTime;
@@ -23,7 +23,7 @@ public class WavyLineRenderer : MonoBehaviour
     private Color _baseColor = Color.yellow;
 
     [Header("Target Management")]
-    private float targetDuration = 0.03f;
+    private float targetDuration = 0.1f;
     private List<GameObject> _targetBlocks = new List<GameObject>();
     private Coroutine _targetProcessCoroutine;
     private GameObject _currentTarget;
@@ -93,7 +93,7 @@ public class WavyLineRenderer : MonoBehaviour
     // Trong WavyLineRenderer
     public void SetSpeedMultiplier(float multiplier)
     {
-        targetDuration = 0.03f / multiplier;
+        targetDuration = 0.05f / multiplier;
         waveSpeed = 30f * multiplier;
     }
     private IEnumerator ProcessTargets()

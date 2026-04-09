@@ -6,25 +6,21 @@ using UnityEngine;
 
 public class HandlePigBehavior : MonoBehaviour
 {
-    private struct PendingLink
-    {
-        public PigComponent sourcePig;
-        public PigComponent targetPig;
-    }
+    private float timer = 0f;
     private int _straightSlot = 0;
     private int _maxstraightSlot = 5;
     public bool isTesting = false;
 
-    public bool isProcessingClick = false;
     private bool onHandItemUsed = false;
     [SerializeField] private float jumpFromLaneSpeed = 6f;
     private float jumpFromQueueSpeed = 3.5f;
-
     public List<Transform> queuePos;
     private List<PigComponent> pigsInQueue = new List<PigComponent>();
     private List<PigComponent> pigsInTempQueue = new List<PigComponent>();
     private List<PigComponent> pigsInConveyor = new List<PigComponent>();
+    private HashSet<PigComponent> pigsJumpingToQueue = new HashSet<PigComponent>();
     public Transform startTempQueuePos;
+
 
     [Header("Plate Settings")]
     public GameObject platePrefab;
@@ -34,14 +30,16 @@ public class HandlePigBehavior : MonoBehaviour
     public Transform tray;
     public GameObject clickVFXPrefab;
     private List<PigComponent> pigStack = new List<PigComponent>();
+    private HashSet<PigComponent> pigsJumpingToStack = new HashSet<PigComponent>();
+
 
     [Header("Stack Settings")]
     public float pigHeightOffset = 1.2f;
-
-    public SpawnBlock spawnManager;
+    public SpawnManager spawnManager;
 
     void OnEnable()
     {
+        EventManager.OnStartGame += ResetData;
         EventManager.OnClickPig += SelectPig;
         EventManager.OnPigEnterQueue += HandlePigEnterQueue;
         EventManager.OnPigDestroyed += RefundStraightSlot;
@@ -62,6 +60,7 @@ public class HandlePigBehavior : MonoBehaviour
 
     private void OnDisable()
     {
+        EventManager.OnStartGame -= ResetData;
         EventManager.OnClickPig -= SelectPig;
         EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
         EventManager.OnPigDestroyed -= RefundStraightSlot;
@@ -238,9 +237,6 @@ public class HandlePigBehavior : MonoBehaviour
 
     private void ContinueGame()
     {
-        StopAllCoroutines();
-        isProcessingClick = false;
-
         List<PigComponent> beltPigs = new List<PigComponent>(pigsInConveyor);
         beltPigs.RemoveAll(p => pigsInQueue.Contains(p) || pigsInTempQueue.Contains(p));
         pigsInConveyor.Clear();
@@ -286,10 +282,8 @@ public class HandlePigBehavior : MonoBehaviour
 
         _straightSlot = 0;
         UIManager.Instance.UpdateStraightSlot(0, _maxstraightSlot);
-
         RearrangeQueue(0, false);
         RearrangeQueue(0, true);
-
         EventManager.OnQueueNotFull?.Invoke();
     }
     private void MovePigToTempQueueInternal(PigComponent pig)
@@ -307,7 +301,10 @@ public class HandlePigBehavior : MonoBehaviour
 
         Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.9f));
 
-        pig.JumpToQueue(targetPos, 5f);
+        pig.JumpToQueue(targetPos, 5f, () =>
+        {
+            pig.isOnTop = true;
+        });
     }
 
     private void RefundStraightSlot(PigComponent pig)
@@ -322,72 +319,15 @@ public class HandlePigBehavior : MonoBehaviour
         pigsInConveyor.Clear();
         pigsInQueue.Clear();
         pigsInTempQueue.Clear();
+        pigsJumpingToStack.Clear();
+        pigsJumpingToQueue.Clear();
 
+        _maxstraightSlot = 5;
         _straightSlot = 0;
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+        InitializePlates();
     }
 
-    // public void SelectPig(PigComponent pig)
-    // {
-
-    //     if (pig == null || isProcessingClick)
-    //     {
-    //         return;
-    //     }
-
-    //     ParticleSystem clickVFX = Instantiate(clickVFXPrefab).GetComponent<ParticleSystem>();
-    //     clickVFX.transform.position = pig.transform.position + Vector3.up - Vector3.forward * 0.2f;
-    //     clickVFX.Play();
-
-
-    //     if (!pig.IsPigValid() && !onHandItemUsed)
-    //     {
-    //         AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
-    //         return;
-    //     }
-
-    //     if (onHandItemUsed)
-    //     {
-    //         onHandItemUsed = false;
-    //         EventManager.OnEndHand?.Invoke();
-    //         pig.SetIsOnTop(true);
-    //     }
-
-    //     if (pig.IsLinkedPig())
-    //     {
-    //         if (!pig.IsWholeLinkOnTop())
-    //         {
-    //             AudioController.instance.PlaySound(AudioIndex.invalid_cat.ToString());
-    //             return;
-    //         }
-
-    //         PigComponent leftmost = pig.GetLeftmostPig();
-    //         List<PigComponent> linkedPigs = GetPigChain(leftmost);
-
-    //         if (_straightSlot + linkedPigs.Count > _maxstraightSlot)
-    //         {
-    //             EventManager.OnFullConveyorSlot?.Invoke();
-    //             AudioController.instance.PlaySound(AudioIndex.error.ToString());
-    //             return;
-    //         }
-
-    //         StartCoroutine(ProcessLinkedPigsRoutine(linkedPigs));
-    //         return;
-    //     }
-
-    //     if (_straightSlot >= _maxstraightSlot)
-    //     {
-    //         EventManager.OnFullConveyorSlot?.Invoke();
-    //         AudioController.instance.PlaySound(AudioIndex.error.ToString());
-    //         return;
-
-    //     }
-
-    //     isProcessingClick = true;
-    //     ProcessPigData(pig);
-    //     // StartCoroutine(ResetClickFlag(0.15f));
-
-    // }
 
     public void SelectPig(PigComponent pig)
     {
@@ -403,12 +343,6 @@ public class HandlePigBehavior : MonoBehaviour
             return;
         }
 
-        if (onHandItemUsed)
-        {
-            onHandItemUsed = false;
-            EventManager.OnEndHand?.Invoke();
-        }
-
         if (pigStack.Contains(pig)) return;
 
         if (_straightSlot >= _maxstraightSlot)
@@ -420,15 +354,23 @@ public class HandlePigBehavior : MonoBehaviour
 
         if (pig.IsLinkedPig())
         {
-            if(!pig.IsWholeLinkOnTop()) return;
+            if (!pig.IsWholeLinkOnTop() && !onHandItemUsed) return;
             PigComponent leftmost = pig.GetLeftmostPig();
             List<PigComponent> linkedPigs = GetPigChain(leftmost);
+            int newPigsCount = linkedPigs.Count(p => !pigStack.Contains(p));
+            if (_straightSlot + newPigsCount > _maxstraightSlot)
+            {
+                EventManager.OnFullConveyorSlot?.Invoke();
+                AudioController.instance.PlaySound(AudioIndex.error.ToString());
+                return;
+            }
             foreach (PigComponent p in linkedPigs)
             {
                 if (!pigStack.Contains(p))
                 {
                     ProcessPigData(p, pigStack.Count);
                     pigStack.Add(p);
+                    AssignPlateToPig(p);
                 }
             }
         }
@@ -436,6 +378,14 @@ public class HandlePigBehavior : MonoBehaviour
         {
             ProcessPigData(pig, pigStack.Count);
             pigStack.Add(pig);
+            AssignPlateToPig(pig);
+        }
+
+        if (onHandItemUsed)
+        {
+            onHandItemUsed = false;
+
+            EventManager.OnEndHand?.Invoke();
         }
     }
 
@@ -450,47 +400,6 @@ public class HandlePigBehavior : MonoBehaviour
             current = current.rightPig;
         }
         return chain;
-    }
-
-    private void ProcessLinkedPigs(List<PigComponent> linkedPigs)
-    {
-        isProcessingClick = true;
-
-        bool isFromTemp = pigsInTempQueue.Contains(linkedPigs[0]);
-        bool isFromQueue = pigsInQueue.Contains(linkedPigs[0]);
-
-        bool isFromLane = !isFromTemp && !isFromQueue;
-
-        int firstQueueIndex = -1;
-        if (isFromTemp) firstQueueIndex = pigsInTempQueue.IndexOf(linkedPigs[0]);
-        else if (isFromQueue) firstQueueIndex = pigsInQueue.IndexOf(linkedPigs[0]);
-
-        foreach (PigComponent p in linkedPigs)
-        {
-
-            if (isFromTemp) p.transform.localScale = Vector3.one;
-
-            if (!isFromLane && !pigsInConveyor.Contains(p)) pigsInConveyor.Add(p);
-
-
-            p.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
-            {
-                pigStack.Add(p);
-            });
-
-        }
-
-        if (!isFromLane)
-        {
-            List<PigComponent> targetQueue = isFromTemp ? pigsInTempQueue : pigsInQueue;
-            foreach (PigComponent p in linkedPigs)
-            {
-                if (targetQueue.Contains(p)) targetQueue.Remove(p);
-            }
-
-            if (firstQueueIndex != -1)
-                RearrangeQueue(firstQueueIndex, isFromTemp);
-        }
     }
 
     private void ProcessPigData(PigComponent pig, int count, Action onComplete = null)
@@ -542,20 +451,16 @@ public class HandlePigBehavior : MonoBehaviour
 
     private void HandlePigEnterQueue(PigComponent pig)
     {
-        if (pig == null) return;
+        if (pig == null || queuePos == null || queuePos.Count == 0) return;
 
+        Debug.Log(1);
         if (pig.currentPlate != null)
         {
             StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
             pig.currentPlate = null;
         }
 
-        if (queuePos == null || queuePos.Count == 0)
-        {
-            return;
-        }
-
-        int queueIndex;
+        int queueIndex = -1;
 
         if (pig.IsLinkedPig())
         {
@@ -568,10 +473,7 @@ public class HandlePigBehavior : MonoBehaviour
             if (needToAdd > freeSlots)
             {
                 GameManager.Instance?.GameOver();
-                foreach (PigComponent member in chain)
-                {
-                    member.GameOver();
-                }
+                foreach (PigComponent member in chain) member.GameOver();
                 return;
             }
 
@@ -580,62 +482,52 @@ public class HandlePigBehavior : MonoBehaviour
             {
                 if (member == pig) continue;
                 int idx = pigsInQueue.IndexOf(member);
-                if (idx >= 0 && idx > insertAfterIndex)
-                    insertAfterIndex = idx;
+                if (idx > insertAfterIndex) insertAfterIndex = idx;
             }
 
             if (insertAfterIndex >= 0)
             {
                 queueIndex = insertAfterIndex + 1;
-                if (pigsInQueue.Count >= queuePos.Count)
-                {
-                    GameManager.Instance?.GameOver();
-                    return;
-                }
                 pigsInQueue.Insert(queueIndex, pig);
-                for (int i = queueIndex; i < pigsInQueue.Count; i++)
-                {
-                    pigsInQueue[i].MoveInQueue(queuePos[i].position, queuePos[i].rotation);
-                }
             }
             else
             {
-                queueIndex = FindNextAvailableQueueIndex();
-                if (queueIndex < 0)
-                {
-                    GameManager.Instance?.GameOver();
-                    return;
-                }
                 pigsInQueue.Add(pig);
-                pig.MoveInQueue(queuePos[queueIndex].position, queuePos[queueIndex].rotation);
+                queueIndex = pigsInQueue.Count - 1;
             }
         }
         else
         {
-            queueIndex = FindNextAvailableQueueIndex();
-            if (queueIndex >= 0 && queueIndex < queuePos.Count)
-            {
-                pigsInQueue.Add(pig);
-            }
-            else
+            if (pigsInQueue.Count >= queuePos.Count)
             {
                 GameManager.Instance?.GameOver();
                 return;
             }
-            RearrangeQueue(queueIndex, false);
+            pigsInQueue.Add(pig);
+            queueIndex = pigsInQueue.Count - 1;
         }
+
+        Debug.Log(2);
+
 
         pigsInConveyor.Remove(pig);
-        pig.JumpToQueue(queuePos[queueIndex].position, 5f);
+        pigsJumpingToQueue.Add(pig);
 
-        if (pigsInQueue.Count >= queuePos.Count)
+        RearrangeQueue(0, false);
+        pig.JumpToQueue(queuePos[queueIndex].position, 5f, () =>
         {
-            EventManager.OnQueueFull?.Invoke();
-        }
-        _straightSlot = _straightSlot - 1 < 0 ? 0 : _straightSlot - 1;
+            pig.isOnTop = true;
+            pigsJumpingToQueue.Remove(pig);
+            RearrangeQueue(0, false);
+            Debug.Log(3);
+
+        });
+
+        if (pigsInQueue.Count >= queuePos.Count) EventManager.OnQueueFull?.Invoke();
+
+        _straightSlot = Mathf.Max(0, _straightSlot - 1);
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
     }
-
     private IEnumerator ReturnPlateToOrigin(Transform plate)
     {
         Vector3 startPos = plate.position;
@@ -676,30 +568,35 @@ public class HandlePigBehavior : MonoBehaviour
         }
     }
 
-    private int FindNextAvailableQueueIndex()
-    {
-        int occupiedCount = pigsInQueue.Count;
-
-        if (occupiedCount < queuePos.Count)
-        {
-            return occupiedCount;
-        }
-
-        return -1;
-    }
-
     private void HandlePigClickedFromQueue(PigComponent pig, Action complete, bool isFromTempQueue = false)
     {
-        if (pig.IsLinkedPig())
+        int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
+        RemovePigFromQueueOrTempQueue(pig, isFromTempQueue);
+        if (removedIndex >= 0)
+            RearrangeQueue(0, isFromTempQueue);
+        pigsJumpingToStack.Add(pig);
+        pig.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
         {
-            PigComponent leftmost = pig.GetLeftmostPig();
-            List<PigComponent> linkedPigs = GetPigChain(leftmost);
-
-            ProcessLinkedPigs(linkedPigs);
+            pigsJumpingToStack.Remove(pig);
+            int currentIndex = pigStack.IndexOf(pig);
+            if (currentIndex >= 0)
+            {
+                Vector3 correctPos = spawnManager.allWaypoints[0].position;
+                correctPos.y += currentIndex * pigHeightOffset;
+                pig.MoveInQueue(correctPos, spawnManager.allWaypoints[0].rotation);
+            }
             complete?.Invoke();
+        });
+    }
+
+    private void RemovePigFromQueueOrTempQueue(PigComponent pig, bool isFromTempQueue = false)
+    {
+        int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
+
+        if (removedIndex < 0)
+        {
             return;
         }
-        int removedIndex = isFromTempQueue ? pigsInTempQueue.IndexOf(pig) : pigsInQueue.IndexOf(pig);
 
         if (removedIndex < 0)
         {
@@ -715,54 +612,39 @@ public class HandlePigBehavior : MonoBehaviour
         {
             pigsInQueue.Remove(pig);
         }
-
         pigsInConveyor.Add(pig);
-
         if (pigsInQueue.Count < queuePos.Count)
         {
             EventManager.OnQueueNotFull?.Invoke();
         }
-
-        // AssignPlateToPig(pig);
-        pig.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
-        {
-            RearrangeQueue(removedIndex, isFromTempQueue);
-            complete?.Invoke();
-        });
     }
 
     private void RearrangeQueue(int startIndex, bool isFromTempQueue = false)
     {
-
         if (!isFromTempQueue)
         {
             for (int i = startIndex; i < pigsInQueue.Count; i++)
             {
-                if (i < pigsInQueue.Count)
-                {
-                    Vector3 targetPos = queuePos[i].position;
-                    Quaternion targetRot = queuePos[i].rotation;
-                    PigComponent pig = pigsInQueue[i];
-                    pig.MoveInQueue(targetPos, targetRot);
-                }
+                PigComponent pig = pigsInQueue[i];
+                if (pigsJumpingToQueue.Contains(pig)) continue;
+
+                Vector3 targetPos = queuePos[i].position;
+                Quaternion targetRot = queuePos[i].rotation;
+                pig.MoveInQueue(targetPos, targetRot);
             }
         }
         else
         {
             for (int i = startIndex; i < pigsInTempQueue.Count; i++)
             {
-                if (i < pigsInTempQueue.Count)
-                {
-                    Vector3 targetPos = startTempQueuePos.position + 0.9f * i * Vector3.right;
-                    Quaternion targetRot = startTempQueuePos.rotation;
-                    PigComponent pig = pigsInTempQueue[i];
-                    pig.MoveInQueue(targetPos, targetRot);
-                }
+                PigComponent pig = pigsInTempQueue[i];
+
+                Vector3 targetPos = startTempQueuePos.position + 0.5f * i * Vector3.right;
+                Quaternion targetRot = startTempQueuePos.rotation;
+                pig.MoveInQueue(targetPos, targetRot);
             }
         }
-
     }
-
     public void UseItemShufflePig()
     {
         spawnManager.pigsByLane = Helper.ShuffleHeoDictionary(spawnManager.pigsByLane);
@@ -791,19 +673,17 @@ public class HandlePigBehavior : MonoBehaviour
         }
     }
 
-    private float timer = 0f;
-
-    void FixedUpdate()
+    void Update()
     {
         if (pigStack.Count == 0) return;
 
         timer += Time.deltaTime;
 
-        if (timer >= 1f)
+        if (timer >= 0.3f)
         {
             PigComponent pigBottom = pigStack[0];
-            AssignPlateToPig(pigBottom);
-            if (pigBottom.currentState != PigState.CanMove) return;
+            if (pigBottom.currentState != PigState.CanMove || !pigBottom.isFirstPgInStack()) return;
+
             timer = 0f;
             pigBottom.StartMove();
             pigStack.RemoveAt(0);
@@ -811,7 +691,8 @@ public class HandlePigBehavior : MonoBehaviour
             {
                 Vector3 newPos = spawnManager.allWaypoints[0].position;
                 newPos.y += i * pigHeightOffset;
-                pigStack[i].MoveInQueue(newPos, spawnManager.allWaypoints[0].rotation, true);
+
+                pigStack[i].MoveToStack(newPos);
             }
         }
     }

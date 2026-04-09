@@ -10,6 +10,7 @@ public enum PigState
     Destroying,
     Shooting,
     DoNothing,
-    CanMove
+    CanMove,
+    LoseGame,
 }
 
