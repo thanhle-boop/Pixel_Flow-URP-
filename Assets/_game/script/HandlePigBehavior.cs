@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class SpawnerManager : MonoBehaviour
+public class HandlePigBehavior : MonoBehaviour
 {
     private struct PendingLink
     {
@@ -19,23 +17,15 @@ public class SpawnerManager : MonoBehaviour
 
     public bool isProcessingClick = false;
     private bool onHandItemUsed = false;
-    public GameObject supertCatPrefab;
-    public Transform pigSpawnPoint;
-    public Transform pigSpawnPos;
-    public GameObject pigPrefab;
-    public List<Transform> allWaypoints;
-    private Dictionary<int, List<PigComponent>> pigsByLane = new Dictionary<int, List<PigComponent>>();
-    private List<Link> activeLinks = new List<Link>();
+    [SerializeField] private float jumpFromLaneSpeed = 6f;
+    private float jumpFromQueueSpeed = 3.5f;
+
     public List<Transform> queuePos;
     private List<PigComponent> pigsInQueue = new List<PigComponent>();
     private List<PigComponent> pigsInTempQueue = new List<PigComponent>();
-    public Transform startTempQueuePos;
     private List<PigComponent> pigsInConveyor = new List<PigComponent>();
-    [SerializeField] private float speed = 1f;
-    [SerializeField] private float jumpFromLaneSpeed = 6f;
-    private float jumpFromQueueSpeed = 3.5f;
-    public Link linkPrefabs;
-    public float spacing = 1.2f;
+    public Transform startTempQueuePos;
+
     [Header("Plate Settings")]
     public GameObject platePrefab;
     public Transform traySlotOrigin;
@@ -48,9 +38,10 @@ public class SpawnerManager : MonoBehaviour
     [Header("Stack Settings")]
     public float pigHeightOffset = 1.2f;
 
+    public SpawnBlock spawnManager;
+
     void OnEnable()
     {
-        EventManager.OnStartGame += SpawnMap;
         EventManager.OnClickPig += SelectPig;
         EventManager.OnPigEnterQueue += HandlePigEnterQueue;
         EventManager.OnPigDestroyed += RefundStraightSlot;
@@ -71,7 +62,6 @@ public class SpawnerManager : MonoBehaviour
 
     private void OnDisable()
     {
-        EventManager.OnStartGame -= SpawnMap;
         EventManager.OnClickPig -= SelectPig;
         EventManager.OnPigEnterQueue -= HandlePigEnterQueue;
         EventManager.OnPigDestroyed -= RefundStraightSlot;
@@ -154,7 +144,7 @@ public class SpawnerManager : MonoBehaviour
     }
     public void ClickBlock(string color)
     {
-        foreach (PigComponent pig in pigSpawnPos.GetComponentsInChildren<PigComponent>())
+        foreach (PigComponent pig in spawnManager.pigGroup.GetComponentsInChildren<PigComponent>())
         {
             if (pig.color == color)
             {
@@ -217,7 +207,7 @@ public class SpawnerManager : MonoBehaviour
     }
     private void CheckAndEnableFinalRush()
     {
-        PigComponent[] allPigs = pigSpawnPos.GetComponentsInChildren<PigComponent>();
+        PigComponent[] allPigs = spawnManager.pigGroup.GetComponentsInChildren<PigComponent>();
         if (allPigs.Length <= 6 && allPigs.Length > 0)
         {
             foreach (var p in allPigs)
@@ -330,7 +320,6 @@ public class SpawnerManager : MonoBehaviour
     private void ResetData()
     {
         pigsInConveyor.Clear();
-        pigsByLane.Clear();
         pigsInQueue.Clear();
         pigsInTempQueue.Clear();
 
@@ -431,8 +420,8 @@ public class SpawnerManager : MonoBehaviour
 
         if (pig.IsLinkedPig())
         {
+            if(!pig.IsWholeLinkOnTop()) return;
             PigComponent leftmost = pig.GetLeftmostPig();
-            // requiredSlots = GetPigChain(leftmost).Count;
             List<PigComponent> linkedPigs = GetPigChain(leftmost);
             foreach (PigComponent p in linkedPigs)
             {
@@ -440,7 +429,6 @@ public class SpawnerManager : MonoBehaviour
                 {
                     ProcessPigData(p, pigStack.Count);
                     pigStack.Add(p);
-                    // _straightSlot++;
                 }
             }
         }
@@ -448,84 +436,9 @@ public class SpawnerManager : MonoBehaviour
         {
             ProcessPigData(pig, pigStack.Count);
             pigStack.Add(pig);
-            // _straightSlot++;
         }
-
-
-
-
-        // Vector3 targetStackPos = allWaypoints[0].position;
-        // targetStackPos.y += pigStack.Count * pigHeightOffset;
-
-        // pig.JumpToQueue(targetStackPos, 5f);
-
-        // if (!isProcessingStack)
-        // {
-        //     StartCoroutine(ProcessPigStackRoutine());
-        // }
     }
 
-    // private IEnumerator ProcessPigStackRoutine()
-    // {
-    //     isProcessingStack = true;
-
-    //     while (pigStack.Count > 0)
-    //     {
-    //         PigComponent bottomPig = pigStack[0];
-
-    //         if (bottomPig == null || (!bottomPig.IsPigValid() && !onHandItemUsed))
-    //         {
-    //             pigStack.RemoveAt(0);
-    //             ShiftPigsDown();
-    //             continue;
-    //         }
-    //         bool isFinished = false;
-    //         if (bottomPig.IsLinkedPig())
-    //         {
-    //             if (!bottomPig.IsWholeLinkOnTop())
-    //             {
-    //                 pigStack.RemoveAt(0);
-    //                 ShiftPigsDown();
-    //                 continue;
-    //             }
-
-    //             PigComponent leftmost = bottomPig.GetLeftmostPig();
-    //             List<PigComponent> linkedPigs = GetPigChain(leftmost);
-    //             ProcessLinkedPigsRoutine(linkedPigs);
-    //             isFinished = true;
-    //         }
-    //         else
-    //         {
-    //             // ProcessPigData(bottomPig, () =>
-    //             // {
-    //             //     isFinished = true;
-    //             // });
-    //         }
-
-    //         pigStack.RemoveAt(0);
-    //         ShiftPigsDown();
-
-    //         yield return new WaitUntil(() => isFinished);
-    //     }
-
-    //     isProcessingStack = false;
-    // }
-
-    // private void ShiftPigsDown()
-    // {
-    //     for (int i = 0; i < pigStack.Count; i++)
-    //     {
-    //         Vector3 newPos = allWaypoints[0].position;
-    //         newPos.y += i * pigHeightOffset;
-    //         pigStack[i].MoveInQueue(newPos, allWaypoints[0].rotation);
-    //     }
-    // }
-    private IEnumerator ResetClickFlag(float time)
-    {
-        yield return new WaitForSeconds(time);
-        isProcessingClick = false;
-    }
-    // GetPigChain trong Spawner Manager:
     private List<PigComponent> GetPigChain(PigComponent startPig)
     {
         List<PigComponent> chain = new List<PigComponent>();
@@ -539,7 +452,7 @@ public class SpawnerManager : MonoBehaviour
         return chain;
     }
 
-    private void ProcessLinkedPigsRoutine(List<PigComponent> linkedPigs)
+    private void ProcessLinkedPigs(List<PigComponent> linkedPigs)
     {
         isProcessingClick = true;
 
@@ -552,24 +465,19 @@ public class SpawnerManager : MonoBehaviour
         if (isFromTemp) firstQueueIndex = pigsInTempQueue.IndexOf(linkedPigs[0]);
         else if (isFromQueue) firstQueueIndex = pigsInQueue.IndexOf(linkedPigs[0]);
 
-        // StartCoroutine(ResetClickFlag(0.15f));
-
         foreach (PigComponent p in linkedPigs)
         {
-            // bool hasFinishedJump = false;
 
             if (isFromTemp) p.transform.localScale = Vector3.one;
 
             if (!isFromLane && !pigsInConveyor.Contains(p)) pigsInConveyor.Add(p);
 
-            // AssignPlateToPig(p);
 
             p.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
             {
                 pigStack.Add(p);
             });
 
-            // yield return new WaitUntil(() => hasFinishedJump);
         }
 
         if (!isFromLane)
@@ -600,30 +508,14 @@ public class SpawnerManager : MonoBehaviour
 
         RemovePigFromLane(pig);
         pig.JumpTo(jumpFromLaneSpeed, count, onComplete);
-
-        // int laneIndex = pig.laneIndex;
-        // if (pigsByLane.ContainsKey(laneIndex))
-        // {
-        //     List<PigComponent> pigsInLane = pigsByLane[laneIndex];
-        //     if (pigsInLane.Count > 0)
-        //     {
-
-        //         AssignPlateToPig(pig);
-        //         pig.JumpTo(jumpFromLaneSpeed, count, onComplete: () =>
-        //         {
-        //             RemovePigFromLane(pig);
-        //             onComplete?.Invoke();
-        //         });
-        //     }
-        // }
     }
 
     private void RemovePigFromLane(PigComponent removedPig)
     {
         int laneIndex = removedPig.laneIndex;
 
-        if (!pigsByLane.ContainsKey(laneIndex)) return;
-        List<PigComponent> pigsInLane = pigsByLane[laneIndex];
+        if (!spawnManager.pigsByLane.ContainsKey(laneIndex)) return;
+        List<PigComponent> pigsInLane = spawnManager.pigsByLane[laneIndex];
 
         pigsInLane.Remove(removedPig);
         pigsInConveyor.Add(removedPig);
@@ -633,7 +525,7 @@ public class SpawnerManager : MonoBehaviour
         for (int i = 0; i < pigsInLane.Count; i++)
         {
             Vector3 newLocalPos = pigsInLane[i].transform.localPosition;
-            newLocalPos.z = -(i * spacing);
+            newLocalPos.z = -(i * spawnManager.pigSpacing);
 
             bool wasHidden = pigsInLane[i].isHidden;
             pigsInLane[i].SetIsOnTop(i == 0);
@@ -644,168 +536,6 @@ public class SpawnerManager : MonoBehaviour
             else
             {
                 pigsInLane[i].MoveTo(newLocalPos);
-            }
-        }
-    }
-
-    private void SpawnMap()
-    {
-        SpawnMapAsync().Forget();
-        InitializePlates();
-    }
-
-    private async UniTask SpawnMapAsync()
-    {
-        CleanupSpawnedObjects();
-        _maxstraightSlot = 5;
-        ResetData();
-        if (SceneManager.GetActiveScene().name == "6.play_test")
-        {
-            if (GameManagerForTesting.Instance.TryGetPlayTestConfig(out DataConfig playTestData))
-            {
-                Debug.Log("<color=green>PlayTest Mode: Loading from Temp Data only.</color>");
-                SpawnPigs(playTestData.lanes);
-                return;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        int levelToLoad = LevelController.GetMaxLevelUnlock();
-        LevelData data = await GameUtility.LoadLevelData(levelToLoad);
-        if (data != null)
-        {
-            SpawnPigs(data.lanes);
-        }
-        else
-        {
-            Debug.LogError("Failed to load level data for level: " + levelToLoad);
-        }
-    }
-
-
-    private void CleanupSpawnedObjects()
-    {
-
-        foreach (Transform child in pigSpawnPos)
-        {
-            Destroy(child.gameObject);
-        }
-
-        foreach (Link link in activeLinks)
-        {
-            if (link != null)
-            {
-                Destroy(link.gameObject);
-            }
-        }
-        activeLinks.Clear();
-    }
-
-
-    private void SpawnPigs(List<LaneConfig> lanes)
-    {
-        foreach (Transform child in pigSpawnPos)
-        {
-            Destroy(child.gameObject);
-        }
-
-        pigsByLane.Clear();
-
-        if (lanes == null || lanes.Count == 0) return;
-
-        int laneCount = lanes.Count;
-        float laneOffsetX = (laneCount - 1) * 1f / 2f;
-        for (int i = 0; i < laneCount; i++)
-        {
-            var currentLane = lanes[i];
-
-            if (!pigsByLane.ContainsKey(i))
-            {
-                pigsByLane[i] = new List<PigComponent>();
-            }
-            if (currentLane.pigs == null) continue;
-
-            for (int j = 0; j < currentLane.pigs.Count; j++)
-            {
-                string colorType = currentLane.pigs[j].colorName;
-                var bulletCount = currentLane.pigs[j].bullets;
-                var color = ColorGameConfig.instance.GetColorByName(colorType);
-                if (colorType == "empty") continue;
-                Vector3 localPos = new Vector3(
-                    (i * 1f) - laneOffsetX,
-                    0,
-                    -(j * spacing)
-                );
-
-                Vector3 worldPos = pigSpawnPos.TransformPoint(localPos);
-
-                GameObject newPig = Instantiate(pigPrefab, worldPos, Quaternion.identity, pigSpawnPos);
-
-                PigComponent pigComp = newPig.GetComponent<PigComponent>();
-
-                if (pigComp != null)
-                {
-                    pigComp.Initialize(colorType, bulletCount, i, color, speed, allWaypoints, currentLane.pigs[j].isHidden);
-                    pigsByLane[i].Add(pigComp);
-                    pigComp.SetIsOnTop(j == 0);
-                }
-
-                var renderer = newPig.GetComponentInChildren<Renderer>();
-
-                if (renderer != null)
-                {
-                    renderer.material.color = color;
-                }
-            }
-
-        }
-
-        // BuildPigLinks(lanes);
-        SpawnLink(lanes);
-    }
-
-    private void SpawnLink(List<LaneConfig> lanes)
-    {
-        for (int i = 0; i < lanes.Count; i++)
-        {
-            var currentLane = lanes[i];
-            for (int j = 0; j < currentLane.pigs.Count; j++)
-            {
-                PigComponent pigLeft = (currentLane.pigs[j].pigLeft != null && currentLane.pigs[j].pigLeft.LaneIndex >= 0)
-                    ? pigsByLane[currentLane.pigs[j].pigLeft.LaneIndex][currentLane.pigs[j].pigLeft.index]
-                    : null;
-
-                PigComponent pigRight = (currentLane.pigs[j].pigRight != null && currentLane.pigs[j].pigRight.LaneIndex >= 0)
-                    ? pigsByLane[currentLane.pigs[j].pigRight.LaneIndex][currentLane.pigs[j].pigRight.index]
-                    : null;
-                var sourcePig = pigsByLane[i][j];
-                if (pigLeft != null)
-                {
-                    Link linkObject = Instantiate(linkPrefabs);
-                    linkObject.transform.position = Vector3.up * -2f;
-                    activeLinks.Add(linkObject);
-                    linkObject.SetColor(
-                        sourcePig.color,
-                        pigLeft.color,
-                        sourcePig,
-                        pigLeft);
-                }
-                if (pigRight != null)
-                {
-                    Link linkObject = Instantiate(linkPrefabs);
-                    linkObject.transform.position = Vector3.up * -2f;
-                    activeLinks.Add(linkObject);
-                    linkObject.SetColor(
-                        sourcePig.color,
-                        pigRight.color,
-                        sourcePig,
-                        pigRight);
-                }
-                sourcePig.SetLinkPig(pigLeft, pigRight);
-
             }
         }
     }
@@ -965,7 +695,7 @@ public class SpawnerManager : MonoBehaviour
             PigComponent leftmost = pig.GetLeftmostPig();
             List<PigComponent> linkedPigs = GetPigChain(leftmost);
 
-            ProcessLinkedPigsRoutine(linkedPigs);
+            ProcessLinkedPigs(linkedPigs);
             complete?.Invoke();
             return;
         }
@@ -1035,12 +765,12 @@ public class SpawnerManager : MonoBehaviour
 
     public void UseItemShufflePig()
     {
-        pigsByLane = Helper.ShuffleHeoDictionary(pigsByLane);
+        spawnManager.pigsByLane = Helper.ShuffleHeoDictionary(spawnManager.pigsByLane);
 
-        int laneCount = pigsByLane.Count;
+        int laneCount = spawnManager.pigsByLane.Count;
         float laneOffsetX = (laneCount - 1) * 0.85f / 2f;
 
-        foreach (var laneEntry in pigsByLane)
+        foreach (var laneEntry in spawnManager.pigsByLane)
         {
             int laneIndex = laneEntry.Key;
 
@@ -1052,7 +782,7 @@ public class SpawnerManager : MonoBehaviour
                 Vector3 newLocalPos = new Vector3(
                     (laneIndex * 0.95f) - laneOffsetX,
                     0,
-                    -(pigIndex * spacing)
+                    -(pigIndex * spawnManager.pigSpacing)
                 );
 
                 pig.MoveTo(newLocalPos);
@@ -1063,7 +793,7 @@ public class SpawnerManager : MonoBehaviour
 
     private float timer = 0f;
 
-    void Update()
+    void FixedUpdate()
     {
         if (pigStack.Count == 0) return;
 
@@ -1079,9 +809,9 @@ public class SpawnerManager : MonoBehaviour
             pigStack.RemoveAt(0);
             for (int i = 0; i < pigStack.Count; i++)
             {
-                Vector3 newPos = allWaypoints[0].position;
+                Vector3 newPos = spawnManager.allWaypoints[0].position;
                 newPos.y += i * pigHeightOffset;
-                pigStack[i].MoveInQueue(newPos, allWaypoints[0].rotation, true);
+                pigStack[i].MoveInQueue(newPos, spawnManager.allWaypoints[0].rotation, true);
             }
         }
     }

@@ -1765,7 +1765,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1331223360}
   m_Layer: 0
-  m_Name: PigGroup
+  m_Name: Pig Spawn Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1947,7 +1947,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1522354508}
   m_Layer: 0
-  m_Name: Pig Spawn Point
+  m_Name: Pig Group
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2678,27 +2678,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isTesting: 0
   isProcessingClick: 0
-  supertCatPrefab: {fileID: 454243561976167103}
-  blockPrefab: {fileID: 4886328685167030700, guid: a4e13b989d360c248906fc7864625213, type: 3}
-  blockSpawnPoint: {fileID: 559098098}
-  blockGroup: {fileID: 2022943474}
-  pigSpawnPoint: {fileID: 1331223360}
-  pigSpawnPos: {fileID: 1522354508}
-  pigPrefab: {fileID: 1949181171605106699, guid: 14002b78b0c85aa4cb82579153db7809, type: 3}
-  allWaypoints:
-  - {fileID: 29516007}
-  - {fileID: 1979549302}
-  - {fileID: 1159030537}
-  - {fileID: 697383971}
-  - {fileID: 1251466128}
-  - {fileID: 718492031}
-  - {fileID: 643384879}
-  - {fileID: 842677221}
-  - {fileID: 569912193}
-  - {fileID: 2075059471}
-  - {fileID: 206767234}
-  - {fileID: 2055026079}
-  - {fileID: 1910865207}
+  jumpFromLaneSpeed: 6
   queuePos:
   - {fileID: 373046240}
   - {fileID: 2075042470}
@@ -2706,17 +2686,13 @@ MonoBehaviour:
   - {fileID: 743297714}
   - {fileID: 271582465}
   startTempQueuePos: {fileID: 77724187}
-  speed: 3.5
-  jumpFromLaneSpeed: 6
-  linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
-  blockPrefabsByColor: []
-  spacing: 1.05
   platePrefab: {fileID: 8748534461424016363, guid: b794253dc69262b45bc032592ee21f8f, type: 3}
   traySlotOrigin: {fileID: 3310556434719890761}
   plateStackOffset: 0.08
   tray: {fileID: 6234724727673448685}
   clickVFXPrefab: {fileID: 2559863911155596046, guid: 920cb0fcbb16f494a93f225b4f56b492, type: 3}
   pigHeightOffset: 1.2
+  spawnManager: {fileID: 1948135046}
 --- !u!114 &1948135046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2734,6 +2710,26 @@ MonoBehaviour:
   blockSpawnPoint: {fileID: 559098098}
   blockPrefabsByColor: []
   supertCatPrefab: {fileID: 454243561976167103}
+  pigSpawnPoint: {fileID: 1331223360}
+  pigGroup: {fileID: 1522354508}
+  pigPrefab: {fileID: 1949181171605106699, guid: 14002b78b0c85aa4cb82579153db7809, type: 3}
+  pigSpeed: 5
+  allWaypoints:
+  - {fileID: 29516007}
+  - {fileID: 1979549302}
+  - {fileID: 1159030537}
+  - {fileID: 697383971}
+  - {fileID: 1251466128}
+  - {fileID: 718492031}
+  - {fileID: 643384879}
+  - {fileID: 842677221}
+  - {fileID: 569912193}
+  - {fileID: 2075059471}
+  - {fileID: 206767234}
+  - {fileID: 2055026079}
+  - {fileID: 1910865207}
+  pigSpacing: 1.05
+  linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
 --- !u!1 &1975314016
 GameObject:
   m_ObjectHideFlags: 0

@@ -81,7 +81,7 @@ public class PigComponent : MonoBehaviour
         {
             case PigState.InLane:
             case PigState.InQueue:
-                model.localScale = initScale;
+                // model.localScale = initScale;
                 animValue = 0;
                 break;
             case PigState.Jumping:
@@ -707,7 +707,6 @@ public class PigComponent : MonoBehaviour
     public void MoveInQueue(Vector3 targetPos, Quaternion targetRot, bool isStack = false)
     {
         ChangeState(PigState.InQueue);
-        transform.localScale = Vector3.one;
         StartMainCoroutine(MoveInQueueCoroutine(targetPos, targetRot, () =>
         {
             if (isStack)
@@ -745,6 +744,7 @@ public class PigComponent : MonoBehaviour
 
         rb.MovePosition(targetPos);
         // model.rotation = targetRot;
+        yield return new WaitForFixedUpdate(); // wait for physics to apply before signaling completion
         onComplete?.Invoke();
     }
 
