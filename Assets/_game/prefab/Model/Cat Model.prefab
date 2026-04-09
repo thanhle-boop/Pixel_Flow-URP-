@@ -162,7 +162,7 @@ GameObject:
   - component: {fileID: -4236024807362940736}
   m_Layer: 7
   m_Name: Cat Model
-  m_TagString: Untagged
+  m_TagString: Pig
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -207,6 +207,7 @@ MonoBehaviour:
   isHidden: 0
   isOnTop: 0
   isRush: 0
+  currentState: 0
   rayCastPoint: {fileID: 7342929883817876045}
   wavyPoint: {fileID: 4749814365527887648}
   rb: {fileID: 9023464987300224240}
@@ -263,8 +264,6 @@ MonoBehaviour:
   jumpCurve: 0
   moveCurve: 0
   jumpToConveyorFB: {fileID: 6826894966101285161}
-  jumpToQueueFB: {fileID: 1374934433827056184}
-  landToQueueFB: {fileID: 0}
   changeColorFeedBack: {fileID: 677996218980284470}
 --- !u!65 &7977785496157537190
 BoxCollider:

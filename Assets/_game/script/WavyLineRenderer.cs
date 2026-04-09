@@ -8,9 +8,9 @@ public class WavyLineRenderer : MonoBehaviour
 
     [Header("Wave Settings")]
     public int waveSegments = 30;
-    public float waveAmplitudeMin = 0.05f;
-    public float waveAmplitudeMax = 0.1f;
-    public float amplitudeChangeSpeed = 2f;
+    public float waveAmplitudeMin = 0.01f;
+    public float waveAmplitudeMax = 0.03f;
+    public float amplitudeChangeSpeed = 0.5f;
     public float waveFrequency = 1f;
     public float waveSpeed = 10f;
 
@@ -93,8 +93,8 @@ public class WavyLineRenderer : MonoBehaviour
     // Trong WavyLineRenderer
     public void SetSpeedMultiplier(float multiplier)
     {
-        targetDuration = 0.05f / multiplier;
-        waveSpeed = 30f * multiplier;
+        targetDuration = 0.07f / multiplier;
+        waveSpeed = 15f * multiplier;
     }
     private IEnumerator ProcessTargets()
     {

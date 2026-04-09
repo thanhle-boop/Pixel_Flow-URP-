@@ -2636,6 +2636,7 @@ GameObject:
   - component: {fileID: 1948135044}
   - component: {fileID: 1948135045}
   - component: {fileID: 1948135046}
+  - component: {fileID: 1948135047}
   m_Layer: 0
   m_Name: Spawner Manager
   m_TagString: Untagged
@@ -2677,7 +2678,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isTesting: 0
-  isProcessingClick: 0
   jumpFromLaneSpeed: 6
   queuePos:
   - {fileID: 373046240}
@@ -2730,6 +2730,27 @@ MonoBehaviour:
   - {fileID: 1910865207}
   pigSpacing: 1.05
   linkPrefabs: {fileID: 5626665246859212756, guid: 77a76475ff8e4b8419d91369108cc105, type: 3}
+--- !u!65 &1948135047
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948135043}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.87, y: 1.33, z: 0.86}
+  m_Center: {x: -2.7, y: 0.78, z: -3.63}
 --- !u!1 &1975314016
 GameObject:
   m_ObjectHideFlags: 0

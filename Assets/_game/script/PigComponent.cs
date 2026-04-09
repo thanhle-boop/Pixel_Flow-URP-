@@ -222,6 +222,7 @@ public class PigComponent : MonoBehaviour
     public void GameOver()
     {
         currentState = PigState.LoseGame;
+        StopCoroutine(_mainCoroutine);
     }
     public void SetIsOnTop(bool value)
     {
@@ -646,9 +647,10 @@ public class PigComponent : MonoBehaviour
         model.rotation = Quaternion.identity;
         ChangeState(PigState.Jumping); // Stop FixedUpdate interference and prevent OnTriggerEnter re-firing
         var distance = Vector3.Distance(this.transform.position, targetPosition);
-        var intervalDuration = distance / speed;
+        // var intervalDuration = distance / speed;
 
-        StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, intervalDuration, () =>
+
+        StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, 0.4f, () =>
         {
             ChangeState(PigState.InQueue);
             canvasTransform.localPosition = initCanvasLocalPos;
@@ -774,7 +776,7 @@ public class PigComponent : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log("currentState: " + currentState + ", isRush: " + isRush);
-        if (other.CompareTag("EndConveyor") && currentState == PigState.OnConveyor && !isRush)
+        if (other.CompareTag("EndConveyor") && !isRush)
         {
             EventManager.OnPigEnterQueue?.Invoke(this);
         }

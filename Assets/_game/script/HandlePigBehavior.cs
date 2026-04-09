@@ -301,7 +301,7 @@ public class HandlePigBehavior : MonoBehaviour
 
         Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.9f));
 
-        pig.JumpToQueue(targetPos, 5f, () =>
+        pig.JumpToQueue(targetPos, 10f, () =>
         {
             pig.isOnTop = true;
         });
@@ -501,14 +501,12 @@ public class HandlePigBehavior : MonoBehaviour
             if (pigsInQueue.Count >= queuePos.Count)
             {
                 GameManager.Instance?.GameOver();
+                pig.GameOver();
                 return;
             }
             pigsInQueue.Add(pig);
             queueIndex = pigsInQueue.Count - 1;
         }
-
-        Debug.Log(2);
-
 
         pigsInConveyor.Remove(pig);
         pigsJumpingToQueue.Add(pig);
@@ -684,6 +682,8 @@ public class HandlePigBehavior : MonoBehaviour
             PigComponent pigBottom = pigStack[0];
             if (pigBottom.currentState != PigState.CanMove || !pigBottom.isFirstPgInStack()) return;
 
+            // if (isHit) return;
+
             timer = 0f;
             pigBottom.StartMove();
             pigStack.RemoveAt(0);
@@ -696,4 +696,21 @@ public class HandlePigBehavior : MonoBehaviour
             }
         }
     }
+    private bool isHit = false;
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.CompareTag("Pig"))
+        {
+            isHit = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("Pig"))
+        {
+            isHit = false;
+        }
+    }
+
 }

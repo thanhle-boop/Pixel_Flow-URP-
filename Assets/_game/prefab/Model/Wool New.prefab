@@ -70,6 +70,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Block
   color: 
   isAlreadyDestroyed: 0
+  curve: 0
+  model: {fileID: 7108519004673664630}
 --- !u!114 &3230766833564377112
 MonoBehaviour:
   m_ObjectHideFlags: 0
