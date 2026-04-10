@@ -14,7 +14,8 @@ public class PlayerCoin : MonoBehaviour
         CurrencyController.GetGoldRx()
             .Subscribe(coins =>
             {
-                txtCoin.text = coins.ToString();
+                var gold = CurrencyController.GetGold();
+                txtCoin.text = gold < 0 ? "0" : gold.ToString();
             }).AddTo(this);
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Tools;
 using UnityEngine;
 
 public class Block : MonoBehaviour
@@ -6,40 +7,46 @@ public class Block : MonoBehaviour
     public string color;
     public bool isAlreadyDestroyed = false;
 
+    public MMTween.MMTweenCurve curve;
+    public GameObject model;
     public void StartDestroy()
     {
+        if(model == null)
+        {
+            Debug.Log("Model is not assigned for " + gameObject.name);
+            return;
+        }   
         StartCoroutine(DestroyCoroutine());
     }
+
     private IEnumerator DestroyCoroutine()
     {
-        float elapsed = 0;
         float durationUp = 0.2f;
         float durationDown = 0.2f;
-        float totalDuration = durationUp + durationDown;
 
-        Vector3 startScale = Vector3.one;
-        Vector3 maxScale = Vector3.one * 1.8f;
+        Vector3 startScale = model.transform.localScale;
+        Vector3 maxScale = startScale * 1.5f;
         Vector3 endScale = Vector3.zero;
 
-        while (elapsed < totalDuration)
+        float elapsed = 0;
+        while (elapsed < durationUp)
         {
             elapsed += Time.deltaTime;
+            model.transform.localScale = MMTween.Tween(elapsed, 0f, durationUp, startScale, maxScale, MMTween.MMTweenCurve.EaseOutQuadratic);
+            yield return null;
+        }
+        model.transform.localScale = maxScale;
 
-            if (elapsed <= durationUp)
-            {
-                float tUp = elapsed / durationUp;
-                transform.localScale = Vector3.Lerp(startScale, maxScale, tUp);
-            }
-            else
-            {
-                float tDown = (elapsed - durationUp) / durationDown;
-                transform.localScale = Vector3.Lerp(maxScale, endScale, tDown);
-            }
-
-            yield return new WaitForFixedUpdate();
+        elapsed = 0;
+        while (elapsed < durationDown)
+        {
+            elapsed += Time.deltaTime;
+            model.transform.localScale = MMTween.Tween(elapsed, 0f, durationDown, maxScale, endScale, MMTween.MMTweenCurve.EaseInQuadratic);
+            yield return null;
         }
 
-        transform.localScale = endScale;
+        model.transform.localScale = endScale;
         Destroy(gameObject);
+
     }
 }

@@ -739,9 +739,9 @@
                     }
                 },
                 {
-                    "colorName": "c01",
-                    "bullets": 40,
-                    "isHidden": false,
+                    "colorName": "c21",
+                    "bullets": 20,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -769,7 +769,7 @@
                 {
                     "colorName": "c21",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -783,7 +783,7 @@
                 {
                     "colorName": "c25",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -825,7 +825,7 @@
                 {
                     "colorName": "c08",
                     "bullets": 30,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -885,7 +885,7 @@
                 {
                     "colorName": "c01",
                     "bullets": 30,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -941,7 +941,7 @@
                 {
                     "colorName": "c25",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -999,9 +999,9 @@
                     }
                 },
                 {
-                    "colorName": "c21",
-                    "bullets": 20,
-                    "isHidden": false,
+                    "colorName": "c01",
+                    "bullets": 40,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,
@@ -1043,7 +1043,7 @@
                 {
                     "colorName": "c07",
                     "bullets": 20,
-                    "isHidden": false,
+                    "isHidden": true,
                     "linkId": -1,
                     "pigLeft": {
                         "LaneIndex": -1,

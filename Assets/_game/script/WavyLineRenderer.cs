@@ -8,11 +8,11 @@ public class WavyLineRenderer : MonoBehaviour
 
     [Header("Wave Settings")]
     public int waveSegments = 30;
-    public float waveAmplitudeMin = 0.05f;
-    public float waveAmplitudeMax = 0.1f;
-    public float amplitudeChangeSpeed = 2f;
-    public float waveFrequency = 1.5f;
-    public float waveSpeed = 30f;
+    public float waveAmplitudeMin = 0.01f;
+    public float waveAmplitudeMax = 0.03f;
+    public float amplitudeChangeSpeed = 0.5f;
+    public float waveFrequency = 1f;
+    public float waveSpeed = 10f;
 
     private float _waveTime;
     private float _amplitudeTime;
@@ -23,7 +23,7 @@ public class WavyLineRenderer : MonoBehaviour
     private Color _baseColor = Color.yellow;
 
     [Header("Target Management")]
-    private float targetDuration = 0.03f;
+    private float targetDuration = 0.1f;
     private List<GameObject> _targetBlocks = new List<GameObject>();
     private Coroutine _targetProcessCoroutine;
     private GameObject _currentTarget;
@@ -48,7 +48,7 @@ public class WavyLineRenderer : MonoBehaviour
         _onBulletChanged = callback;
     }
 
-    public void InitializeLineRenderer(float startWidth = 0.08f, float endWidth = 0.08f, float amplitude = 0.03f)
+    public void InitializeLineRenderer(float startWidth = 0.06f, float endWidth = 0.06f, float amplitude = 0.03f)
     {
         _lineRenderer = GetComponent<LineRenderer>();
         if (_lineRenderer == null)
@@ -90,6 +90,12 @@ public class WavyLineRenderer : MonoBehaviour
         }
     }
 
+    // Trong WavyLineRenderer
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        targetDuration = 0.07f / multiplier;
+        waveSpeed = 15f * multiplier;
+    }
     private IEnumerator ProcessTargets()
     {
         while (_targetBlocks.Count > 0)
@@ -137,7 +143,7 @@ public class WavyLineRenderer : MonoBehaviour
 
             _lineRenderer.enabled = true;
             AudioGameManger.instance.PlaySFX(AudioIndex.yarn);
-            HapticController.PlayHeavy();
+            HapticController.PlayHaptic(HapticType.collect_yarn);
 
 
             float elapsed = 0f;
@@ -196,7 +202,7 @@ public class WavyLineRenderer : MonoBehaviour
                     {
                         _pigComponent.bulletText.text = _pigComponent.Bullet.ToString();
                     }
-                    _onBulletChanged?.Invoke();
+                _onBulletChanged?.Invoke();
                 }
             }
             if (_targetBlocks.Count > 0)
@@ -230,7 +236,7 @@ public class WavyLineRenderer : MonoBehaviour
 
     public void UpdateStartPoint(Vector3 startPoint)
     {
-        _startPoint = new Vector3(startPoint.x, startPoint.y + 0.5f, startPoint.z);
+        _startPoint = new Vector3(startPoint.x, startPoint.y, startPoint.z);
     }
 
     public void HideLineImmediately()
