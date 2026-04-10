@@ -48,7 +48,7 @@ public class PlayerInput : MonoBehaviour
                 if (clickedPig != null)
                 {
                     EventManager.OnClickPig?.Invoke(clickedPig);
-                    Debug.Log("Clicked on pig: ");
+                    // Debug.Log("Clicked on pig: ");
 
                 }
             }

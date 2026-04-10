@@ -100,6 +100,7 @@ public class SpawnManager : MonoBehaviour
         {
             Debug.LogError("Failed to load level data for level: " + levelToLoad);
         }
+        LoaderOverlayManager.instance.EndOverlay();
     }
 
     private void CleanupSpawnedObjects()

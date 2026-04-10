@@ -12,8 +12,8 @@ public class HandlePigBehavior : MonoBehaviour
     public bool isTesting = false;
 
     private bool onHandItemUsed = false;
-    [SerializeField] private float jumpFromLaneSpeed = 6f;
-    private float jumpFromQueueSpeed = 3.5f;
+    private float jumpFromLaneSpeed = 0.5f;
+    private float jumpFromQueueSpeed = 0.4f;
     public List<Transform> queuePos;
     private List<PigComponent> pigsInQueue = new List<PigComponent>();
     private List<PigComponent> pigsInTempQueue = new List<PigComponent>();
@@ -226,13 +226,25 @@ public class HandlePigBehavior : MonoBehaviour
     {
         foreach (PigComponent pig in pigsInConveyor)
         {
-            if (pig != null) pig.StopShooting();
+            if (pig != null)
+            {
+                pig.StopShooting();
+                pig.GameOver();
+            }
+        }
+        foreach (PigComponent pig in pigsInQueue)
+        {
+            if (pig != null) pig.GameOver();
+        }
+        foreach (PigComponent pig in pigsInTempQueue)
+        {
+            if (pig != null) pig.GameOver();
         }
     }
     private void WinGame()
     {
         if (!isTesting)
-            LevelController.ClearLevel(LevelController.GetMaxLevelUnlock() + 1);
+            LevelController.ClearLevel(LevelController.GetMaxLevelUnlock());
     }
 
     private void ContinueGame()
@@ -282,8 +294,6 @@ public class HandlePigBehavior : MonoBehaviour
 
         _straightSlot = 0;
         UIManager.Instance.UpdateStraightSlot(0, _maxstraightSlot);
-        RearrangeQueue(0, false);
-        RearrangeQueue(0, true);
         EventManager.OnQueueNotFull?.Invoke();
     }
     private void MovePigToTempQueueInternal(PigComponent pig)
@@ -299,9 +309,9 @@ public class HandlePigBehavior : MonoBehaviour
 
         int index = pigsInTempQueue.Count - 1;
 
-        Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.9f));
+        Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.7f));
 
-        pig.JumpToQueue(targetPos, 10f, () =>
+        pig.JumpToQueue(targetPos, 0.4f, () =>
         {
             pig.isOnTop = true;
         });
@@ -453,7 +463,7 @@ public class HandlePigBehavior : MonoBehaviour
     {
         if (pig == null || queuePos == null || queuePos.Count == 0) return;
 
-        Debug.Log(1);
+        // Debug.Log(1);
         if (pig.currentPlate != null)
         {
             StartCoroutine(ReturnPlateToOrigin(pig.currentPlate));
@@ -512,12 +522,12 @@ public class HandlePigBehavior : MonoBehaviour
         pigsJumpingToQueue.Add(pig);
 
         RearrangeQueue(0, false);
-        pig.JumpToQueue(queuePos[queueIndex].position, 5f, () =>
+        pig.JumpToQueue(queuePos[queueIndex].position, jumpFromQueueSpeed, () =>
         {
             pig.isOnTop = true;
             pigsJumpingToQueue.Remove(pig);
             RearrangeQueue(0, false);
-            Debug.Log(3);
+            // Debug.Log(3);
 
         });
 
@@ -637,7 +647,7 @@ public class HandlePigBehavior : MonoBehaviour
             {
                 PigComponent pig = pigsInTempQueue[i];
 
-                Vector3 targetPos = startTempQueuePos.position + 0.5f * i * Vector3.right;
+                Vector3 targetPos = startTempQueuePos.position + 0.7f * i * Vector3.right;
                 Quaternion targetRot = startTempQueuePos.rotation;
                 pig.MoveInQueue(targetPos, targetRot);
             }
@@ -680,9 +690,13 @@ public class HandlePigBehavior : MonoBehaviour
         if (timer >= 0.3f)
         {
             PigComponent pigBottom = pigStack[0];
-            if (pigBottom.currentState != PigState.CanMove || !pigBottom.isFirstPgInStack()) return;
+            if (pigBottom.currentState != PigState.CanMove) return;
 
-            // if (isHit) return;
+            if(!pigBottom.isFirstPgInStack())
+            {
+                pigBottom.transform.position = spawnManager.allWaypoints[0].position;
+                return;
+            }
 
             timer = 0f;
             pigBottom.StartMove();

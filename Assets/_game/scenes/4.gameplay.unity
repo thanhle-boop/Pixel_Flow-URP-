@@ -2678,7 +2678,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isTesting: 0
-  jumpFromLaneSpeed: 6
+  jumpFromLaneSpeed: 0.5
   queuePos:
   - {fileID: 373046240}
   - {fileID: 2075042470}
