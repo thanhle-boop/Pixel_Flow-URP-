@@ -33,7 +33,7 @@ public class TabHomePresenter : MonoBehaviour
         btnPlay.OnClickAsObservable()
             .Subscribe(_ =>
             {
-                SceneManager.LoadScene("4.gameplay");
+                LoaderOverlayManager.instance.LoadScene("4.gameplay");
             }).AddTo(this);
     }
 }

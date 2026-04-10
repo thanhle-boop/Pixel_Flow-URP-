@@ -650,6 +650,8 @@ public class SpawnerManager : MonoBehaviour
         {
             Debug.LogError("Failed to load level data for level: " + levelToLoad);
         }
+
+        LoaderOverlayManager.instance.EndOverlay();
     }
 
     public async UniTask<LevelData> LoadLevelData(int levelNumber)

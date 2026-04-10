@@ -6,5 +6,7 @@ public class SceneMenuUI : MonoBehaviour
     {
         AudioGameManger.instance.InitAudioGameManager();
         AudioController.instance.PlayMusic(AudioIndex.bgm.ToString());
+
+        LoaderOverlayManager.instance.EndOverlay();
     }
 }
