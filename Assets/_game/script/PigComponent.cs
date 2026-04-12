@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using TMPro;
@@ -644,7 +645,7 @@ public class PigComponent : MonoBehaviour
         {
             // ChangeState(PigState.InQueue);
             bulletText.transform.localPosition = initCanvasLocalPos;
-            StartCoroutine(ScaleUpAndDownWhenEnterQueue());
+            ScaleUpAndDownWhenEnterQueue().Forget();
             onComplete?.Invoke();
         }));
     }
@@ -670,8 +671,9 @@ public class PigComponent : MonoBehaviour
         onComplete?.Invoke();
     }
 
-    private IEnumerator ScaleUpAndDownWhenEnterQueue()
+    private async UniTask ScaleUpAndDownWhenEnterQueue()
     {
+        var token = this.GetCancellationTokenOnDestroy();
         float duration = 0.2f;
         float elapsed = 0;
         model.localScale = initScale;
@@ -680,6 +682,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if(token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -692,7 +695,7 @@ public class PigComponent : MonoBehaviour
                 model.localScale = Vector3.Lerp(maxScale, startScale, (t - 0.5f) * 2f);
             }
 
-            yield return null;
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
         }
         // model.localScale = startScale;
         ChangeState(PigState.InQueue);
