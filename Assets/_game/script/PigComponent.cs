@@ -35,7 +35,7 @@ public class PigComponent : MonoBehaviour
     private Vector3 initScale;
 
     [Header("References")]
-    // public Animator animator;
+    public Animator animator;
     private List<Transform> allWaypoints = new List<Transform>();
     public Transform rayCastPoint;
     public Transform wavyPoint;
@@ -48,14 +48,14 @@ public class PigComponent : MonoBehaviour
     public GameObject tailModel;
     public GameObject Model;
 
-    public TextMeshProUGUI bulletText;
+    public TextMeshPro bulletText;
     public Material hiddenMaterial;
     public Material normalMaterial;
     public Material normalFaceMaterial;
     public List<GameObject> ammoCircles;
     public Transform model;
 
-    public Transform canvasTransform;
+    // public Transform canvasTransform;
     private Vector3 initCanvasLocalPos;
     public Transform currentPlate;
     public GameObject spoolDissapearVFX;
@@ -85,21 +85,25 @@ public class PigComponent : MonoBehaviour
                 break;
             case PigState.Destroying:
             case PigState.OnConveyor:
-            case PigState.DoNothing:
-                animValue = 1;
+            // case PigState.DoNothing:
+                animValue = 2;
                 break;
             case PigState.ReadyToJump:
-                animValue = 3;
+                animValue = 1;
                 break;
 
             case PigState.Shooting:
+                animValue = 3;
+                break;
+
+            case PigState.DoNothing:
                 animValue = 4;
                 break;
         }
-        // if (animator.GetInteger("state") != animValue)
-        // {
-        //     animator.SetInteger("state", animValue);
-        // }
+        if (animator.GetInteger("state") != animValue)
+        {
+            animator.SetInteger("state", animValue);
+        }
         currentState = newState;
     }
     public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed, List<Transform> paths, bool isHidden)
@@ -112,7 +116,7 @@ public class PigComponent : MonoBehaviour
         this.speed = _speed;
         this.baseConveyorSpeed = _speed;
         this._bulletsFiredCount = 0;
-        initCanvasLocalPos = canvasTransform.localPosition;
+        initCanvasLocalPos = bulletText.transform.localPosition;
         initScale = model.localScale;
 
         ChangeState(PigState.DoNothing);
@@ -158,7 +162,7 @@ public class PigComponent : MonoBehaviour
             tailMeshRenderer.material = hiddenMaterial;
 
             bulletText.text = "?";
-            bulletText.fontSize = 50f;
+            bulletText.fontSize = 5f;
             return;
         }
         bulletText.text = bulletCount.ToString();
@@ -252,7 +256,7 @@ public class PigComponent : MonoBehaviour
                 face2Renderer.material = normalFaceMaterial;
 
                 bulletText.text = Bullet.ToString();
-                bulletText.fontSize = 40f;
+                bulletText.fontSize = 4f;
                 var gradient = new Gradient()
                 {
                     colorKeys = new GradientColorKey[]
@@ -644,7 +648,7 @@ public class PigComponent : MonoBehaviour
         StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, 0.4f, () =>
         {
             ChangeState(PigState.InQueue);
-            canvasTransform.localPosition = initCanvasLocalPos;
+            bulletText.transform.localPosition = initCanvasLocalPos;
             StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             onComplete?.Invoke();
         }));
