@@ -950,7 +950,7 @@ MonoBehaviour:
   - Top
   - Pig
   - Block
-  straightSlotText: {fileID: 6658393869562978994}
+  straightSlotText: {fileID: 7565851558203586304}
   straightSlot: {fileID: 5826698816362256165}
   eventSystem: {fileID: 2031756627}
 --- !u!4 &610574051
@@ -2678,7 +2678,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isTesting: 0
-  jumpFromLaneSpeed: 0.5
   queuePos:
   - {fileID: 373046240}
   - {fileID: 2075042470}
@@ -3775,17 +3774,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1078500852832234415, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
   m_PrefabInstance: {fileID: 7565851558203586303}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6658393869562978994 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7520919248856549633, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-  m_PrefabInstance: {fileID: 7565851558203586303}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!23 &6690848190254596878
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3865,26 +3853,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Conveyor
       objectReference: {fileID: 0}
-    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3411585214769799456, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3475341904336172539, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-      propertyPath: m_CastShadows
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7647738657145349585, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8524388108716313962, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.90442824
@@ -3928,8 +3896,22 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1552709584045923028, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+--- !u!114 &7565851558203586304 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2664446168418620281, guid: a571ace57aa36e64c9ea7690a9ce806c, type: 3}
+  m_PrefabInstance: {fileID: 7565851558203586303}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
 --- !u!1 &8293771906754265876
 GameObject:
   m_ObjectHideFlags: 0

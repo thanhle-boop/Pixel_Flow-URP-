@@ -72,39 +72,34 @@ public class PigComponent : MonoBehaviour
     private Coroutine _mainCoroutine;
     private void ChangeState(PigState newState)
     {
+        currentState = newState;
+
+        // 1. Nếu là DoNothing, tắt Animator và thoát hàm ngay lập tức
+        if (newState == PigState.DoNothing)
+        {
+            animator.enabled = false;
+            return; // Thoát luôn, không chạy xuống phần SetInteger bên dưới
+        }
+
+        // 2. Nếu không phải DoNothing, đảm bảo Animator được bật
+        animator.enabled = true;
+
+        // 3. Tính toán animValue dựa trên state
         int animValue = 0;
         switch (newState)
         {
-            case PigState.InLane:
-            case PigState.InQueue:
-                // model.localScale = initScale;
-                animValue = 0;
-                break;
-            case PigState.Jumping:
-                // animValue = 2;
-                break;
-            case PigState.Destroying:
-            case PigState.OnConveyor:
-            // case PigState.DoNothing:
-                animValue = 2;
-                break;
-            case PigState.ReadyToJump:
-                animValue = 1;
-                break;
-
-            case PigState.Shooting:
-                animValue = 3;
-                break;
-
-            case PigState.DoNothing:
-                animValue = 4;
-                break;
+            case PigState.InQueue: animValue = 0; break;
+            case PigState.ReadyToJump: animValue = 1; break;
+            case PigState.OnConveyor: animValue = 2; break;
+            case PigState.Shooting: animValue = 3; break;
+            case PigState.Jumping: animValue = 4; break;
         }
-        if (animator.GetInteger("state") != animValue)
+
+        // 4. Chỉ set Parameter khi Animator đang hoạt động
+        if (animator.runtimeAnimatorController != null)
         {
             animator.SetInteger("state", animValue);
         }
-        currentState = newState;
     }
     public void Initialize(string color, int bulletCount, int laneIndex, Color lineColor, float _speed, List<Transform> paths, bool isHidden)
     {
@@ -640,14 +635,14 @@ public class PigComponent : MonoBehaviour
         // jumpToQueueFB?.PlayFeedbacks();
         _lockedTargets = 0;
         model.rotation = Quaternion.identity;
-        ChangeState(PigState.Jumping); // Stop FixedUpdate interference and prevent OnTriggerEnter re-firing
+        // ChangeState(PigState.Jumping); // Stop FixedUpdate interference and prevent OnTriggerEnter re-firing
+        ChangeState(PigState.DoNothing);
         var distance = Vector3.Distance(this.transform.position, targetPosition);
-        // var intervalDuration = distance / speed;
-
+        // var intervalDuration = distance / speed
 
         StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, 0.4f, () =>
         {
-            ChangeState(PigState.InQueue);
+            // ChangeState(PigState.InQueue);
             bulletText.transform.localPosition = initCanvasLocalPos;
             StartCoroutine(ScaleUpAndDownWhenEnterQueue());
             onComplete?.Invoke();
@@ -700,12 +695,13 @@ public class PigComponent : MonoBehaviour
             yield return null;
         }
         // model.localScale = startScale;
+        ChangeState(PigState.InQueue);
         model.localScale = initScale;
     }
     public void MoveInQueue(Vector3 targetPos, Quaternion targetRot)
     {
-
-        ChangeState(PigState.InQueue);
+        // Debug.Log("congthanh");
+        // ChangeState(PigState.InQueue);
         StartMainCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
     }
 
@@ -738,6 +734,7 @@ public class PigComponent : MonoBehaviour
         float duration = distance / moveSpeed;
         float jumpHeight = 0.5f;
         float elapsed = 0;
+        // ChangeState(PigState.InQueue);
 
         while (elapsed < duration)
         {
@@ -776,6 +773,14 @@ public class PigComponent : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // if (animator.enabled)
+        // {
+        //     Debug.Log("Current State: " + currentState);
+        // }
+        // else
+        // {
+        //     Debug.Log("Animator is disabled. Current State: " + currentState);
+        // }
         if (Bullet > 0 && (currentState == PigState.OnConveyor || currentState == PigState.Shooting))
         {
             _wavyLine.UpdateStartPoint(wavyPoint.position);

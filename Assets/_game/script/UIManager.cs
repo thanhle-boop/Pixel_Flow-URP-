@@ -12,7 +12,7 @@ public class UIManager : Singleton<UIManager>
     protected override bool PersistAcrossScenes => false;
 
     public List<string> tagValueTypes;
-    public TextMeshProUGUI straightSlotText;
+    public TextMeshPro straightSlotText;
 
     public GameObject straightSlot;
     public UnityEngine.EventSystems.EventSystem eventSystem;
