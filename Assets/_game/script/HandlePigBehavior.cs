@@ -311,10 +311,7 @@ public class HandlePigBehavior : MonoBehaviour
 
         Vector3 targetPos = startTempQueuePos.position + (Vector3.right * (index * 0.7f));
 
-        pig.JumpToQueue(targetPos, 0.4f, () =>
-        {
-            pig.isOnTop = true;
-        });
+        pig.JumpToQueue(targetPos, jumpFromQueueSpeed);
     }
 
     private void RefundStraightSlot(PigComponent pig)
@@ -522,12 +519,11 @@ public class HandlePigBehavior : MonoBehaviour
         pigsJumpingToQueue.Add(pig);
 
         RearrangeQueue(0, false);
-        pig.JumpToQueue(queuePos[queueIndex].position, jumpFromQueueSpeed, () =>
+        pigsJumpingToQueue.Add(pig);
+        pig.JumpToQueue(queuePos[queueIndex].position, jumpFromQueueSpeed, onComplete: () =>
         {
-            pig.isOnTop = true;
-            pigsJumpingToQueue.Remove(pig);
+            pigsJumpingToQueue.Remove(pig); // ✅ Remove SAU khi jump xong
             RearrangeQueue(0, false);
-            // Debug.Log(3);
 
         });
 
@@ -687,14 +683,19 @@ public class HandlePigBehavior : MonoBehaviour
 
         timer += Time.deltaTime;
 
-        if (timer >= 0.3f)
+        if (timer >= 0.08f)
         {
             PigComponent pigBottom = pigStack[0];
-            if (pigBottom.currentState != PigState.CanMove) return;
-
-            if(!pigBottom.isFirstPgInStack())
+            if (pigBottom.currentState != PigState.CanMove)
             {
-                pigBottom.transform.position = spawnManager.allWaypoints[0].position;
+                timer = 0f;
+                return;
+            }
+
+            if (!pigBottom.isFirstPgInStack())
+            {
+                timer = 0f;
+                pigBottom.MoveToStack(spawnManager.allWaypoints[0].position);
                 return;
             }
 

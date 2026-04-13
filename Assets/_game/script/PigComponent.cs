@@ -71,21 +71,18 @@ public class PigComponent : MonoBehaviour
     // public MMF_Player scaleDownFB;
     public MMF_Player changeColorFeedBack;
     private Coroutine _mainCoroutine;
+    private System.Threading.CancellationTokenSource _stateCTS;
     private void ChangeState(PigState newState)
     {
         currentState = newState;
 
-        // 1. Nếu là DoNothing, tắt Animator và thoát hàm ngay lập tức
         if (newState == PigState.DoNothing)
         {
             animator.enabled = false;
-            return; // Thoát luôn, không chạy xuống phần SetInteger bên dưới
+            return; 
         }
 
-        // 2. Nếu không phải DoNothing, đảm bảo Animator được bật
         animator.enabled = true;
-
-        // 3. Tính toán animValue dựa trên state
         int animValue = 0;
         switch (newState)
         {
@@ -96,7 +93,6 @@ public class PigComponent : MonoBehaviour
             case PigState.Jumping: animValue = 4; break;
         }
 
-        // 4. Chỉ set Parameter khi Animator đang hoạt động
         if (animator.runtimeAnimatorController != null)
         {
             animator.SetInteger("state", animValue);
@@ -221,9 +217,9 @@ public class PigComponent : MonoBehaviour
     }
     public void GameOver()
     {
-        // currentState = PigState.LoseGame;
-        if (_mainCoroutine != null)
-            StopCoroutine(_mainCoroutine);
+        if(currentState != PigState.Destroying)
+            StopCurrentLogic();
+
     }
     public void SetIsOnTop(bool value)
     {
@@ -367,9 +363,9 @@ public class PigComponent : MonoBehaviour
         AudioController.instance.PlaySound(AudioIndex.destroy_cat.ToString());
         ChangeState(PigState.Destroying);
         bulletText.text = "";
-        StartMainCoroutine(DestroyAnimationInternal());
+        StartNewLogic(async token => await DestroyAnimationInternal(token));
     }
-    private IEnumerator DestroyAnimationInternal()
+    private async UniTask DestroyAnimationInternal(System.Threading.CancellationToken token)
     {
         Vector3 startScale = transform.localScale;
         Quaternion startRotation = rb.rotation;
@@ -379,6 +375,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -407,7 +404,7 @@ public class PigComponent : MonoBehaviour
             transform.localScale = Vector3.Lerp(startScale, Vector3.zero, scaleT);
             rb.MoveRotation(startRotation * Quaternion.Euler(0f, t * 360f, 0f));
 
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
 
         EventManager.OnPigDestroyed?.Invoke(this);
@@ -428,7 +425,7 @@ public class PigComponent : MonoBehaviour
     {
         SetConveyorSpeedMultiplier(isRush ? 2f : 1f);
         EventManager.OnJumpToConveyor?.Invoke();
-        StartCoroutine(ReadyToJump(0.1f, onComplete, speed, count));
+        StartNewLogic(async token => await ReadyToJump(0.1f, onComplete, speed, count, token));
     }
 
     public void JumpToTarget(Vector3 localTargetPos)
@@ -436,22 +433,22 @@ public class PigComponent : MonoBehaviour
         Vector3 worldTargetPos = transform.parent.TransformPoint(localTargetPos);
         var distance = Vector3.Distance(this.transform.position, worldTargetPos);
         var intervalDuration = distance / 2;
-        StartCoroutine(JumpArcCoroutine(this.transform.position, worldTargetPos, intervalDuration));
+        StartNewLogic(async token =>
+            await JumpArcCoroutine(this.transform.position, worldTargetPos, intervalDuration, token));
     }
-    private IEnumerator ConveyorJourney(Action onComplete, float jumpDuration, int counter)
+    private async UniTask ConveyorJourney(Action onComplete, float jumpDuration, int counter, System.Threading.CancellationToken token)
     {
         Vector3 firstPoint = allWaypoints[0].position + new Vector3(0, 0.5f * counter, 0);
         ChangeState(PigState.Jumping);
-        yield return StartCoroutine(JumpArcCoroutine(rb.position, firstPoint, jumpDuration, null, jumpToConveyorFB));
 
+        await JumpArcCoroutine(rb.position, firstPoint, jumpDuration, token, jumpToConveyorFB);
+        this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
+        model.rotation = Quaternion.Euler(-90, 0, 0);
         ParticleSystem ps = Instantiate(landOnDiskVFX).GetComponent<ParticleSystem>();
         ps.transform.position = transform.position;
         ps.Play();
-        onComplete?.Invoke();
         ChangeState(PigState.CanMove);
-        this.model.localScale = new Vector3(0.85f, 0.85f, 0.85f);
-        model.rotation = Quaternion.LookRotation(allWaypoints[0].up, allWaypoints[0].forward);
-        yield return new WaitForFixedUpdate();
+        onComplete?.Invoke();
 
         _rayCastDirection = allWaypoints[0].forward;
         if (_wavyLine != null)
@@ -471,10 +468,10 @@ public class PigComponent : MonoBehaviour
         currentPlate.SetParent(transform);
         currentPlate.localPosition = new Vector3(-0.035f, -0.25f, -0.079f);
         currentPlate.localRotation = Quaternion.Euler(0, 0, 90);
-        StartMainCoroutine(MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints));
+        StartNewLogic(async token => await MovePigThroughWaypoints(0, allWaypoints.Count - 1, allWaypoints, token));
     }
 
-    private IEnumerator ReadyToJump(float duration, Action onComplete, float speed, int count)
+    private async UniTask ReadyToJump(float duration, Action onComplete, float speed, int count, System.Threading.CancellationToken token)
     {
         isOnTop = false;
         float elapsed = 0;
@@ -483,9 +480,11 @@ public class PigComponent : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
-        StartMainCoroutine(ConveyorJourney(onComplete, speed, count)); // thay StartCoroutine
+
+        if (token.IsCancellationRequested) return;
+        await ConveyorJourney(onComplete, speed, count, token);
     }
     public void MoveTo(Vector3 newLocalPos)
     {
@@ -535,26 +534,29 @@ public class PigComponent : MonoBehaviour
         }
     }
 
-    public IEnumerator SlideTo(Vector3 target, float speed)
+    public async UniTask SlideTo(Vector3 target, float speed, System.Threading.CancellationToken token)
     {
         Vector3 start = rb.position;
         float duration = Vector3.Distance(start, target) / speed;
         float elapsed = 0;
         while (elapsed < duration)
         {
+            if (token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             Vector3 newPos = Vector3.Lerp(start, target, elapsed / duration);
             rb.MovePosition(newPos);
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
+        if (this == null || token.IsCancellationRequested) return;
         rb.MovePosition(target);
     }
 
-    private IEnumerator MovePigThroughWaypoints(int startIndex, int targetIndex, List<Transform> path)
+    private async UniTask MovePigThroughWaypoints(int startIndex, int targetIndex, List<Transform> path, System.Threading.CancellationToken token)
     {
         int i = startIndex;
         while (true)
         {
+            if (token.IsCancellationRequested) return;
             var current = path[i];
 
             Quaternion targetRot = Quaternion.LookRotation(current.up, current.forward);
@@ -573,14 +575,14 @@ public class PigComponent : MonoBehaviour
                 Quaternion startRotAligned = Quaternion.LookRotation(path[i].up, path[i].forward);
                 Quaternion endRotAligned = Quaternion.LookRotation(path[i + 2].up, path[i + 2].forward);
 
-                yield return StartCoroutine(SlideOnCurve(start, control, end, startRotAligned, endRotAligned, speed));
+                await SlideOnCurve(start, control, end, startRotAligned, endRotAligned, speed, token);
                 i += 2;
             }
             else
             {
                 model.rotation = targetRot;
                 Vector3 end = path[i + 1].position;
-                yield return StartCoroutine(SlideTo(end, speed));
+                await SlideTo(end, speed, token);
                 i++;
             }
 
@@ -588,7 +590,7 @@ public class PigComponent : MonoBehaviour
         }
     }
 
-    public IEnumerator SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float speed)
+    public async UniTask SlideOnCurve(Vector3 start, Vector3 control, Vector3 end, Quaternion startRotation, Quaternion endRotation, float speed, System.Threading.CancellationToken token)
     {
         const int samples = 20;
         float curveLength = 0f;
@@ -608,6 +610,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -619,8 +622,9 @@ public class PigComponent : MonoBehaviour
 
             model.rotation = Quaternion.Lerp(startRotation, endRotation, t);
 
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
+        if (this == null || token.IsCancellationRequested) return;
         rb.MovePosition(end);
         model.rotation = endRotation;
     }
@@ -633,47 +637,51 @@ public class PigComponent : MonoBehaviour
             _wavyLine.HideLineImmediately();
         }
 
-        // jumpToQueueFB?.PlayFeedbacks();
+
         _lockedTargets = 0;
         model.rotation = Quaternion.identity;
-        // ChangeState(PigState.Jumping); // Stop FixedUpdate interference and prevent OnTriggerEnter re-firing
         ChangeState(PigState.DoNothing);
-        var distance = Vector3.Distance(this.transform.position, targetPosition);
-        // var intervalDuration = distance / speed
-
-        StartMainCoroutine(JumpArcCoroutine(rb.position, targetPosition, 0.4f, () =>
+        StartNewLogic(async token =>
         {
-            // ChangeState(PigState.InQueue);
+            await JumpArcCoroutine(rb.position, targetPosition, speed, token);
+            if (token.IsCancellationRequested) return;
+            ScaleUpAndDownWhenEnterQueue(token).Forget();
             bulletText.transform.localPosition = initCanvasLocalPos;
-            ScaleUpAndDownWhenEnterQueue().Forget();
+            isOnTop = true;
+            ChangeState(PigState.InQueue);
             onComplete?.Invoke();
-        }));
+        });
+
     }
 
-    private IEnumerator JumpArcCoroutine(Vector3 startPos, Vector3 endPos, float duration, Action onComplete = null, MMF_Player jumpFeedback = null)
+    private async UniTask JumpArcCoroutine(Vector3 startPos, Vector3 endPos, float duration, System.Threading.CancellationToken token, MMF_Player jumpFeedback = null)
     {
         float timeSpent = 0f;
-        jumpFeedback?.PlayFeedbacks();
+        if (jumpFeedback != null)
+        {
+            jumpFeedback.StopFeedbacks();
+            jumpFeedback.PlayFeedbacks();
+        }
 
         while (timeSpent < duration)
         {
+            if (token.IsCancellationRequested) return;
             timeSpent += Time.fixedDeltaTime;
             float percent = timeSpent / duration;
             Vector3 currentPos = MMTween.Tween(timeSpent, 0f, duration, startPos, endPos, jumpCurve);
             float arcOffset = Mathf.Sin(percent * Mathf.PI) * 2f;
             currentPos.y += arcOffset;
             rb.MovePosition(currentPos);
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
-
-        // Đảm bảo đáp đất chính xác ở điểm cuối
+        if (this == null || token.IsCancellationRequested) return;
         rb.MovePosition(endPos);
-        onComplete?.Invoke();
+        // onComplete?.Invoke();
     }
 
-    private async UniTask ScaleUpAndDownWhenEnterQueue()
+    private async UniTask ScaleUpAndDownWhenEnterQueue(System.Threading.CancellationToken token)
     {
-        var token = this.GetCancellationTokenOnDestroy();
+
         float duration = 0.2f;
         float elapsed = 0;
         model.localScale = initScale;
@@ -682,7 +690,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
-            if(token.IsCancellationRequested) return;
+            if (token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -697,40 +705,42 @@ public class PigComponent : MonoBehaviour
 
             await UniTask.Yield(PlayerLoopTiming.Update, token);
         }
-        // model.localScale = startScale;
         ChangeState(PigState.InQueue);
         model.localScale = initScale;
     }
     public void MoveInQueue(Vector3 targetPos, Quaternion targetRot)
     {
-        // Debug.Log("congthanh");
         // ChangeState(PigState.InQueue);
-        StartMainCoroutine(MoveInQueueCoroutine(targetPos, targetRot));
+        StartNewLogic(async token => await MoveInQueueCoroutine(targetPos, targetRot, token));
     }
 
     public void MoveToStack(Vector3 targetPos)
     {
-        StartCoroutine(MoveToStackCoroutine(targetPos));
+        StartNewLogic(async token => await MoveToStackCoroutine(targetPos, token));
     }
 
-    private IEnumerator MoveToStackCoroutine(Vector3 targetPos)
+    private async UniTask MoveToStackCoroutine(Vector3 targetPos, System.Threading.CancellationToken token)
     {
         // ChangeState(PigState.InQueue);
         Vector3 start = rb.position;
         float distance = Vector3.Distance(start, targetPos);
         float duration = Mathf.Max(0.1f, distance / moveSpeed);
         float elapsed = 0;
+        // rb.rotation = Quaternion.Euler(-90, 0, 0);
         while (elapsed < duration)
         {
+            if (token.IsCancellationRequested) return;
             elapsed += Time.deltaTime;
             rb.MovePosition(Vector3.Lerp(start, targetPos, elapsed / duration));
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
-        rb.MovePosition(targetPos);
         // ChangeState(PigState.CanMove);
+        if (this == null || token.IsCancellationRequested) return;
+        rb.MovePosition(targetPos);
+        ChangeState(PigState.CanMove);
     }
 
-    private IEnumerator MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot)
+    private async UniTask MoveInQueueCoroutine(Vector3 targetPos, Quaternion targetRot, System.Threading.CancellationToken token)
     {
         Vector3 startPos = rb.position;
         float distance = Vector3.Distance(new Vector3(startPos.x, 0, startPos.z), new Vector3(targetPos.x, 0, targetPos.z));
@@ -741,7 +751,7 @@ public class PigComponent : MonoBehaviour
 
         while (elapsed < duration)
         {
-            if (this == null) yield break;
+            if (token.IsCancellationRequested) return;
 
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
@@ -750,11 +760,11 @@ public class PigComponent : MonoBehaviour
             currentPos.y += Mathf.Sin(t * Mathf.PI) * jumpHeight;
 
             rb.MovePosition(currentPos);
-            yield return new WaitForFixedUpdate();
+            await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
         }
-
+        if (this == null || token.IsCancellationRequested) return;
         rb.MovePosition(targetPos);
-        yield return new WaitForFixedUpdate();
+        await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
 
     }
 
@@ -767,7 +777,6 @@ public class PigComponent : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Debug.Log("currentState: " + currentState + ", isRush: " + isRush);
         if (other.CompareTag("EndConveyor") && !isRush)
         {
             EventManager.OnPigEnterQueue?.Invoke(this);
@@ -776,14 +785,6 @@ public class PigComponent : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // if (animator.enabled)
-        // {
-        //     Debug.Log("Current State: " + currentState);
-        // }
-        // else
-        // {
-        //     Debug.Log("Animator is disabled. Current State: " + currentState);
-        // }
         if (Bullet > 0 && (currentState == PigState.OnConveyor || currentState == PigState.Shooting))
         {
             _wavyLine.UpdateStartPoint(wavyPoint.position);
@@ -800,12 +801,29 @@ public class PigComponent : MonoBehaviour
             }
         }
     }
-    private void StartMainCoroutine(IEnumerator routine)
+
+
+    public void StartNewLogic(Func<System.Threading.CancellationToken, UniTask> taskFactory)
     {
-        // Debug.Log("Starting new main coroutine: " + routine);
-        if (_mainCoroutine != null)
-            StopCoroutine(_mainCoroutine);
-        _mainCoroutine = StartCoroutine(routine);
+        _stateCTS?.Cancel();
+        _stateCTS?.Dispose();
+        _stateCTS = new System.Threading.CancellationTokenSource();
+
+        var linkedCTS = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(
+            _stateCTS.Token,
+            this.GetCancellationTokenOnDestroy()
+        );
+
+        taskFactory(linkedCTS.Token)
+            .ContinueWith(() => linkedCTS.Dispose())
+            .Forget();
+    }
+
+    public void StopCurrentLogic()
+    {
+        _stateCTS?.Cancel();
+        _stateCTS?.Dispose();
+        _stateCTS = null;
     }
 }
 

@@ -226,7 +226,8 @@ public class WavyLineRenderer : MonoBehaviour
 
         foreach (GameObject go in _targetBlocks)
         {
-            go.GetComponent<Block>().isAlreadyDestroyed = false;
+            if (go != null)
+                go.GetComponent<Block>().isAlreadyDestroyed = false;
         }
         _targetBlocks.Clear();
         _currentTarget = null;
