@@ -68,6 +68,8 @@ MonoBehaviour:
   androidTargetSDK: 35
   screenOrientation: 0
   androidKeystorePassword: Hopper#123
+  slackChannelNameForBuildNote: game16-puzzlepxflow
+  slackBotTokenForBuildNote: xoxb-844426964530-10893572590119-N8G9zm2TGZjeHMqpmqCFkPAt
   playPassPID: 
   iapDelayForTestRepay: -1
   facebookInstallReferrerDecryptKey: 
