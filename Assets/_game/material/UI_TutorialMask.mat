@@ -34,7 +34,7 @@ Material:
     - _HoleRadius: 0.1
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 0.7}
-    - _HoleCenter: {r: 0.5, g: 0.65625, b: 0, a: 0}
-    - _HoleSize: {r: 0.3611111, g: 0.21354167, b: 0, a: 0}
+    - _HoleCenter: {r: 0.20648149, g: 0.31302083, b: 0, a: 0}
+    - _HoleSize: {r: 0.046296295, g: 0.026041666, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
