@@ -63,10 +63,10 @@ public static class BoosterController
     {
         switch (boosterIndex)
         {
-            case BoosterIndex.tray: return HardCodeInGame.TRAY_AVAILABLE;
-            case BoosterIndex.hand: return HardCodeInGame.HAND_AVAILABLE && !SceneGameplayUI.instance.isBottomUiTranslate;
-            case BoosterIndex.shuffle: return HardCodeInGame.SHUFFLE_AVAILABLE;
-            case BoosterIndex.super: return HardCodeInGame.SUPER_AVAILABLE;
+            case BoosterIndex.tray: return HardCodeInGame.TRAY_AVAILABLE && LevelController.GetMaxLevelUnlock() >= 6;
+            case BoosterIndex.hand: return HardCodeInGame.HAND_AVAILABLE && !SceneGameplayUI.instance.isBottomUiTranslate && LevelController.GetMaxLevelUnlock() >= 12;
+            case BoosterIndex.shuffle: return HardCodeInGame.SHUFFLE_AVAILABLE && LevelController.GetMaxLevelUnlock() >= 15;
+            case BoosterIndex.super: return HardCodeInGame.SUPER_AVAILABLE && LevelController.GetMaxLevelUnlock() >= 18;
             default: return false;
         }
     }

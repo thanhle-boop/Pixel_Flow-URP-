@@ -37,28 +37,37 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
 
         EventManager.OnClickBlock += ProcessClickBlock;
 
-        EventManager.oncompleteStep1Level1 += () =>
-        {
-            if (LevelController.GetMaxLevelUnlock() == 1)
-            {
-                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
-                SetTargetZeroSize(); // Giữ
-            }
-        };
-        EventManager.oncompleteStep2Level1 += () =>
-        {
-            if (LevelController.GetMaxLevelUnlock() == 1)
-            {
-                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
-                SetTargetCustomSize(new Vector2(-317f, -359f), new Vector2(60, 80));
-            }
-        };
+        // EventManager.oncompleteStep1Level1 += () =>
+        // {
+        //     if (LevelController.GetMaxLevelUnlock() == 1)
+        //     {
+        //         TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+        //         SetTargetZeroSize(); // Giữ
+        //     }
+        // };
+        // EventManager.oncompleteStep2Level1 += () =>
+        // {
+        //     if (LevelController.GetMaxLevelUnlock() == 1)
+        //     {
+        //         TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+        //         SetTargetCustomSize(new Vector2(-317f, -359f), new Vector2(60, 80));
+        //     }
+        // };
 
-        EventManager.oncompleteStep3Level1 += () =>
+        // EventManager.oncompleteStep3Level1 += () =>
+        // {
+        //     if (LevelController.GetMaxLevelUnlock() == 1)
+        //     {
+        //         TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+        //     }
+        // };
+        EventManager.closeClickBlockPopup += () =>
         {
-            if (LevelController.GetMaxLevelUnlock() == 1)
+
+            if (!string.IsNullOrEmpty(BoosterTutorialType.Booster_Super.ToString()) && !TutorialController.IsCompleted(BoosterTutorialType.Booster_Super.ToString()))
             {
-                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+                SetTargetFullSize();
+                ExecuteTutorialLogic(LevelController.GetMaxLevelUnlock(), BoosterTutorialType.Booster_Super.ToString());
             }
         };
     }
@@ -85,12 +94,14 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
         if (SceneGameplayUI.instance.currentTutorial != BoosterTutorialType.Booster_Balloon) return;
         TutorialController.AdvanceStep(BoosterTutorialType.Booster_Balloon.ToString());
         SceneGameplayUI.instance.ResetButton();
+
     }
 
     private void ProcessUseSuperCat()
     {
         if (SceneGameplayUI.instance.currentTutorial == BoosterTutorialType.Booster_Super)
         {
+            PopupManager.instance.OpenPopup<PopupClickBlock>().Forget();
             TutorialController.AdvanceStep(BoosterTutorialType.Booster_Super.ToString());
             SetTargetCustomSize(new Vector2(0F, 300f), new Vector2(600, 800));
         }
@@ -101,6 +112,13 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
         if (SceneGameplayUI.instance.currentTutorial != BoosterTutorialType.Booster_Super) return;
         TutorialController.AdvanceStep(BoosterTutorialType.Booster_Super.ToString());
         SceneGameplayUI.instance.ResetButton();
+                
+        var popup = PopupManager.instance.GetPopup<PopupClickBlock>();
+
+        if (popup != null)
+        {
+            PopupManager.instance.ClosePopup(popup, true);
+        }
     }
     private void HandleStartGame()
     {
@@ -109,8 +127,8 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
 
         switch (level)
         {
-            case 1: tutorialKey = GuideTutorialType.Level_1.ToString(); break;
-            case 2: tutorialKey = GuideTutorialType.Level_2.ToString(); break;
+            // case 1: tutorialKey = GuideTutorialType.Level_1.ToString(); break;
+            // case 2: tutorialKey = GuideTutorialType.Level_2.ToString(); break;
             case 6: tutorialKey = BoosterTutorialType.Booster_AddTray.ToString(); break;
             case 7: tutorialKey = MechanicTutorialType.Mechanic_Hidden.ToString(); break;
             case 12: tutorialKey = BoosterTutorialType.Booster_Balloon.ToString(); break;
@@ -134,9 +152,9 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
     {
         switch (level)
         {
-            case 1:
-                SetTargetCustomSize(new Vector2(-77.7f, -512f), new Vector2(60, 80));
-                break;
+            // case 1:
+            //     SetTargetCustomSize(new Vector2(-77.7f, -512f), new Vector2(60, 80));
+            //     break;
             case 6:
                 SetTargetZeroSize(); // Giữ màn hình tối để focus
                 PopupManager.instance.OpenPopup<PopupAddTray>().Forget();

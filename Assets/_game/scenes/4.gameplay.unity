@@ -2733,7 +2733,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: -4.635195}
-  m_LocalScale: {x: 0.69075, y: 1, z: 1.628}
+  m_LocalScale: {x: 0.69229525, y: 1, z: 1.628}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1975314017}
@@ -3859,7 +3859,7 @@ Transform:
   m_GameObject: {fileID: 2902704590171826669}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.088, y: -0.1, z: 0.04}
+  m_LocalPosition: {x: -0.12, y: -0.1, z: 0.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4134,7 +4134,7 @@ MonoBehaviour:
   amplitudeChangeSpeed: 2
   waveFrequency: 1.5
   waveSpeed: 30
-  lineMaterial: {fileID: 2100000, guid: 8a1d77b7d18618f4f973266b9b19e9c5, type: 2}
+  lineMaterial: {fileID: 2100000, guid: 9730ef2759c2b1e44848887919095e99, type: 2}
 --- !u!120 &5645387789150197072
 LineRenderer:
   serializedVersion: 3

@@ -133,6 +133,7 @@ MonoBehaviour:
   coinText: {fileID: 3262664444901835904}
   levelText: {fileID: 6385872144280887082}
   rectBottomUI: {fileID: 9106261237541815554}
+  currentTutorial: 0
   isBottomUiTranslate: 0
 --- !u!1 &1728781041170829116
 GameObject:
@@ -1096,11 +1097,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 83
+      value: 92
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 84
+      value: 105
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1108,7 +1109,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 5.9
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2509744708694804035, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_Pivot.x
@@ -1361,12 +1362,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 9106261237541815554}
     m_Modifications:
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 92
+      objectReference: {fileID: 0}
+    - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 105
+      objectReference: {fileID: 0}
+    - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 8
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2509744708694804035, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_Pivot.x
@@ -1487,19 +1496,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 99
+      value: 92
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 113
+      value: 105
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 149202885547621069, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 8
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 2509744708694804035, guid: eb00845dc58d0704eaae7f245f45a4c9, type: 3}
       propertyPath: m_Pivot.x
