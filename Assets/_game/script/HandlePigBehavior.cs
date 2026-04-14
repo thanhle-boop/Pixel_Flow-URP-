@@ -87,6 +87,16 @@ public class HandlePigBehavior : MonoBehaviour
     {
         _maxstraightSlot++;
         UIManager.Instance.UpdateStraightSlot(_straightSlot, _maxstraightSlot);
+
+        Vector3 spawnPos = traySlotOrigin.position - Vector3.right * (availablePlates.Count * plateStackOffset);
+        GameObject go = Instantiate(platePrefab);
+        Transform plate = go.transform;
+        plate.position = spawnPos;
+        plate.localRotation = Quaternion.Euler(0, 0, -45);
+        plate.SetParent(tray);
+        plate.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+        availablePlates.Enqueue(plate);
+        RearrangePlatesInTray();
     }
     private void InitializePlates()
     {
@@ -154,12 +164,35 @@ public class HandlePigBehavior : MonoBehaviour
         {
             if (pig.color == color)
             {
-
-                HandlePigClickedFromQueue(pig, () =>
+                if (pig.IsLinkedPig())
+                {
+                    pig.Bullet = 0;
+                    pig.bulletText.text = "0";
+                    PigComponent leftmost = pig.GetLeftmostPig();
+                    List<PigComponent> linkedGroup = GetPigChain(leftmost);
+                    bool canDestroyGroup = true;
+                    foreach (PigComponent p in linkedGroup)
+                    {
+                        if (p.Bullet > 0)
+                        {
+                            canDestroyGroup = false;
+                            break;
+                        }
+                    }
+                    if (canDestroyGroup)
+                    {
+                        foreach (PigComponent p in linkedGroup)
+                        {
+                            p.ExecuteDestroy();
+                            RemovePigFromLane(p);
+                        }
+                    }
+                }
+                else
                 {
                     pig.ExecuteDestroy();
                     RemovePigFromLane(pig);
-                }, pigsInTempQueue.Contains(pig));
+                }
             }
         }
     }
@@ -390,6 +423,11 @@ public class HandlePigBehavior : MonoBehaviour
         }
         else
         {
+            if(LevelController.GetMaxLevelUnlock() == 1)
+            {
+                EventManager.oncompleteStep1Level1?.Invoke();
+            }
+
             ProcessPigData(pig, pigStack.Count);
             pigStack.Add(pig);
             AssignPlateToPig(pig);
@@ -527,6 +565,12 @@ public class HandlePigBehavior : MonoBehaviour
 
         RearrangeQueue(0, false);
         pigsJumpingToQueue.Add(pig);
+
+        if(LevelController.GetMaxLevelUnlock() == 1)
+        {
+            EventManager.oncompleteStep2Level1?.Invoke();
+        }
+        
         pig.JumpToQueue(queuePos[queueIndex].position, jumpFromQueueSpeed, onComplete: () =>
         {
             pigsJumpingToQueue.Remove(pig); // ✅ Remove SAU khi jump xong
@@ -563,7 +607,7 @@ public class HandlePigBehavior : MonoBehaviour
         plate.transform.SetParent(tray);
         plate.position = targetPos;
         plate.rotation = Quaternion.Euler(0, 0, -45);
-        plate.localScale = Vector3.one;
+        plate.localScale = new Vector3(1.2f, 1.2f, 1.2f);
 
         RearrangePlatesInTray();
     }
@@ -586,6 +630,11 @@ public class HandlePigBehavior : MonoBehaviour
         if (removedIndex >= 0)
             RearrangeQueue(0, isFromTempQueue);
         pigsJumpingToStack.Add(pig);
+        if(LevelController.GetMaxLevelUnlock() == 1)
+        {
+            EventManager.oncompleteStep3Level1?.Invoke();
+        }
+
         pig.JumpTo(jumpFromQueueSpeed, pigStack.Count, () =>
         {
             pigsJumpingToStack.Remove(pig);

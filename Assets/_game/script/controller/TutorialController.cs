@@ -1,43 +1,58 @@
-using System.Collections.Generic;
+using R3;
 
 public static class TutorialController
 {
-    // Truy cập nhanh vào Model thông qua Manager
-    private static TutorialModel tutorialModel => PlayerModelManager.instance.GetPlayerModel<TutorialModel>();
+    private static TutorialModel Model => PlayerModelManager.instance.GetPlayerModel<TutorialModel>();
 
-    /// <summary>
-    /// Kiểm tra xem một tutorial cụ thể đã hoàn thành chưa
-    /// </summary>
-    public static bool IsCompleted(string tutorialKey)
+    // Hàm helper lấy Item công khai
+    public static TutorialItem GetTutorialItem(string key)
     {
-        var item = FindItem(tutorialKey);
-        return item != null && item.isCompleted;
+        return Model.GetTutorialItem(key);
     }
 
-    /// <summary>
-    /// Đánh dấu hoàn thành tutorial và lưu lại ngay lập tức
-    /// </summary>
-    public static void MarkAsCompleted(string tutorialKey)
+    public static bool IsCompleted(string key)
     {
-        var item = FindItem(tutorialKey);
-        if (item != null && !item.isCompleted)
+        var item = GetTutorialItem(key);
+        // Cần .Value vì isCompleted là ReactiveProperty<bool>
+        return item != null && item.isCompleted.Value;
+    }
+
+    // Lấy ReadOnly để View không thể tự ý sửa giá trị từ bên ngoài
+    public static ReadOnlyReactiveProperty<bool> IsCompletedRx(string key)
+    {
+        var item = GetTutorialItem(key);
+        return item?.isCompleted;
+    }
+
+    public static int GetCurrentStep(string key)
+    {
+        var item = GetTutorialItem(key);
+        return item?.currentStep ?? 0;
+    }
+
+    public static void AdvanceStep(string key)
+    {
+        var item = GetTutorialItem(key);
+        if (item == null || item.isCompleted.Value) return;
+
+        item.currentStep++;
+
+        if (item.currentStep >= item.totalSteps)
         {
-            item.isCompleted = true;
-            tutorialModel.Save(); // Lưu xuống máy và chuẩn bị sync server
-            
-            // Thông báo cho UI cập nhật nếu cần
-            // EventManager.OnTutorialUpdated?.Invoke(tutorialKey);
+            item.isCompleted.Value = true;
         }
+
+        Model.Save();
     }
 
-    /// <summary>
-    /// Tìm item trong cả 2 danh sách Mechanic và Booster
-    /// </summary>
-    private static TutorialItem FindItem(string key)
+    public static void CompleteTutorial(string key)
     {
-        var found = tutorialModel.mechanicTutorials.Find(x => x.tutorialKey == key);
-        if (found == null)
-            found = tutorialModel.boosterTutorials.Find(x => x.tutorialKey == key);
-        return found;
+        var item = GetTutorialItem(key);
+        if (item != null)
+        {
+            item.isCompleted.Value = true;
+            item.currentStep = item.totalSteps;
+            Model.Save();
+        }
     }
 }

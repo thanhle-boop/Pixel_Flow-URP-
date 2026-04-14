@@ -51,7 +51,7 @@ public static class BoosterController
 
     public static bool IsCanUseBooster(BoosterIndex boosterIndex)
     {
-        if(boosterIndex == BoosterIndex.super && !IsBoosterAvailable(boosterIndex))
+        if (!IsBoosterAvailable(boosterIndex))
         {
             return false;
         }
@@ -92,5 +92,30 @@ public static class BoosterController
         }
 
         SubtractBooster(boosterIndex, 1);
+    }
+
+    public static void CompledtedTutorialStep(BoosterIndex boosterIndex)
+    {
+        BoosterTutorialType boosterTutorial = BoosterTutorialType.None;
+        switch (boosterIndex)
+        {
+            case BoosterIndex.tray:
+                boosterTutorial = BoosterTutorialType.Booster_AddTray;
+                break;
+            case BoosterIndex.hand:
+                boosterTutorial = BoosterTutorialType.Booster_Balloon;
+                break;
+            case BoosterIndex.shuffle:
+                boosterTutorial = BoosterTutorialType.Booster_Shuffle;
+                break;
+            case BoosterIndex.super:
+                boosterTutorial = BoosterTutorialType.Booster_Super;
+                break;
+        }
+
+        if (boosterTutorial != BoosterTutorialType.None && boosterTutorial != BoosterTutorialType.Booster_Balloon && boosterTutorial != BoosterTutorialType.Booster_Super)
+        {
+            SceneGameplayUI.instance.CompleteFirstStepTutorial(boosterTutorial);
+        }
     }
 }

@@ -9,5 +9,6 @@ public class ListModelsImplementation : IListModelDeclaration
         new LevelModel(),
         new BoosterModel(),
         new SettingModel(),
+        new TutorialModel(),
     };
 }

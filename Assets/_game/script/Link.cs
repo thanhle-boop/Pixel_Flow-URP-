@@ -53,6 +53,7 @@ public class Link : MonoBehaviour
     {
         if (pigObject1 == null || pigObject2 == null)
         {
+            Destroy(gameObject);
             return;
         }
 

@@ -54,6 +54,7 @@ public class ItemButtomController : MonoBehaviour
                 if (BoosterController.IsCanUseBooster(itemType))
                 {
                     BoosterController.HandleUseBooster(itemType);
+                    BoosterController.CompledtedTutorialStep(itemType);
                 }
             }).AddTo(this);
     }

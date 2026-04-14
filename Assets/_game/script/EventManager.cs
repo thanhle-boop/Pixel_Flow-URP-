@@ -35,4 +35,8 @@ public class EventManager
 
     public static Action<string,string> onClickLevelButton;
 
+    public static Action oncompleteStep1Level1;
+    public static Action oncompleteStep2Level1;
+    public static Action oncompleteStep3Level1;
+
 }

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using R3;
 using System.Collections;
 using TMPro;
@@ -17,6 +18,7 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
     [SerializeField] TextMeshProUGUI levelText;
 
     [SerializeField] RectTransform rectBottomUI;
+    public BoosterTutorialType currentTutorial = BoosterTutorialType.None;
 
     public bool isBottomUiTranslate = false;
 
@@ -101,4 +103,73 @@ public class SceneGameplayUI : SingletonMonoBehaviour<SceneGameplayUI>
     {
         PopupManager.instance.OpenPopup<PopupGameOver>().Forget();
     }
+    private Button btn;
+    public void InTutorial(BoosterTutorialType key)
+    {
+        btn = btnUseSuper;
+        switch (key)
+        {
+            case BoosterTutorialType.Booster_Super:
+                btn = btnUseSuper;
+                currentTutorial = key;
+                break;
+
+            case BoosterTutorialType.Booster_Shuffle:
+                btn = btnUseShuff;
+                currentTutorial = key;
+                break;
+            case BoosterTutorialType.Booster_Balloon:
+                btn = btnHand;
+                currentTutorial = key;
+                break;
+            case BoosterTutorialType.Booster_AddTray:
+                btn = btnAddTray;
+                currentTutorial = key;
+                break;
+
+            default:
+                break;
+        }
+        var targetImage = btn.GetComponent<Image>();
+        var icon = btn.transform.GetChild(1).GetComponent<Image>();
+        icon.DOKill();
+        targetImage.DOKill();
+        btn.transform.DOKill();
+
+        btn.transform.DOScale(1.25f, 0.1f).OnComplete(() =>
+        {
+            targetImage.DOFade(0.2f, 1f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+
+            icon.DOFade(0.2f, 1f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+        });
+
+    }
+    public void CompleteFirstStepTutorial(BoosterTutorialType key)
+    {
+        if (currentTutorial == BoosterTutorialType.None) return;
+
+        // 2. Nếu cái hoàn thành không phải cái đang chạy thì cũng biến đi
+        if (currentTutorial != key) return;
+
+        TutorialController.AdvanceStep(currentTutorial.ToString());
+        ResetButton();
+        currentTutorial = BoosterTutorialType.None;
+    }
+    public void ResetButton()
+    {
+        var targetImage = btn.GetComponent<Image>();
+        var icon = btn.transform.GetChild(1).GetComponent<Image>();
+        icon.DOKill();
+        targetImage.DOKill();
+        btn.transform.DOKill();
+
+        targetImage.color = new Color(targetImage.color.r, targetImage.color.g, targetImage.color.b, 1f);
+        icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 1f);
+        btn.transform.localScale = Vector3.one;
+    }
+
 }

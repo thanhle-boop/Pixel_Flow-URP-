@@ -1,80 +1,259 @@
+using System;
+using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
 {
-    [Header("Hole Settings")]
-    [Tooltip("The RectTransform to spotlight (e.g. a button)")]
+    public Sprite hiddenSprite;
+    public Sprite linkedSprite;
     public RectTransform target;
-
-    [Tooltip("Extra radius padding around the target (pixels)")]
     public float radiusPadding = 40f;
-
-    [Tooltip("Softness of the hole edge")]
     public float edgeSoftness = 0.005f;
-
     public Material _mat;
     private Canvas _canvas;
     private Camera _cam;
 
+    private IDisposable _disposable;
+
     void Awake()
     {
         var image = GetComponent<Image>();
-        // Create a material instance so we don't modify the shared asset
-        _mat = new Material(Shader.Find("UI/TutorialMask"));
+        // _mat = new Material(Shader.Find("UI/TutorialMask"));
         image.material = _mat;
 
         _canvas = GetComponentInParent<Canvas>();
         _cam = _canvas.renderMode == RenderMode.ScreenSpaceOverlay
             ? null
             : _canvas.worldCamera;
+
+        EventManager.OnStartGame += HandleStartGame;
+        EventManager.OnUseHand += ProcessUseHand;
+
+        EventManager.OnEndHand += ProcessEndHand;
+
+        EventManager.OnUseSuperCat += ProcessUseSuperCat;
+
+        EventManager.OnClickBlock += ProcessClickBlock;
+
+        EventManager.oncompleteStep1Level1 += () =>
+        {
+            if (LevelController.GetMaxLevelUnlock() == 1)
+            {
+                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+                SetTargetZeroSize(); // Giữ
+            }
+        };
+        EventManager.oncompleteStep2Level1 += () =>
+        {
+            if (LevelController.GetMaxLevelUnlock() == 1)
+            {
+                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+                SetTargetCustomSize(new Vector2(-317f, -359f), new Vector2(60, 80));
+            }
+        };
+
+        EventManager.oncompleteStep3Level1 += () =>
+        {
+            if (LevelController.GetMaxLevelUnlock() == 1)
+            {
+                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
+            }
+        };
     }
 
+    void OnDisable()
+    {
+        EventManager.OnStartGame -= HandleStartGame;
+        EventManager.OnUseHand -= ProcessUseHand;
+        EventManager.OnEndHand -= ProcessEndHand;
+        EventManager.OnUseSuperCat -= ProcessUseSuperCat;
+        EventManager.OnClickBlock -= ProcessClickBlock;
+    }
+    private void ProcessUseHand()
+    {
+        if (SceneGameplayUI.instance.currentTutorial == BoosterTutorialType.Booster_Balloon)
+        {
+            TutorialController.AdvanceStep(BoosterTutorialType.Booster_Balloon.ToString());
+            SetTargetCustomSize(new Vector2(0.5f, -712f), new Vector2(400, 800));
+        }
+    }
+
+    private void ProcessEndHand()
+    {
+        if (SceneGameplayUI.instance.currentTutorial != BoosterTutorialType.Booster_Balloon) return;
+        TutorialController.AdvanceStep(BoosterTutorialType.Booster_Balloon.ToString());
+        SceneGameplayUI.instance.ResetButton();
+    }
+
+    private void ProcessUseSuperCat()
+    {
+        if (SceneGameplayUI.instance.currentTutorial == BoosterTutorialType.Booster_Super)
+        {
+            TutorialController.AdvanceStep(BoosterTutorialType.Booster_Super.ToString());
+            SetTargetCustomSize(new Vector2(0F, 300f), new Vector2(600, 800));
+        }
+    }
+
+    private void ProcessClickBlock(string s)
+    {
+        if (SceneGameplayUI.instance.currentTutorial != BoosterTutorialType.Booster_Super) return;
+        TutorialController.AdvanceStep(BoosterTutorialType.Booster_Super.ToString());
+        SceneGameplayUI.instance.ResetButton();
+    }
+    private void HandleStartGame()
+    {
+        int level = LevelController.GetMaxLevelUnlock();
+        string tutorialKey = "";
+
+        switch (level)
+        {
+            case 1: tutorialKey = GuideTutorialType.Level_1.ToString(); break;
+            case 2: tutorialKey = GuideTutorialType.Level_2.ToString(); break;
+            case 6: tutorialKey = BoosterTutorialType.Booster_AddTray.ToString(); break;
+            case 7: tutorialKey = MechanicTutorialType.Mechanic_Hidden.ToString(); break;
+            case 12: tutorialKey = BoosterTutorialType.Booster_Balloon.ToString(); break;
+            case 13: tutorialKey = MechanicTutorialType.Mechanic_Link.ToString(); break;
+            case 15: tutorialKey = BoosterTutorialType.Booster_Shuffle.ToString(); break;
+            case 18: tutorialKey = BoosterTutorialType.Booster_Super.ToString(); break;
+        }
+
+        if (!string.IsNullOrEmpty(tutorialKey) && !TutorialController.IsCompleted(tutorialKey))
+        {
+            ExecuteTutorialLogic(level, tutorialKey);
+        }
+        else
+        {
+            Debug.Log("No tutorial needed for this level or already completed. Setting Full Size.");
+            SetTargetFullSize();
+        }
+    }
+
+    private void ExecuteTutorialLogic(int level, string key)
+    {
+        switch (level)
+        {
+            case 1:
+                SetTargetCustomSize(new Vector2(-77.7f, -512f), new Vector2(60, 80));
+                break;
+            case 6:
+                SetTargetZeroSize(); // Giữ màn hình tối để focus
+                PopupManager.instance.OpenPopup<PopupAddTray>().Forget();
+                SceneGameplayUI.instance.InTutorial(BoosterTutorialType.Booster_AddTray);
+                break;
+            case 7:
+                SetTargetFullSize();
+                PopupManager.instance.OpenPopup<PopupHiddenMechanic>().Forget();
+                break;
+            case 12:
+                SetTargetZeroSize();
+                PopupManager.instance.OpenPopup<PopupBalloon>().Forget();
+                SceneGameplayUI.instance.InTutorial(BoosterTutorialType.Booster_Balloon);
+                break;
+            case 13:
+                SetTargetFullSize();
+                PopupManager.instance.OpenPopup<PopupLinkMechanic>().Forget();
+                break;
+            case 15:
+                SetTargetZeroSize();
+                PopupManager.instance.OpenPopup<PopupShuffle>().Forget();
+                SceneGameplayUI.instance.InTutorial(BoosterTutorialType.Booster_Shuffle);
+                break;
+            case 18:
+                SetTargetZeroSize();
+                PopupManager.instance.OpenPopup<PopupSuperCat>().Forget();
+                SceneGameplayUI.instance.InTutorial(BoosterTutorialType.Booster_Super);
+                break;
+        }
+
+        WatchTutorialStatus(key);
+    }
     void Update()
     {
-        if (target == null)
-        {
-            Debug.LogWarning("[TutorialOverlay] target is NULL!");
-            return;
-        }
+        if (target == null) return;
 
         Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(_cam, target.position);
         Vector2 viewportPos = new Vector2(screenPos.x / Screen.width, screenPos.y / Screen.height);
 
-        float worldRadius = Mathf.Max(target.rect.width, target.rect.height) * 0.5f
-                            * target.lossyScale.x + radiusPadding;
-        float uvRadius = worldRadius / Screen.height;
+        float halfWidth = (target.rect.width * target.lossyScale.x * 0.5f + radiusPadding) / Screen.width;
+        float halfHeight = (target.rect.height * target.lossyScale.y * 0.5f + radiusPadding) / Screen.height;
 
         _mat.SetVector("_HoleCenter", new Vector4(viewportPos.x, viewportPos.y, 0, 0));
-        _mat.SetFloat("_HoleRadius", uvRadius);
+        _mat.SetVector("_HoleSize", new Vector4(halfWidth, halfHeight, 0, 0));
         _mat.SetFloat("_EdgeSoftness", edgeSoftness);
-
         if (!IsRaycastLocationValid(Input.mousePosition, _cam) && Input.GetMouseButtonDown(0))
         {
-            Debug.Log("congthah");
+            Debug.Log("Click inside rounded rectangle!");
         }
-        //  Debug.Log($"[TutorialOverlay] target={target.name} | screenPos={screenPos} | viewportPos={viewportPos} | worldRadius={worldRadius} | uvRadius={uvRadius}");
     }
-
     public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
     {
         if (target == null) return true;
-
         Vector2 targetScreenPos = RectTransformUtility.WorldToScreenPoint(_cam, target.position);
-        float worldRadius = Mathf.Max(target.rect.width, target.rect.height) * 0.5f
-                            * target.lossyScale.x + radiusPadding;
 
-        float dist = Vector2.Distance(screenPoint, targetScreenPos);
-        bool isBlocked = dist > worldRadius;
+        float halfW = (target.rect.width * target.lossyScale.x * 0.5f) + radiusPadding;
+        float halfH = (target.rect.height * target.lossyScale.y * 0.5f) + radiusPadding;
+        bool isInside = screenPoint.x >= targetScreenPos.x - halfW &&
+                        screenPoint.x <= targetScreenPos.x + halfW &&
+                        screenPoint.y >= targetScreenPos.y - halfH &&
+                        screenPoint.y <= targetScreenPos.y + halfH;
+        return !isInside;
+    }
+    public void SetTargetFullSize()
+    {
+        if (target == null) return;
+        target.anchorMin = Vector2.zero;
+        target.anchorMax = Vector2.one;
+        target.offsetMin = Vector2.zero;
+        target.offsetMax = Vector2.one;
+        target.localScale = Vector3.one;
+    }
 
-        // Debug.Log($"[TutorialOverlay] Click at {screenPoint} | targetScreen={targetScreenPos} | dist={dist:F1} | radius={worldRadius:F1} | blocked={isBlocked}");
+    public void SetTargetZeroSize()
+    {
+        if (target == null) return;
 
-        return isBlocked;
+        target.sizeDelta = Vector2.zero;
+
+        target.localScale = Vector3.zero;
     }
 
     void OnDestroy()
     {
-        if (_mat != null) Destroy(_mat);
+        // if (_mat != null) Destroy(_mat);
+    }
+
+    public void WatchTutorialStatus(string key)
+    {
+        _disposable?.Dispose();
+
+        var isCompletedRx = TutorialController.IsCompletedRx(key);
+        if (isCompletedRx == null) return;
+
+        _disposable = isCompletedRx
+            .Where(done => done == true)
+            .Subscribe(_ =>
+            {
+                Debug.Log($"Tutorial {key} finished!");
+                SetTargetFullSize();
+            })
+            .AddTo(this);
+    }
+
+    public void SetTargetCustomSize(Vector2 position, Vector2 size)
+    {
+        if (target == null) return;
+
+        target.anchorMin = new Vector2(0.5f, 0.5f);
+        target.anchorMax = new Vector2(0.5f, 0.5f);
+
+        target.pivot = new Vector2(0.5f, 0.5f);
+
+        target.sizeDelta = size;
+
+        target.anchoredPosition = position;
+        target.localScale = Vector3.one;
     }
 
 }

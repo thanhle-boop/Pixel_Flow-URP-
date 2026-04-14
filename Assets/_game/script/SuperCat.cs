@@ -25,6 +25,7 @@ public class SuperCat : MonoBehaviour
     {
         targetBlocks = new List<GameObject>(blocks);
         wavyLineRenderer.InitializeLineRenderer(0.15f, 0.15f,0.015f);
+        wavyLineRenderer.SetSpeedMultiplier(2f);
         wavyLineRenderer.SetColor(color);
         animator.SetInteger("Status", 1);
         StartCoroutine(ShootingRoutine());
@@ -52,15 +53,15 @@ public class SuperCat : MonoBehaviour
         animator.enabled = false;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (currentState == SuperCatState.Rotate)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(90f, 0, 0), Time.deltaTime * 10f);
-            if (Quaternion.Angle(transform.rotation, Quaternion.Euler(90f, 0, 0)) < 0.1f)
-            {
+            // transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(90f, 0, 0), Time.deltaTime * 10f);
+            // if (Quaternion.Angle(transform.rotation, Quaternion.Euler(90f, 0, 0)) < 0.1f)
+            // {
+            // }
                 currentState = SuperCatState.Move;
-            }
         }
         if (currentState == SuperCatState.Move)
         {

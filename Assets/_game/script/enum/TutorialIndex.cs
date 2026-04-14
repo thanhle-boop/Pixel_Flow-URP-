@@ -7,8 +7,17 @@ public enum MechanicTutorialType
 
 public enum BoosterTutorialType
 {
+    None,
     Booster_AddTray,
-    Booster_Hand,
+    Booster_Balloon,
     Booster_Shuffle,
     Booster_Super
+}
+
+public enum GuideTutorialType
+{
+    None,
+    Level_1,
+    Level_2,
+    Full_slot,
 }
