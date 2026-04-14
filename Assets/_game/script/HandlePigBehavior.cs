@@ -90,6 +90,13 @@ public class HandlePigBehavior : MonoBehaviour
     }
     private void InitializePlates()
     {
+        for (int i = 0; i < availablePlates.Count; i++)
+        {
+            if (availablePlates.ElementAt(i) != null)
+            {
+                Destroy(availablePlates.ElementAt(i).gameObject);
+            }
+        }
         availablePlates.Clear();
         for (int i = 0; i < 5; i++)
         {
@@ -683,7 +690,7 @@ public class HandlePigBehavior : MonoBehaviour
 
         timer += Time.deltaTime;
 
-        if (timer >= 0.08f)
+        if (timer >= 0.11f)
         {
             PigComponent pigBottom = pigStack[0];
             if (pigBottom.currentState != PigState.CanMove)

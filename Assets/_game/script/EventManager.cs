@@ -33,4 +33,6 @@ public class EventManager
     public static Action<int> onClickYesButton;
     public static Action<int> onClickNoButton;
 
+    public static Action<string,string> onClickLevelButton;
+
 }

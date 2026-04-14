@@ -142,8 +142,13 @@ public class SpawnManager : MonoBehaviour
         }
         else if (nonEmptyCount > 800)
         {
-            scale = new Vector3(0.9f, 1, 0.9f);
+            scale = new Vector3(0.85f, 1, 0.85f);
             blockSpacing = 0.55f;
+        }
+        else if (nonEmptyCount > 600)
+        {
+            scale = new Vector3(0.9f, 1, 0.9f);
+            blockSpacing = 0.65f;
         }
         else if (nonEmptyCount > 300)
         {
