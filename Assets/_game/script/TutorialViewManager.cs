@@ -70,6 +70,8 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
                 ExecuteTutorialLogic(LevelController.GetMaxLevelUnlock(), BoosterTutorialType.Booster_Super.ToString());
             }
         };
+
+
     }
 
     void OnDisable()
@@ -112,7 +114,7 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
         if (SceneGameplayUI.instance.currentTutorial != BoosterTutorialType.Booster_Super) return;
         TutorialController.AdvanceStep(BoosterTutorialType.Booster_Super.ToString());
         SceneGameplayUI.instance.ResetButton();
-                
+
         var popup = PopupManager.instance.GetPopup<PopupClickBlock>();
 
         if (popup != null)
@@ -127,7 +129,7 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
 
         switch (level)
         {
-            // case 1: tutorialKey = GuideTutorialType.Level_1.ToString(); break;
+            case 1: tutorialKey = GuideTutorialType.Level_1.ToString(); break;
             // case 2: tutorialKey = GuideTutorialType.Level_2.ToString(); break;
             case 6: tutorialKey = BoosterTutorialType.Booster_AddTray.ToString(); break;
             case 7: tutorialKey = MechanicTutorialType.Mechanic_Hidden.ToString(); break;
@@ -137,13 +139,22 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
             case 18: tutorialKey = BoosterTutorialType.Booster_Super.ToString(); break;
         }
 
-        if (!string.IsNullOrEmpty(tutorialKey) && !TutorialController.IsCompleted(tutorialKey))
+        if (!string.IsNullOrEmpty(tutorialKey))
         {
-            ExecuteTutorialLogic(level, tutorialKey);
+            if (!TutorialController.IsCompleted(tutorialKey))
+            {
+                // NẾU CHƯA HOÀN THÀNH: Reset về step 0 trước khi chạy logic
+                TutorialController.ResetTutorialStep(tutorialKey);
+
+                ExecuteTutorialLogic(level, tutorialKey);
+            }
+            else
+            {
+                SetTargetFullSize();
+            }
         }
         else
         {
-            Debug.Log("No tutorial needed for this level or already completed. Setting Full Size.");
             SetTargetFullSize();
         }
     }
@@ -152,9 +163,9 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
     {
         switch (level)
         {
-            // case 1:
-            //     SetTargetCustomSize(new Vector2(-77.7f, -512f), new Vector2(60, 80));
-            //     break;
+            case 1:
+                WatchhStepChange(GuideTutorialType.Level_1.ToString());
+                return; // Các bước sẽ được xử lý trong WatchhStepChange
             case 6:
                 SetTargetZeroSize(); // Giữ màn hình tối để focus
                 PopupManager.instance.OpenPopup<PopupAddTray>().Forget();
@@ -235,6 +246,7 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
         target.sizeDelta = Vector2.zero;
 
         target.localScale = Vector3.zero;
+        target.anchoredPosition = new Vector2(2000f, 2000f);
     }
 
     void OnDestroy()
@@ -250,6 +262,37 @@ public class TutorialViewManager : MonoBehaviour, ICanvasRaycastFilter
         if (isCompletedRx == null) return;
 
         _disposable = isCompletedRx
+            .Where(done => done == true)
+            .Subscribe(_ =>
+            {
+                Debug.Log($"Tutorial {key} finished!");
+                SetTargetFullSize();
+            })
+            .AddTo(this);
+    }
+
+    private void WatchhStepChange(string key)
+    {
+        _disposable?.Dispose();
+
+        var item = TutorialController.GetTutorialItem(key);
+        if (item == null) return;
+        item.currentStep
+            .Subscribe(step =>
+            {
+                Debug.Log($"Step changed: {step} for {key}");
+                if (key == GuideTutorialType.Level_1.ToString())
+                {
+                    if (step == 0) SetTargetCustomSize(new Vector2(0.5f, -800f), new Vector2(250, 700));
+                    else if (step == 1) SetTargetCustomSize(new Vector2(0F, 300f), new Vector2(800, 900));
+                    else if (step == 2) SetTargetCustomSize(new Vector2(0f, -359f), new Vector2(700, 80));
+                    // else SetTargetFullSize();
+                }
+            })
+            .AddTo(this);
+
+        // 2. Lắng nghe Hoàn thành (Thay thế cho WatchTutorialStatus)
+        item.isCompleted
             .Where(done => done == true)
             .Subscribe(_ =>
             {

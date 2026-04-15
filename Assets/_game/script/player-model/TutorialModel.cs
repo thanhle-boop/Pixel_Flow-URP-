@@ -5,7 +5,7 @@ using R3;
 public class TutorialItem : IFileStreamObject
 {
     public string tutorialKey;
-    public int currentStep;
+    public ReactiveProperty<int> currentStep;
     public int totalSteps;
     public ReactiveProperty<bool> isCompleted;
 
@@ -14,7 +14,7 @@ public class TutorialItem : IFileStreamObject
     public void ReadOrWrite(IFileStream stream, int version)
     {
         stream.ReadOrWriteString(ref tutorialKey, nameof(tutorialKey));
-        stream.ReadOrWriteInt(ref currentStep, nameof(currentStep));
+        stream.ReadOrWriteRxInt(ref currentStep, nameof(currentStep));
         stream.ReadOrWriteInt(ref totalSteps, nameof(totalSteps));
         stream.ReadOrWriteRxBool(ref isCompleted, nameof(isCompleted));
     }
@@ -52,7 +52,7 @@ public class TutorialModel : BasePlayerModel
             mechanicTutorials.Add(new TutorialItem
             {
                 tutorialKey = type.ToString(),
-                currentStep = 0,
+                currentStep = new ReactiveProperty<int>(0),
                 totalSteps = 1,
                 isCompleted = new ReactiveProperty<bool>(false)
             });
@@ -64,7 +64,7 @@ public class TutorialModel : BasePlayerModel
         boosterTutorials.Add(new TutorialItem
         {
             tutorialKey = type.ToString(),
-            currentStep = 0,
+            currentStep = new ReactiveProperty<int>(0),
             totalSteps = steps,
             isCompleted = new ReactiveProperty<bool>(false)
         });
@@ -75,7 +75,7 @@ public class TutorialModel : BasePlayerModel
         guide.Add(new TutorialItem
         {
             tutorialKey = type.ToString(),
-            currentStep = 0,
+            currentStep = new ReactiveProperty<int>(0),
             totalSteps = steps,
             isCompleted = new ReactiveProperty<bool>(false)
         });
@@ -97,7 +97,7 @@ public class TutorialModel : BasePlayerModel
     public int GetCurrentStep(string key)
     {
         var item = GetTutorialItem(key);
-        return item?.currentStep ?? 0;
+        return item?.currentStep.Value ?? 0;
     }
 
 }

@@ -2733,7 +2733,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: -4.635195}
-  m_LocalScale: {x: 0.69229525, y: 1, z: 1.628}
+  m_LocalScale: {x: 0.69075, y: 1, z: 1.628}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1975314017}
@@ -3545,6 +3545,10 @@ PrefabInstance:
     - target: {fileID: 1407077586026330679, guid: f923e8cbdc81bfd47a8e1bc56bdce248, type: 3}
       propertyPath: m_Name
       value: scene-gameplay-ui
+      objectReference: {fileID: 0}
+    - target: {fileID: 1728781041170829116, guid: f923e8cbdc81bfd47a8e1bc56bdce248, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 2931523771128942919, guid: f923e8cbdc81bfd47a8e1bc56bdce248, type: 3}
       propertyPath: m_Pivot.x

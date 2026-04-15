@@ -423,9 +423,9 @@ public class HandlePigBehavior : MonoBehaviour
         }
         else
         {
-            if(LevelController.GetMaxLevelUnlock() == 1)
+            if (LevelController.GetMaxLevelUnlock() == 1 && TutorialController.GetTutorialItem(GuideTutorialType.Level_1.ToString()).currentStep.Value == 0)
             {
-                EventManager.oncompleteStep1Level1?.Invoke();
+                TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
             }
 
             ProcessPigData(pig, pigStack.Count);
@@ -566,11 +566,10 @@ public class HandlePigBehavior : MonoBehaviour
         RearrangeQueue(0, false);
         pigsJumpingToQueue.Add(pig);
 
-        if(LevelController.GetMaxLevelUnlock() == 1)
+        if (LevelController.GetMaxLevelUnlock() == 1 && TutorialController.GetTutorialItem(GuideTutorialType.Level_1.ToString()).isCompleted.Value == false)
         {
-            EventManager.oncompleteStep2Level1?.Invoke();
+            TutorialController.AdvanceStep(GuideTutorialType.Level_1.ToString());
         }
-        
         pig.JumpToQueue(queuePos[queueIndex].position, jumpFromQueueSpeed, onComplete: () =>
         {
             pigsJumpingToQueue.Remove(pig); // ✅ Remove SAU khi jump xong
@@ -630,7 +629,7 @@ public class HandlePigBehavior : MonoBehaviour
         if (removedIndex >= 0)
             RearrangeQueue(0, isFromTempQueue);
         pigsJumpingToStack.Add(pig);
-        if(LevelController.GetMaxLevelUnlock() == 1)
+        if (LevelController.GetMaxLevelUnlock() == 1 && TutorialController.GetTutorialItem(GuideTutorialType.Level_1.ToString()).isCompleted.Value == false)
         {
             EventManager.oncompleteStep3Level1?.Invoke();
         }

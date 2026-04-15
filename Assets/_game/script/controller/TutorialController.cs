@@ -27,7 +27,7 @@ public static class TutorialController
     public static int GetCurrentStep(string key)
     {
         var item = GetTutorialItem(key);
-        return item?.currentStep ?? 0;
+        return item?.currentStep.Value ?? 0;
     }
 
     public static void AdvanceStep(string key)
@@ -35,9 +35,9 @@ public static class TutorialController
         var item = GetTutorialItem(key);
         if (item == null || item.isCompleted.Value) return;
 
-        item.currentStep++;
+        item.currentStep.Value++;
 
-        if (item.currentStep >= item.totalSteps)
+        if (item.currentStep.Value >= item.totalSteps)
         {
             item.isCompleted.Value = true;
         }
@@ -51,8 +51,21 @@ public static class TutorialController
         if (item != null)
         {
             item.isCompleted.Value = true;
-            item.currentStep = item.totalSteps;
+            item.currentStep.Value = item.totalSteps;
             Model.Save();
         }
+    }
+
+    public static void ResetTutorialStep(string key)
+    {
+        var item = GetTutorialItem(key);
+        if (item == null || item.isCompleted.Value) return;
+
+        // Reset step về 0
+        item.currentStep.Value = 0;
+        
+        // Lưu lại trạng thái mới
+        Model.Save();
+        // Debug.Log($"[ResetTutorial] {key} has been reset to step 0");
     }
 }
